@@ -1,0 +1,89 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: var(--color-overlay);
+  z-index: var(--z-modal);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 32rem;
+  max-height: calc(100dvh - var(--space-8));
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-6);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.title {
+  font-size: var(--text-lg);
+}
+
+.close {
+  flex: none;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+}
+
+.body {
+  padding: var(--space-6);
+  overflow-y: auto;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+/* 모바일: 화면 아래에서 올라오는 시트 형태 */
+@media (max-width: 768px) {
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .panel {
+    max-width: none;
+    max-height: 90dvh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .body {
+    padding: var(--space-4);
+  }
+
+  .footer {
+    padding: var(--space-3) var(--space-4);
+  }
+}

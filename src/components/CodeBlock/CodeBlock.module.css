@@ -1,0 +1,46 @@
+.figure {
+  margin: 0;
+  min-width: 0;
+}
+
+.caption {
+  margin-bottom: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-subtle);
+}
+
+.pre {
+  margin: 0;
+  padding: var(--space-4);
+  background: var(--color-code-bg);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  white-space: pre;
+  tab-size: 4;
+}
+
+.keyword {
+  color: var(--color-code-keyword);
+  font-weight: var(--weight-bold);
+}
+
+.function {
+  color: var(--color-code-function);
+}
+
+.string {
+  color: var(--color-code-string);
+}
+
+.number {
+  color: var(--color-code-number);
+}
+
+.comment {
+  color: var(--color-code-comment);
+  font-style: italic;
+}

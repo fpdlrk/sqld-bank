@@ -1,0 +1,46 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.labels {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+}
+
+.track {
+  height: 0.5rem;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--transition-base);
+}
+
+.primary {
+  background: var(--color-primary);
+}
+
+.success {
+  background: var(--color-success);
+}
+
+.danger {
+  background: var(--color-danger);
+}
+
+.warning {
+  background: var(--color-warning);
+}

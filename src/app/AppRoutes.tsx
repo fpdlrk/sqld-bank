@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { Layout } from './Layout'
 import {
   BankPage,
+  DevPage,
   ExamPage,
   HomePage,
   MorePage,
@@ -27,6 +28,8 @@ export function AppRoutes() {
         <Route path="bank" element={<BankPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="more" element={<MorePage />} />
+        {/* 임시 컴포넌트 견본 (T1-4) — 메뉴에는 없음 */}
+        <Route path="dev" element={<DevPage />} />
         {/* 없는 주소는 홈으로 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

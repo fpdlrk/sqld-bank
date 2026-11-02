@@ -1,0 +1,63 @@
+.figure {
+  margin: 0;
+  min-width: 0;
+}
+
+.caption {
+  margin-bottom: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+.scroll {
+  /* 표가 좁으면 왼쪽 정렬된 작은 표로, 넓으면 이 박스 안에서만 스크롤 */
+  max-width: 100%;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-width) solid var(--color-border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-bold);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table th + th,
+.table td + td {
+  border-left: var(--border-width) solid var(--color-border);
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.null {
+  color: var(--color-text-subtle);
+  font-style: italic;
+}
+
+.empty {
+  color: var(--color-text-subtle);
+  text-align: center !important;
+}
