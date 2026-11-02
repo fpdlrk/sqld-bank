@@ -1,0 +1,21 @@
+/* 임시 전역 스타일. 디자인 토큰은 T1-2에서 src/styles/tokens.css로 옮긴다. */
+:root {
+  font-family: system-ui, 'Malgun Gothic', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.boot {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
