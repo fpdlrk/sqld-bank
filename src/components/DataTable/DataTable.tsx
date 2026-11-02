@@ -1,7 +1,7 @@
+import type { CellValue } from '../../domain'
 import styles from './DataTable.module.css'
 
-/** 표 한 칸의 값. 문제 JSON의 rows와 같은 형태 (NULL은 null) */
-export type CellValue = string | number | null
+export type { CellValue }
 
 interface Props {
   /** 테이블 이름 (예: "EMP"). 있으면 [EMP] 형태로 위에 표시 */

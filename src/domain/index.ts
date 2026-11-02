@@ -3,6 +3,6 @@
  *
  * 규칙: 이 폴더의 코드는 React에 의존하지 않는다.
  * (화면 없이 테스트할 수 있고, 나중에 다른 곳에서도 재사용할 수 있게)
- * 타입은 T2-1, 단원 코드표는 T2-2부터 추가한다.
  */
-export {}
+export * from './types'
+export * from './questionRef'
