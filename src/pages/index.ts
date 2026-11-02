@@ -1,8 +1,14 @@
 /**
  * pages/ — 화면 단위 컴포넌트
  *
- * Home, Practice, Exam, Result, WrongNote, Bank, Settings 7개 화면이 들어온다.
- * 각 화면은 폴더 하나(예: pages/Home/HomePage.tsx + HomePage.module.css)로 만든다.
- * 실제 화면은 T1-3(라우팅과 레이아웃)에서 추가한다.
+ * 화면마다 폴더 하나(예: pages/Home/HomePage.tsx)로 만든다.
+ * 지금은 빈 화면(T1-3)이고, 각 기능 Task에서 채운다.
  */
-export {}
+export { HomePage } from './Home/HomePage'
+export { PracticePage } from './Practice/PracticePage'
+export { ExamPage } from './Exam/ExamPage'
+export { ResultPage } from './Result/ResultPage'
+export { WrongNotePage } from './WrongNote/WrongNotePage'
+export { BankPage } from './Bank/BankPage'
+export { SettingsPage } from './Settings/SettingsPage'
+export { MorePage } from './More/MorePage'

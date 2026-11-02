@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import App from '../src/App'
 
-describe('T0-3 초기화 확인', () => {
-  it('App이 제목을 렌더링한다', () => {
+describe('앱 기본 동작', () => {
+  it('App을 띄우면 홈 화면이 나온다', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('SQLD 문제은행')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('홈')
   })
 
   it('테스트 환경에 IndexedDB(fake-indexeddb)가 준비되어 있다', () => {

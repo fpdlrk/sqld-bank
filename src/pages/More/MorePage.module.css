@@ -1,0 +1,27 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.list li + li {
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-min);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text);
+}
+
+.item:hover {
+  background: var(--color-surface-sunken);
+  text-decoration: none;
+}

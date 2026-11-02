@@ -1,0 +1,128 @@
+/* ===== 데스크톱: 좌측 사이드 메뉴 + 본문 ===== */
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-3);
+  background: var(--color-surface);
+  border-right: var(--border-width) solid var(--color-border);
+  overflow-y: auto;
+  z-index: var(--z-sticky);
+}
+
+.brand {
+  padding: 0 var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-primary);
+}
+
+.menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.link:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.link.active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.content {
+  margin-left: var(--sidebar-width);
+  max-width: calc(var(--content-max) + var(--space-16));
+  padding: var(--space-8);
+  /* 긴 SQL·표가 본문을 밀어내지 않게 (안쪽 박스에서만 가로 스크롤) */
+  min-width: 0;
+}
+
+/* 하단 탭바는 데스크톱에서 숨김 */
+.tabbar {
+  display: none;
+}
+
+/* ===== 모바일(≤768px): 하단 탭바 ===== */
+/* CSS 변수는 미디어쿼리 안에 쓸 수 없어 768px을 직접 적는다 (tokens.css의 --breakpoint-mobile과 같은 값) */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    margin-left: 0;
+    max-width: none;
+    padding: var(--space-6) var(--space-4);
+    /* 탭바에 가려지지 않게 아래 여백 확보 (아이폰 홈 막대 영역 포함) */
+    padding-bottom: calc(var(--tabbar-height) + var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .tabbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    height: calc(var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--color-surface);
+    border-top: var(--border-width) solid var(--color-border);
+    z-index: var(--z-tabbar);
+  }
+
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    color: var(--color-text-subtle);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+  }
+
+  .tab span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tab:hover {
+    text-decoration: none;
+  }
+
+  .tab.active {
+    color: var(--color-primary);
+  }
+}
