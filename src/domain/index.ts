@@ -6,3 +6,18 @@
  */
 export * from './types'
 export * from './questionRef'
+export {
+  CHAPTERS,
+  CHAPTER_CODES,
+  PARTS,
+  SUBJECTS,
+  chapterLabel,
+  chaptersOfPart,
+  chaptersOfSubject,
+  getChapter,
+  isChapterCode,
+  partOf,
+} from './chapters'
+export type { ChapterInfo, PartCode, PartInfo, SubjectInfo } from './chapters'
+export { questionSchema, validateQuestionFiles, formatProblem } from './questionSchema'
+export type { QuestionProblem } from './questionSchema'

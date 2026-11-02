@@ -7,6 +7,7 @@
  * 날짜·시각은 모두 ISO 문자열("2026-11-02T09:30:00.000Z")로 저장한다.
  * → 백업 JSON을 사람이 읽을 수 있고, 문자열 정렬이 곧 시간순 정렬이 된다.
  */
+import type { ChapterCode } from './chapters'
 
 // ───────────────────────────── 기본 값 ─────────────────────────────
 
@@ -14,10 +15,10 @@
 export type Subject = 1 | 2
 
 /**
- * 단원 코드 (예: "S1-05"). 실제 목록은 T2-2의 chapters.ts.
+ * 단원 코드 (예: "S1-05") — chapters.ts의 단원표에 있는 30개 중 하나.
  * 접두어: M1·M2 = 1과목, S1·S2·S3 = 2과목
  */
-export type ChapterCode = `${'M1' | 'M2' | 'S1' | 'S2' | 'S3'}-${string}`
+export type { ChapterCode }
 
 /** 문제 유형 (docs/04 §3) */
 export type QuestionType =
