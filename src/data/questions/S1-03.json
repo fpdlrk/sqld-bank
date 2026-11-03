@@ -1,0 +1,64 @@
+[
+  {
+    "id": "S1-03-0001",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "NULL 산술과 NVL, SUM",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [PAY] 테이블에 SQL을 실행한 결과 (A, B, C)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "PAY",
+        "columns": [
+          "EMPNO",
+          "SAL",
+          "COMM"
+        ],
+        "rows": [
+          [
+            1,
+            300,
+            50
+          ],
+          [
+            2,
+            200,
+            null
+          ],
+          [
+            3,
+            400,
+            0
+          ],
+          [
+            4,
+            100,
+            null
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT SUM(SAL + COMM)        AS A,\n       SUM(SAL) + SUM(COMM)  AS B,\n       SUM(SAL + NVL(COMM, 0)) AS C\n  FROM PAY;",
+    "sqlExec": "SELECT SUM(SAL + COMM) AS A, SUM(SAL) + SUM(COMM) AS B, SUM(SAL + IFNULL(COMM, 0)) AS C FROM PAY;",
+    "choices": [
+      "1050, 1050, 1050",
+      "NULL, 1050, 1050",
+      "750, 1050, 1050",
+      "750, 750, 1050"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③(750, 1050, 1050)입니다. NULL이 들어간 산술 연산은 결과가 NULL이 되고 집계 함수는 NULL을 건너뛰기 때문에, \"행마다 더한 뒤 합계를 내는지\" \"합계를 낸 뒤 더하는지\"에 따라 결과가 달라집니다.\n\nA는 행마다 SAL + COMM을 먼저 계산한 뒤 SUM을 합니다. COMM이 NULL인 2번·4번 행은 SAL + NULL = NULL이 되고, SUM은 이 NULL을 무시하므로 1번(350)과 3번(400)만 더해져 750이 됩니다. B는 순서가 반대라서 SUM(SAL) = 1000과 SUM(COMM) = 50(NULL 두 개는 건너뜀)을 각각 구한 뒤 더하므로 1050입니다. C는 NVL로 NULL을 0으로 바꾼 뒤 더하므로 모든 행이 살아남아 350 + 200 + 400 + 100 = 1050이 됩니다. 3번 행의 COMM은 처음부터 0이라서 NULL과 달리 계산에 그대로 참여한다는 점도 함께 보세요.\n\n| EMPNO | SAL + COMM | SAL + NVL(COMM, 0) |\n|---|---|---|\n| 1 | 350 | 350 |\n| 2 | NULL | 200 |\n| 3 | 400 | 400 |\n| 4 | NULL | 100 |\n\n실행 결과는 다음과 같습니다.\n\n| A | B | C |\n|---|---|---|\n| 750 | 1050 | 1050 |\n\n①은 NULL을 0처럼 계산해 A까지 1050으로 본 경우이고, ②는 NULL이 하나라도 있으면 SUM 전체가 NULL이 된다고 착각한 경우입니다. SUM은 대상 값이 모두 NULL일 때만 NULL을 돌려줍니다. ④는 B에서도 NULL 행이 통째로 빠진다고 생각했지만, B는 컬럼을 따로 합산하므로 SAL은 네 행이 모두 더해집니다.",
+    "examPoint": "NULL + 숫자 = NULL, 집계 함수는 NULL을 무시한다. NULL이 있으면 SUM(a + b)와 SUM(a) + SUM(b)는 다르다.",
+    "tags": [
+      "NULL",
+      "NVL",
+      "집계함수"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  }
+]

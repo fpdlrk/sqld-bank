@@ -1,0 +1,26 @@
+[
+  {
+    "id": "S1-05-0001",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "GROUP BY와 SELECT 컬럼 규칙",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블(EMPNO, DEPTNO, JOB, SAL)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT DEPTNO, COUNT(*) FROM EMP GROUP BY DEPTNO HAVING AVG(SAL) > 3000;",
+      "SELECT DEPTNO, JOB, SUM(SAL) FROM EMP GROUP BY DEPTNO;",
+      "SELECT COUNT(*) FROM EMP WHERE SAL > 1000 GROUP BY DEPTNO;",
+      "SELECT DEPTNO, MAX(SAL) FROM EMP GROUP BY DEPTNO ORDER BY MAX(SAL) DESC;"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. GROUP BY를 쓰면 SELECT 절에는 GROUP BY에 적은 컬럼과 집계 함수만 올 수 있는데, ②는 그룹 기준이 아닌 JOB을 그대로 조회하려 해서 \"GROUP BY 표현식이 아니다\"(ORA-00979) 오류가 납니다.\n\nGROUP BY DEPTNO를 실행하면 같은 부서의 여러 행이 한 행으로 합쳐집니다. 이때 SUM(SAL)처럼 여러 값을 하나로 요약하는 집계 함수는 계산할 수 있지만, 한 부서 안에 CLERK·MANAGER 등 여러 값이 섞여 있을 수 있는 JOB은 그 한 행에 어떤 값을 보여 줘야 할지 정할 수 없습니다. 그래서 Oracle은 GROUP BY에 없는 일반 컬럼을 SELECT·HAVING·ORDER BY에 쓰는 것을 오류로 막습니다. JOB까지 보고 싶다면 `GROUP BY DEPTNO, JOB`처럼 그룹 기준에 추가해야 합니다.\n\n나머지는 오류처럼 보이도록 만든 보기입니다. ①은 SELECT에 없는 AVG(SAL)를 HAVING에서 쓰고 있지만, HAVING은 그룹마다 집계 함수를 새로 계산할 수 있으므로 문제없습니다. ③은 그룹 기준인 DEPTNO를 SELECT에 적지 않았는데, 그룹 기준을 꼭 화면에 보여 줘야 한다는 규칙은 없으므로 부서별 건수만 출력됩니다. ④는 ORDER BY에 집계 함수를 쓴 경우로, 정렬은 그룹화가 끝난 뒤에 일어나므로 집계 결과로 정렬할 수 있습니다.",
+    "examPoint": "GROUP BY 이후 SELECT에는 그룹 기준 컬럼과 집계 함수만 온다. 반대로 그룹 기준을 SELECT에서 빼는 것은 허용된다.",
+    "tags": [
+      "GROUP BY",
+      "HAVING",
+      "오류"
+    ],
+    "source": "claude"
+  }
+]

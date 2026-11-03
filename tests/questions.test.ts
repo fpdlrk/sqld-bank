@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { formatProblem, validateQuestionFiles } from '../src/domain/questionSchema'
+import type { Question } from '../src/domain'
 
 /** 정상 문제 1개 (아래 테스트에서 일부만 망가뜨려 쓴다) */
 const valid = {
@@ -33,6 +34,18 @@ describe('T2-3 실제 문제 파일 검사', () => {
       throw new Error(`문제 JSON 오류 ${problems.length}건\n  - ${problems.join('\n  - ')}`)
     }
     expect(problems).toEqual([])
+  })
+
+  it('문제 은행에 7가지 유형과 두 과목이 모두 들어 있다 (T2-4 샘플 기준)', () => {
+    const all = Object.values(
+      import.meta.glob<Question[]>('/src/data/questions/*.json', { eager: true, import: 'default' }),
+    ).flat()
+    const types = new Set(all.map((q) => q.type))
+    for (const t of ['concept', 'sql_result', 'sql_error', 'sql_equivalent', 'sql_fill', 'modeling', 'scenario']) {
+      expect(types, `유형 ${t} 문제가 없습니다`).toContain(t)
+    }
+    expect(all.filter((q) => q.subject === 1).length).toBeGreaterThanOrEqual(4)
+    expect(all.filter((q) => q.subject === 2).length).toBeGreaterThanOrEqual(8)
   })
 })
 

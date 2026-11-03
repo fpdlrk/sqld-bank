@@ -19,5 +19,8 @@ export {
   partOf,
 } from './chapters'
 export type { ChapterInfo, PartCode, PartInfo, SubjectInfo } from './chapters'
-export { questionSchema, validateQuestionFiles, formatProblem } from './questionSchema'
+// 문제 스키마 검증(questionSchema.ts)은 여기서 내보내지 않는다.
+// zod 라이브러리가 커서, 필요한 곳(테스트·문제 추가 폼)에서만 직접 import한다.
+export { countByChapter, filterQuestions, findQuestion, mergeQuestions } from './questionBank'
+export type { MergeResult, QuestionFilter } from './questionBank'
 export type { QuestionProblem } from './questionSchema'

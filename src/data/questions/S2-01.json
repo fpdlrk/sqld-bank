@@ -1,0 +1,27 @@
+[
+  {
+    "id": "S2-01-0001",
+    "subject": 2,
+    "chapter": "S2-01",
+    "topic": "IN 서브쿼리와 EXISTS의 동치",
+    "type": "sql_equivalent",
+    "difficulty": 2,
+    "stem": "다음 SQL과 **항상** 같은 결과를 반환하는 SQL은? (DEPT.DEPTNO는 기본키이다)",
+    "sql": "SELECT D.DEPTNO, D.DNAME\n  FROM DEPT D\n WHERE D.DEPTNO IN (SELECT E.DEPTNO\n                      FROM EMP E\n                     WHERE E.SAL >= 300);",
+    "choices": [
+      "SELECT D.DEPTNO, D.DNAME FROM DEPT D JOIN EMP E ON D.DEPTNO = E.DEPTNO WHERE E.SAL >= 300;",
+      "SELECT D.DEPTNO, D.DNAME FROM DEPT D WHERE EXISTS (SELECT 1 FROM EMP E WHERE E.DEPTNO = D.DEPTNO AND E.SAL >= 300);",
+      "SELECT D.DEPTNO, D.DNAME FROM DEPT D WHERE EXISTS (SELECT 1 FROM EMP E WHERE E.SAL >= 300);",
+      "SELECT D.DEPTNO, D.DNAME FROM DEPT D WHERE D.DEPTNO NOT IN (SELECT E.DEPTNO FROM EMP E WHERE E.SAL < 300);"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. 원래 SQL은 \"급여 300 이상인 직원이 한 명이라도 있는 부서\"를 한 번씩만 보여 주는데, 바깥 행의 DEPTNO를 서브쿼리 안에서 비교하는 연관 EXISTS도 정확히 같은 뜻입니다.\n\nIN 서브쿼리는 서브쿼리 결과 목록에 값이 들어 있는지만 확인하므로, 목록에 같은 부서 번호가 여러 번 나와도 DEPT의 각 행은 많아야 한 번 출력됩니다. EXISTS도 조건에 맞는 행이 하나라도 발견되면 참이 되고 더 이상 세지 않으므로 바깥 행을 중복시키지 않습니다. 단, EXISTS가 IN과 같아지려면 서브쿼리가 `E.DEPTNO = D.DEPTNO`로 바깥 행과 연결되어 있어야 합니다. 아래 예시 데이터로 각 보기를 실행해 보면 차이가 분명해집니다.\n\n[DEPT]\n\n| DEPTNO | DNAME |\n|---|---|\n| 10 | 영업 |\n| 20 | 개발 |\n| 30 | 인사 |\n\n[EMP]\n\n| ENAME | DEPTNO | SAL |\n|---|---|---|\n| 가람 | 10 | 400 |\n| 나래 | 10 | 350 |\n| 다솜 | 20 | 250 |\n| 라온 | NULL | 500 |\n\n| SQL | 결과 (DNAME) |\n|---|---|\n| 원래 SQL | 영업 |\n| ① JOIN | 영업, 영업 |\n| ② 연관 EXISTS | 영업 |\n| ③ 비연관 EXISTS | 영업, 개발, 인사 |\n| ④ NOT IN | 영업, 인사 |\n\n①은 조인이라서 영업 부서에 조건을 만족하는 직원이 둘(가람, 나래)이면 영업이 두 번 나옵니다. ③은 서브쿼리가 바깥 행과 연결되지 않아서, 회사 전체에 300 이상인 직원이 한 명만 있어도 모든 부서가 출력됩니다. ④는 \"300 미만인 직원이 있는 부서를 빼면 된다\"는 발상이지만, 직원이 아예 없는 인사 부서가 포함되고, 300 미만 직원 중 DEPTNO가 NULL인 사람이 생기면 NOT IN 전체가 참이 될 수 없어 결과가 0건이 되는 문제까지 있습니다.",
+    "examPoint": "IN 서브쿼리 = 연관 EXISTS(바깥 컬럼과 연결 필수). 조인으로 바꾸면 중복이 생길 수 있고, NOT IN은 NULL에 약하다.",
+    "tags": [
+      "서브쿼리",
+      "IN",
+      "EXISTS"
+    ],
+    "source": "claude"
+  }
+]

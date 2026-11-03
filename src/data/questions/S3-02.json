@@ -1,0 +1,51 @@
+[
+  {
+    "id": "S3-02-0001",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "SAVEPOINT와 ROLLBACK TO",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_ORDER] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은? (실행 전 데이터는 모두 COMMIT된 상태이다)",
+    "tables": [
+      {
+        "name": "T_ORDER",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ]
+        ]
+      }
+    ],
+    "sql": "INSERT INTO T_ORDER VALUES (3, 30);\nSAVEPOINT SP1;\nUPDATE T_ORDER SET QTY = QTY + 5 WHERE ID <= 2;\nSAVEPOINT SP2;\nDELETE FROM T_ORDER WHERE ID = 1;\nROLLBACK TO SAVEPOINT SP1;\nINSERT INTO T_ORDER VALUES (4, 40);\nCOMMIT;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "sqlExec": "BEGIN;\nINSERT INTO T_ORDER VALUES (3, 30);\nSAVEPOINT SP1;\nUPDATE T_ORDER SET QTY = QTY + 5 WHERE ID <= 2;\nSAVEPOINT SP2;\nDELETE FROM T_ORDER WHERE ID = 1;\nROLLBACK TO SAVEPOINT SP1;\nINSERT INTO T_ORDER VALUES (4, 40);\nCOMMIT;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "choices": [
+      "4, 110",
+      "3, 70",
+      "3, 90",
+      "4, 100"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④(4, 100)입니다. ROLLBACK TO SAVEPOINT SP1은 SP1 이후의 작업(UPDATE와 DELETE)만 취소하고, SP1 이전의 INSERT(3번)와 그 뒤에 새로 한 INSERT(4번)는 마지막 COMMIT으로 함께 확정됩니다.\n\n트랜잭션 안에서 SAVEPOINT는 \"여기까지는 지키고 싶다\"는 책갈피입니다. 단계별로 데이터를 따라가 보면, 먼저 INSERT로 (3, 30)이 추가되어 3행이 되고 SP1이 표시됩니다. 이어 UPDATE로 1·2번의 QTY가 15·25로 바뀌고, SP2를 표시한 뒤 DELETE로 1번 행이 지워집니다. 이 상태에서 ROLLBACK TO SAVEPOINT SP1을 실행하면 SP1 이후의 UPDATE와 DELETE가 모두 되돌려져 (1, 10), (2, 20), (3, 30)으로 돌아가고, SP1보다 뒤에 만든 SP2도 함께 사라집니다. 트랜잭션 자체는 끝나지 않았으므로, 이어서 (4, 40)을 넣고 COMMIT하면 4행, 합계 10 + 20 + 30 + 40 = 100이 확정됩니다.\n\n| 단계 | 데이터 (ID:QTY) |\n|---|---|\n| 시작 | 1:10, 2:20 |\n| INSERT 3 → SP1 | 1:10, 2:20, 3:30 |\n| UPDATE → SP2 | 1:15, 2:25, 3:30 |\n| DELETE 1 | 2:25, 3:30 |\n| ROLLBACK TO SP1 | 1:10, 2:20, 3:30 |\n| INSERT 4 → COMMIT | 1:10, 2:20, 3:30, 4:40 |\n\n①(4, 110)은 SP2까지만 되돌린 것처럼 UPDATE가 남아 있다고 본 경우이고, ③(3, 90)은 반대로 DELETE는 남고 UPDATE만 취소됐다고 본 경우입니다. ②(3, 70)는 ROLLBACK TO SAVEPOINT를 일반 ROLLBACK처럼 트랜잭션 전체를 취소하는 명령으로 착각해 3번 INSERT까지 사라졌다고 계산한 경우입니다.",
+    "examPoint": "ROLLBACK TO SAVEPOINT는 그 지점 이후만 취소하고 트랜잭션은 계속된다. 그 이전 작업은 이후의 COMMIT으로 함께 확정된다.",
+    "tags": [
+      "TCL",
+      "SAVEPOINT",
+      "ROLLBACK"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  }
+]

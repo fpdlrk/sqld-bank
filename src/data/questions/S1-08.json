@@ -1,0 +1,90 @@
+[
+  {
+    "id": "S1-08-0001",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "OUTER JOIN의 ON 조건과 WHERE 조건",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [DEPT], [EMP] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "DEPT",
+        "columns": [
+          "DEPTNO",
+          "DNAME"
+        ],
+        "rows": [
+          [
+            10,
+            "영업"
+          ],
+          [
+            20,
+            "개발"
+          ],
+          [
+            30,
+            "인사"
+          ]
+        ]
+      },
+      {
+        "name": "EMP",
+        "columns": [
+          "EMPNO",
+          "ENAME",
+          "DEPTNO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            101,
+            "가람",
+            10,
+            400
+          ],
+          [
+            102,
+            "나래",
+            10,
+            250
+          ],
+          [
+            103,
+            "다솜",
+            20,
+            500
+          ],
+          [
+            104,
+            "라온",
+            null,
+            300
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT D.DNAME, E.ENAME\n  FROM DEPT D\n  LEFT OUTER JOIN EMP E\n    ON D.DEPTNO = E.DEPTNO\n   AND E.SAL >= 300;",
+    "choices": [
+      "2건",
+      "3건",
+      "4건",
+      "5건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②(3건)입니다. LEFT OUTER JOIN에서 ON 절에 넣은 조건은 \"어떤 EMP 행을 짝으로 붙일지\"만 정할 뿐, 왼쪽 테이블(DEPT)의 행을 없애지 않습니다.\n\n조인은 DEPT의 각 행마다 \"DEPTNO가 같고 SAL이 300 이상인 EMP 행\"을 찾아 붙이는 방식으로 진행됩니다. 영업(10)은 가람(400)과 나래(250) 중 가람만 조건을 만족하므로 1행, 개발(20)은 다솜(500)이 붙어 1행이 됩니다. 인사(30)는 붙일 직원이 없지만 LEFT OUTER JOIN이므로 ENAME을 NULL로 채운 채 1행으로 남습니다. 부서가 NULL인 라온은 오른쪽 테이블에만 있는 행이라 LEFT 조인 결과에는 나오지 않습니다.\n\n| DNAME | ENAME |\n|---|---|\n| 영업 | 가람 |\n| 개발 | 다솜 |\n| 인사 | NULL |\n\n①(2건)은 SAL 조건을 WHERE 절로 옮긴 경우(`ON D.DEPTNO = E.DEPTNO WHERE E.SAL >= 300`)의 결과입니다. WHERE는 조인이 끝난 뒤에 적용되는데, 인사 행은 E.SAL이 NULL이라 조건을 통과하지 못해 함께 걸러지고 결국 INNER JOIN과 같아집니다. ③(4건)은 SAL 조건을 무시하고 나래까지 붙인 경우, ④(5건)는 거기에 오른쪽에만 있는 라온까지 포함한 FULL OUTER JOIN의 결과입니다.",
+    "examPoint": "OUTER JOIN에서 ON 조건은 짝을 붙이는 기준, WHERE 조건은 조인 후 필터. NULL로 채워지는 쪽 테이블의 조건을 WHERE에 쓰면 INNER JOIN처럼 된다.",
+    "tags": [
+      "OUTER JOIN",
+      "ON",
+      "WHERE"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  }
+]
