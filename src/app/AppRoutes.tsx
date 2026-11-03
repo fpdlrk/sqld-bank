@@ -7,6 +7,7 @@ import {
   HomePage,
   MorePage,
   PracticePage,
+  PracticeRunPage,
   ResultPage,
   SettingsPage,
   WrongNotePage,
@@ -22,6 +23,7 @@ export function AppRoutes() {
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="practice" element={<PracticePage />} />
+        <Route path="practice/:sessionId" element={<PracticeRunPage />} />
         <Route path="exam" element={<ExamPage />} />
         <Route path="result/:sessionId" element={<ResultPage />} />
         <Route path="wrong" element={<WrongNotePage />} />

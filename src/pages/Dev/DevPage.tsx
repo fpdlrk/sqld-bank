@@ -1,4 +1,10 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { BUILT_IN_QUESTIONS } from '../../data/builtInQuestions'
+import type { ChoiceNumber } from '../../domain'
+import { getStorage } from '../../storage'
+import { QuestionPlayer } from '../Practice/QuestionPlayer'
+import { SqlPlayground } from './SqlPlayground'
+import { TemplatePreview } from './TemplatePreview'
 import {
   Badge,
   Button,
@@ -7,6 +13,7 @@ import {
   DataTable,
   Modal,
   ProgressBar,
+  QuestionView,
   Tabs,
   ThemeSwitch,
 } from '../../components'
@@ -27,9 +34,35 @@ HAVING COUNT(*) >= 2
 
 const LONG_SQL = `SELECT e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, d.dname, d.loc, RANK() OVER (PARTITION BY e.deptno ORDER BY e.sal DESC) AS rnk FROM emp e LEFT OUTER JOIN dept d ON e.deptno = d.deptno;`
 
+const DEV_SESSION = 'dev-preview'
+
 export function DevPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [progress, setProgress] = useState(3)
+  const [qIndex, setQIndex] = useState(0)
+  const [picked, setPicked] = useState<ChoiceNumber | null>(null)
+  const [reversed, setReversed] = useState(false)
+  const [savedCount, setSavedCount] = useState<number | null>(null)
+  const total = BUILT_IN_QUESTIONS.length
+  const question = BUILT_IN_QUESTIONS[qIndex]
+
+  // 견본 풀이 기록은 회차 ID "dev-preview"로 저장된다 (실제 기록과 구분, 지우기 쉬움)
+  const refreshCount = useCallback(() => {
+    getStorage()
+      .listAttempts({ sessionId: DEV_SESSION })
+      .then((list) => setSavedCount(list.length))
+      .catch(() => setSavedCount(null))
+  }, [])
+  useEffect(refreshCount, [refreshCount])
+
+  const move = (step: number) => {
+    setQIndex((i) => (i + step + total) % total)
+    setPicked(null)
+    refreshCount()
+  }
+  const clearDevAttempts = () => {
+    void getStorage().deleteAttemptsOfSession(DEV_SESSION).then(refreshCount)
+  }
 
   return (
     <div className={styles.page}>
@@ -38,6 +71,56 @@ export function DevPage() {
         <p className={styles.desc}>개발 확인용 임시 화면입니다. 테마를 바꿔 가며 색을 확인하세요.</p>
         <ThemeSwitch />
       </header>
+
+      <TemplatePreview />
+
+      <SqlPlayground />
+
+      <Card title="QuestionPlayer">
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Button variant="secondary" onClick={() => move(-1)}>
+            이전
+          </Button>
+          <span>
+            {qIndex + 1} / {total} ({question?.id})
+          </span>
+          <Button variant="secondary" onClick={() => move(1)}>
+            다음
+          </Button>
+          <Button variant="ghost" onClick={() => setReversed((r) => !r)}>
+            보기 순서 {reversed ? '원래대로' : '거꾸로'}
+          </Button>
+        </div>
+        {question && (
+          <QuestionPlayer
+            question={question}
+            sessionId={DEV_SESSION}
+            mode="practice"
+            number={qIndex + 1}
+            order={reversed ? [4, 3, 2, 1] : [1, 2, 3, 4]}
+            onSubmitted={(a) => setPicked(a.chosen)}
+            footer={
+              <Button block variant="secondary" onClick={() => move(1)}>
+                다음 문제
+              </Button>
+            }
+          />
+        )}
+        <p>
+          제출한 보기의 원래 번호: {picked ?? '없음'} · 저장된 견본 기록 {savedCount ?? '?'}건{' '}
+          <Button variant="ghost" onClick={refreshCount}>
+            새로고침
+          </Button>
+          <Button variant="ghost" onClick={clearDevAttempts}>
+            견본 기록 지우기
+          </Button>
+        </p>
+      </Card>
+
+      <Card title="QuestionView">
+        <p>채점 표시 견본 — 정답 ③, 내 답 ①</p>
+        {BUILT_IN_QUESTIONS[0] && <QuestionView question={BUILT_IN_QUESTIONS[0]} selected={1} answer={3} />}
+      </Card>
 
       <Card title="Button">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>

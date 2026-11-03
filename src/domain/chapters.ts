@@ -1,3 +1,4 @@
+import { EXAM_RULES } from './examRules'
 import type { Subject } from './types'
 
 /**
@@ -20,8 +21,9 @@ export interface SubjectInfo {
 }
 
 export const SUBJECTS: readonly SubjectInfo[] = [
-  { subject: 1, name: '데이터 모델링의 이해', examCount: 10 },
-  { subject: 2, name: 'SQL 기본과 활용', examCount: 40 },
+  // 문항 수는 시험 규칙(examRules.ts) 한 곳에서 관리
+  { subject: 1, name: '데이터 모델링의 이해', examCount: EXAM_RULES.subjects[1].questionCount },
+  { subject: 2, name: 'SQL 기본과 활용', examCount: EXAM_RULES.subjects[2].questionCount },
 ]
 
 // ───────────────────────────── 파트 (단원 묶음) ─────────────────────────────

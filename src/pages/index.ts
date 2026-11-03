@@ -6,6 +6,7 @@
  */
 export { HomePage } from './Home/HomePage'
 export { PracticePage } from './Practice/PracticePage'
+export { PracticeRunPage } from './Practice/PracticeRunPage'
 export { ExamPage } from './Exam/ExamPage'
 export { ResultPage } from './Result/ResultPage'
 export { WrongNotePage } from './WrongNote/WrongNotePage'

@@ -24,3 +24,37 @@ export type { ChapterInfo, PartCode, PartInfo, SubjectInfo } from './chapters'
 export { countByChapter, filterQuestions, findQuestion, mergeQuestions } from './questionBank'
 export type { MergeResult, QuestionFilter } from './questionBank'
 export type { QuestionProblem } from './questionSchema'
+export { CHOICE_MARKS, DIFFICULTY_LABELS, QUESTION_TYPE_LABELS } from './labels'
+export { createAttempt, elapsedSeconds, isCorrect, newId } from './grading'
+export type { AttemptInput } from './grading'
+export {
+  DEFAULT_PRACTICE_SETTINGS,
+  PRACTICE_SETTINGS_KEY,
+  TEMPLATE_SLOTS,
+  filterTemplates,
+  normalizePracticeSettings,
+  pickPracticeItems,
+  pickPracticeQuestions,
+  practiceItems,
+  practiceCandidates,
+  shuffled,
+  summarizeAttempts,
+  withSubjects,
+} from './practice'
+export type { PracticeCount, PracticeItem, PracticeSettings, ProgressFilter, QuestionStat } from './practice'
+export { createPracticeSession, finishSession, moveTo, recordAnswer, summarizeSession } from './session'
+export type { ChapterResult, CreateSessionOptions, SessionSummary } from './session'
+export { ORIGINAL_ORDER, isValidChoiceOrder, makeChoiceOrder, remapChoiceMarks } from './choiceOrder'
+export {
+  EXAM_MAX_SCORE,
+  EXAM_RULES,
+  EXAM_SUBJECTS,
+  EXAM_TOTAL_QUESTIONS,
+  examEndsAt,
+  formatClock,
+  gradeExam,
+  isWarningTime,
+  remainingSeconds,
+  verdictLabel,
+} from './examRules'
+export type { ExamGrade, ExamItemResult, ExamVerdict, SubjectGrade, SubjectRule } from './examRules'

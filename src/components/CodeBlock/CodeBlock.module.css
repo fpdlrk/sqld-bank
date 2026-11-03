@@ -44,3 +44,11 @@
   color: var(--color-code-comment);
   font-style: italic;
 }
+
+/* 보기 안의 SQL (InlineSql) — 줄바꿈 허용 */
+.inline {
+  font-family: var(--font-mono);
+  font-size: 0.9375em;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

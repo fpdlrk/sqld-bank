@@ -5,7 +5,7 @@ export type { CellValue }
 
 interface Props {
   /** 테이블 이름 (예: "EMP"). 있으면 [EMP] 형태로 위에 표시 */
-  name?: string
+  name?: string | undefined
   columns: string[]
   rows: CellValue[][]
   /** 결과 표처럼 이름 대신 쓰는 설명 (예: "실행 결과") */

@@ -145,6 +145,12 @@ export interface QuestionTemplate {
   generate: (seed: number) => Promise<GeneratedQuestion>
 }
 
+/**
+ * 템플릿의 정보만 (generate 제외) — 템플릿 코드를 불러오지 않고도
+ * 연습 설정 화면에서 단원·유형으로 거를 수 있게 하기 위한 가벼운 목록용 (T4-7)
+ */
+export type TemplateInfo = Omit<QuestionTemplate, 'generate'>
+
 /** 화면에서 다루는 문제 = 고정 문제 또는 템플릿 문제 */
 export type AnyQuestion = Question | GeneratedQuestion
 
