@@ -42,7 +42,7 @@ export {
   withSubjects,
 } from './practice'
 export type { PracticeCount, PracticeItem, PracticeSettings, ProgressFilter, QuestionStat } from './practice'
-export { createPracticeSession, finishSession, moveTo, recordAnswer, summarizeSession } from './session'
+export { createPracticeSession, createReviewSession, finishSession, moveTo, recordAnswer, summarizeSession } from './session'
 export type { ChapterResult, CreateSessionOptions, SessionSummary } from './session'
 export { ORIGINAL_ORDER, isValidChoiceOrder, makeChoiceOrder, remapChoiceMarks } from './choiceOrder'
 export {
@@ -58,3 +58,40 @@ export {
   verdictLabel,
 } from './examRules'
 export type { ExamGrade, ExamItemResult, ExamVerdict, SubjectGrade, SubjectRule } from './examRules'
+export {
+  DEFAULT_TEMPLATE_RATIO,
+  EXAM_SETTINGS_KEY,
+  RECENT_EXAM_COUNT,
+  TEMPLATE_RATIO_OPTIONS,
+  normalizeExamSettings,
+  buildExamPlan,
+  chapterTargets,
+  recentExamRefs,
+} from './examBuilder'
+export type { ChapterPlan, ExamBuildOptions, ExamPlan, ExamSettings, SubjectPlan } from './examBuilder'
+export { createExamSession, examRemaining, gradeExamSession, submitExam, toggleFlag } from './examSession'
+export type { ExamSubmission } from './examSession'
+export {
+  MASTER_STREAK,
+  REVIEW_LIMIT,
+  buildWrongNote,
+  correctStreaks,
+  groupWrongNote,
+  reviewQueue,
+  stageLabel,
+} from './wrongNote'
+export type { WrongNoteEntry, WrongNoteGroup, WrongNoteInfo } from './wrongNote'
+export { emptyNote, isMasteredAfter, setBookmark, setMastered, setMemo } from './notes'
+export {
+  STATS_WINDOW_DAYS,
+  WEAK_LIMIT,
+  WEAK_MIN_ATTEMPTS,
+  chapterAccuracy,
+  examTrend,
+  recentAttempts,
+  subjectAccuracy,
+  weakChapters,
+} from './stats'
+export type { Accuracy, ChapterAccuracy, ChapterOf, ExamTrendPoint, StatsOptions } from './stats'
+export { EXAM_DATE_KEY, daysUntil, formatDDay, isValidDateString } from './dday'
+export { searchQuestions } from './questionSearch'

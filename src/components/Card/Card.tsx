@@ -6,7 +6,8 @@ interface Props {
   /** 제목 오른쪽에 붙는 요소 (배지, 버튼 등) */
   actions?: ReactNode
   children: ReactNode
-  className?: string
+  /** CSS Modules 클래스는 타입상 undefined일 수 있어 함께 받는다 */
+  className?: string | undefined
 }
 
 export function Card({ title, actions, children, className }: Props) {

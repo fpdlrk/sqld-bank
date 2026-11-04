@@ -47,10 +47,10 @@ describe('T1-3 라우팅과 레이아웃', () => {
     expect(heading()).toHaveTextContent('설정')
   })
 
-  it('결과 화면은 주소의 기록 ID를 받는다', () => {
+  it('결과 화면은 주소의 기록 ID로 회차를 찾는다 (없는 ID면 안내)', async () => {
     renderAt('/result/abc123')
+    expect(await screen.findByText('제출된 모의고사를 찾을 수 없습니다.')).toBeInTheDocument()
     expect(heading()).toHaveTextContent('결과')
-    expect(screen.getByText(/abc123/)).toBeInTheDocument()
   })
 
   it('없는 주소는 홈으로 보낸다', () => {

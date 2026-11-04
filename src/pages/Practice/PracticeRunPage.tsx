@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { AnswerFeedback, Button, Modal, ProgressBar, QuestionView } from '../../components'
 import {
+  MASTER_STREAK,
   ORIGINAL_ORDER,
+  correctStreaks,
   finishSession,
   isValidChoiceOrder,
   moveTo,
@@ -15,16 +17,24 @@ import { getStorage } from '../../storage'
 import { loadAllQuestions, loadSessionQuestions } from './loadQuestions'
 import { PracticeSummary } from './PracticeSummary'
 import { QuestionPlayer } from './QuestionPlayer'
+import { MasterPrompt } from '../WrongNote/MasterPrompt'
 import pageStyles from '../Page.module.css'
 import styles from './PracticeRun.module.css'
 
 type LoadState =
   | { status: 'loading' }
   | { status: 'missing' }
-  | { status: 'ready'; session: Session; questionsByRef: Map<QuestionRef, AnyQuestion> }
+  | {
+      status: 'ready'
+      session: Session
+      questionsByRef: Map<QuestionRef, AnyQuestion>
+      /** 복습 모드: 이 회차를 시작하기 전까지의 연속 정답 수 (T6-3) */
+      streaks: Map<QuestionRef, number>
+    }
 
 /**
  * 연습 풀이 화면 (T3-4) — 주소: #/practice/{회차ID}
+ * 오답 복습(mode: review, T6-3)도 같은 화면을 쓴다. 복습 중 2회 연속 맞히면 "이제 안다"를 제안한다.
  * 답을 내거나 문항을 옮길 때마다 회차를 저장하므로, 새로고침해도 같은 자리에서 이어진다.
  */
 export function PracticeRunPage() {
@@ -35,6 +45,8 @@ export function PracticeRunPage() {
   const [confirmFinish, setConfirmFinish] = useState(false)
   // 방금 이 화면에서 제출한 문제 — 채점 화면(소요 시간·저장 실패 안내 포함)을 그대로 유지하기 위해
   const [liveRef, setLiveRef] = useState<QuestionRef | null>(null)
+  // 복습 중 "이제 안다"를 제안할 문제
+  const [suggestRef, setSuggestRef] = useState<QuestionRef | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -42,13 +54,18 @@ export function PracticeRunPage() {
     setLiveRef(null)
     Promise.all([getStorage().getSession(sessionId), loadAllQuestions()])
       .then(async ([session, questions]) => {
-        if (!session || session.mode !== 'practice') {
+        if (!session || (session.mode !== 'practice' && session.mode !== 'review')) {
           if (alive) setState({ status: 'missing' })
           return
         }
         // 변형 문제는 저장된 "템플릿ID#시드"로 다시 만든다 (T4-7)
         const questionsByRef = await loadSessionQuestions(session.questionRefs, questions)
-        if (alive) setState({ status: 'ready', session, questionsByRef })
+        // 복습: 이 회차 전까지의 연속 정답 수 (이 회차에서 푼 기록은 빼고 센다)
+        const streaks =
+          session.mode === 'review'
+            ? correctStreaks((await getStorage().listAttempts()).filter((a) => a.sessionId !== session.id))
+            : new Map<QuestionRef, number>()
+        if (alive) setState({ status: 'ready', session, questionsByRef, streaks })
       })
       .catch(() => alive && setState({ status: 'missing' }))
     return () => {
@@ -69,11 +86,12 @@ export function PracticeRunPage() {
     )
   }
 
-  const { session, questionsByRef } = state
+  const { session, questionsByRef, streaks } = state
+  const isReview = session.mode === 'review'
 
   /** 화면 상태를 바꾸고 저장소에도 저장 */
   function save(next: Session) {
-    setState({ status: 'ready', session: next, questionsByRef })
+    setState({ status: 'ready', session: next, questionsByRef, streaks })
     getStorage()
       .putSession(next)
       .then(() => setSaveFailed(false))
@@ -114,8 +132,8 @@ export function PracticeRunPage() {
     <div className={pageStyles.page}>
       <header className={styles.top}>
         <div className={styles.topRow}>
-          <h1 className={styles.title}>단원별 연습</h1>
-          <Button variant="ghost" onClick={() => navigate('/practice')}>
+          <h1 className={styles.title}>{isReview ? '오답 복습' : '단원별 연습'}</h1>
+          <Button variant="ghost" onClick={() => navigate(isReview ? '/wrong' : '/practice')}>
             그만두기
           </Button>
         </div>
@@ -133,18 +151,23 @@ export function PracticeRunPage() {
         <QuestionPlayer
           question={question}
           sessionId={session.id}
-          mode="practice"
+          mode={session.mode}
           number={index + 1}
           order={order}
           onSubmitted={(a) => {
             if (a.chosen === null) return
             setLiveRef(ref)
+            // 복습에서 맞혀 연속 정답이 기준에 닿으면 "이제 안다" 제안
+            if (isReview && a.correct && (streaks.get(ref) ?? 0) + 1 >= MASTER_STREAK) setSuggestRef(ref)
             save(recordAnswer(session, ref, a.chosen))
           }}
           footer={
-            <Button block size="lg" onClick={goNext}>
-              {nextLabel}
-            </Button>
+            <>
+              {suggestRef === ref && <MasterPrompt questionRef={ref} />}
+              <Button block size="lg" onClick={goNext}>
+                {nextLabel}
+              </Button>
+            </>
           }
         />
       ) : (
@@ -179,7 +202,7 @@ export function PracticeRunPage() {
       <Modal
         open={confirmFinish}
         onClose={() => setConfirmFinish(false)}
-        title="연습을 끝낼까요?"
+        title={isReview ? '복습을 끝낼까요?' : '연습을 끝낼까요?'}
         footer={
           <>
             <Button variant="secondary" onClick={() => setConfirmFinish(false)}>

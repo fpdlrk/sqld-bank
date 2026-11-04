@@ -185,7 +185,10 @@ export interface Attempt {
   at: IsoDateTime
 }
 
-/** 과목별 점수 (100점 만점 환산) */
+/**
+ * 과목별 획득 점수 (문항당 2점 — 1과목 20점·2과목 80점 만점, 합계가 총점)
+ * 과락 기준(1과목 8점·2과목 32점 미만)과 같은 단위로 맞췄다 (T5-3)
+ */
 export type SubjectScores = Record<Subject, number>
 
 /**
@@ -229,6 +232,12 @@ export interface Note {
   memo: string
   /** "이제 안다" 처리 → 오답노트 목록에서 빠짐 */
   mastered: boolean
+  /**
+   * "이제 안다"를 누른 시각 (T6-2). 이 시각 뒤에 다시 틀리면 오답노트에 다시 나타난다.
+   * (없으면 updatedAt을 대신 쓴다 — 예전 데이터 호환)
+   */
+  masteredAt?: IsoDateTime
+  /** 마지막으로 바뀐 시각 (메모·북마크 포함) */
   updatedAt: IsoDateTime
 }
 

@@ -39,7 +39,7 @@ export function PracticeSummary({ session, questionsByRef }: Props) {
   return (
     <div className={pageStyles.page}>
       <header className={pageStyles.header}>
-        <h1>연습 결과</h1>
+        <h1>{session.mode === 'review' ? '복습 결과' : '연습 결과'}</h1>
       </header>
 
       <Card>
@@ -85,6 +85,11 @@ export function PracticeSummary({ session, questionsByRef }: Props) {
         {wrongQuestions.length > 0 && (
           <Button size="lg" onClick={() => void retryWrong()}>
             틀린 문제 다시 풀기
+          </Button>
+        )}
+        {session.mode === 'review' && (
+          <Button size="lg" variant="secondary" onClick={() => navigate('/wrong')}>
+            오답노트로
           </Button>
         )}
         <Button size="lg" variant="secondary" onClick={() => navigate('/practice')}>

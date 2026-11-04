@@ -4,6 +4,7 @@ import {
   BankPage,
   DevPage,
   ExamPage,
+  ExamRunPage,
   HomePage,
   MorePage,
   PracticePage,
@@ -25,6 +26,7 @@ export function AppRoutes() {
         <Route path="practice" element={<PracticePage />} />
         <Route path="practice/:sessionId" element={<PracticeRunPage />} />
         <Route path="exam" element={<ExamPage />} />
+        <Route path="exam/:sessionId" element={<ExamRunPage />} />
         <Route path="result/:sessionId" element={<ResultPage />} />
         <Route path="wrong" element={<WrongNotePage />} />
         <Route path="bank" element={<BankPage />} />

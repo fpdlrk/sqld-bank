@@ -1,0 +1,189 @@
+/* ── 판정 배너 ── */
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: var(--border-width) solid;
+}
+
+.pass {
+  background: var(--color-success-soft);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.fail {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.verdictTitle {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+}
+
+.verdictScore {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.verdictScore strong {
+  font-size: var(--text-3xl);
+}
+
+.verdictMeta {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* ── 과목별 ── */
+.subjects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
+}
+
+
+.subjectScore {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.subjectScore strong {
+  font-size: var(--text-2xl);
+}
+
+.goodFlag,
+.badFlag {
+  margin-left: auto;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+}
+
+.goodFlag {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badFlag {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ── 정오표 ── */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.row {
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.rowHead {
+  display: grid;
+  grid-template-columns: 2.5rem 2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-1);
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rowHead:hover {
+  background: var(--color-surface-sunken);
+}
+
+.rowNo {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.mark {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  text-align: center;
+}
+
+.markOk {
+  color: var(--color-success);
+}
+
+.markNg {
+  color: var(--color-danger);
+}
+
+.markNone {
+  color: var(--color-text-subtle);
+}
+
+.rowTopic {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowAnswers {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-1) var(--space-6);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+}
+
+/* 좁은 화면: 내 답·정답은 다음 줄로 */
+@media (max-width: 768px) {
+  .rowHead {
+    grid-template-columns: 2rem 1.75rem minmax(0, 1fr);
+  }
+
+  .rowAnswers {
+    grid-column: 3;
+  }
+}

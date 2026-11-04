@@ -123,3 +123,8 @@ export function summarizeSession(
     wrongRefs,
   }
 }
+
+/** 오답 복습 회차 (T6-3) — 연습 회차와 같고 모드만 'review' */
+export function createReviewSession(questions: readonly AnyQuestion[], options: CreateSessionOptions = {}): Session {
+  return { ...createPracticeSession(questions, options), mode: 'review' }
+}

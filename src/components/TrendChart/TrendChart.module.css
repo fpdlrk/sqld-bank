@@ -1,0 +1,101 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.chart {
+  position: relative;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  touch-action: pan-y;
+}
+
+.svg:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* 눈금선: 1px 실선, 눈에 덜 띄게 */
+.grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.axisY,
+.axisX,
+.thresholdLabel {
+  fill: var(--color-text-muted);
+  font-size: 12px;
+  font-family: var(--font-sans);
+}
+
+.axisY {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.axisX {
+  text-anchor: middle;
+}
+
+/* 기준선(합격선): 눈금선보다 진하게, 글자로 이름을 단다 */
+.threshold {
+  stroke: var(--color-text-subtle);
+  stroke-width: 1.5;
+}
+
+.thresholdLabel {
+  text-anchor: end;
+}
+
+.crosshair {
+  stroke: var(--color-border-strong);
+  stroke-width: 1;
+}
+
+/* 선 2px, 둥근 이음 */
+.line {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* 점: 지름 8px + 배경색 테두리 2px */
+.dot {
+  fill: var(--color-primary);
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, calc(-100% - 12px));
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-raised);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tableView summary {
+  min-height: var(--tap-min);
+  display: flex;
+  align-items: center;
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}

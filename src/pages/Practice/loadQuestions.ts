@@ -7,8 +7,9 @@ import {
   type PracticeItem,
   type Question,
   type QuestionRef,
+  type WrongNoteInfo,
 } from '../../domain'
-import { generateTemplateQuestion, randomSeed } from '../../engine'
+import { TEMPLATE_INFO, generateTemplateQuestion, randomSeed } from '../../engine'
 import { getStorage } from '../../storage'
 
 /** 기본 문제 + 직접 추가 문제 (저장소를 못 열면 기본 문제만) */
@@ -70,4 +71,27 @@ export async function loadSessionQuestions(
     if (q) map.set(ref, q)
   }
   return map
+}
+
+/**
+ * 문제 키 → 과목·단원·주제 (오답노트·통계용, T6-1·T6-4)
+ * 변형 문제는 문제를 다시 만들지 않고 템플릿 정보 목록으로 찾는다 (가볍게).
+ * 찾을 수 없는 키(지워진 문제·깨진 키)는 undefined.
+ */
+export function questionInfoResolver(
+  questions: readonly Question[],
+): (ref: QuestionRef) => WrongNoteInfo | undefined {
+  const fixed = new Map(questions.map((q) => [q.id, q]))
+  const templates = new Map(TEMPLATE_INFO.map((t) => [t.id, t]))
+  return (ref) => {
+    const q = fixed.get(ref)
+    if (q) return { subject: q.subject, chapter: q.chapter, topic: q.topic, variant: false }
+    try {
+      const parsed = parseRef(ref)
+      const t = parsed.kind === 'template' ? templates.get(parsed.templateId) : undefined
+      return t && { subject: t.subject, chapter: t.chapter, topic: t.topic, variant: true }
+    } catch {
+      return undefined
+    }
+  }
 }
