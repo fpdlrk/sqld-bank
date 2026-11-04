@@ -9,7 +9,7 @@
  */
 import type {
   Attempt,
-  MetaEntry,
+  DataDump,
   Note,
   QuestionRef,
   Session,
@@ -33,16 +33,8 @@ export interface SessionQuery {
   unfinished?: boolean
 }
 
-/** 전체 데이터 묶음 — 백업 파일(T7-3)과 저장소 교체 시 옮기기에 쓴다 */
-export interface StorageDump {
-  schemaVersion: number
-  exportedAt: string
-  attempts: Attempt[]
-  sessions: Session[]
-  notes: Note[]
-  userQuestions: UserQuestion[]
-  meta: MetaEntry[]
-}
+/** 전체 데이터 묶음 — 백업 파일(T7-4)과 저장소 교체 시 옮기기에 쓴다 (모양은 domain/backup.ts) */
+export type StorageDump = DataDump
 
 export interface StorageAdapter {
   // ── 풀이 기록 (attempts) — 시각(at) 오래된 순으로 돌려준다

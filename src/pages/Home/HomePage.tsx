@@ -46,6 +46,20 @@ export function HomePage() {
       {failed && <p role="alert">기록을 불러오지 못했습니다.</p>}
       {!data && !failed && <p role="status">불러오는 중…</p>}
 
+      {data && data.backupDays !== null && (
+        <aside className={styles.backupBanner} aria-label="백업 권장">
+          <p className={styles.bannerText}>
+            {data.everBackedUp
+              ? `마지막 백업 후 ${data.backupDays}일이 지났습니다.`
+              : `기록을 시작한 지 ${data.backupDays}일이 지났는데 아직 백업한 적이 없습니다.`}{' '}
+            브라우저 데이터가 지워지면 기록도 사라지니 백업 파일을 받아 두세요.
+          </p>
+          <Button variant="secondary" onClick={() => navigate('/settings')}>
+            설정에서 백업하기
+          </Button>
+        </aside>
+      )}
+
       {data && (
         <div className={styles.grid}>
           <ExamDateCard

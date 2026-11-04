@@ -124,3 +124,70 @@
     justify-content: flex-start;
   }
 }
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.headerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* ── 가져오기 (T7-3) ── */
+.importError {
+  margin: 0;
+  color: var(--color-danger);
+}
+
+.invalid summary {
+  min-height: var(--tap-min);
+  display: flex;
+  align-items: center;
+  color: var(--color-danger);
+  cursor: pointer;
+}
+
+.invalid ul {
+  margin: 0;
+  padding-left: var(--space-6);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.toolRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ── 오류 신고 (T7-5) ── */
+.reportRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-1);
+}
+
+.reportTitle {
+  margin: 0;
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.reportBody {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.notice {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-success-soft);
+  border-radius: var(--radius-md);
+}

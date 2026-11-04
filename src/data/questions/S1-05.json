@@ -22,5 +22,561 @@
       "오류"
     ],
     "source": "claude"
+  },
+  {
+    "id": "S1-05-0002",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "COUNT의 세 가지 형태",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [ORD] 테이블에 SQL을 실행한 결과 (A, B, C)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "ORD",
+        "columns": [
+          "ONO",
+          "CUST",
+          "AMT"
+        ],
+        "rows": [
+          [
+            1,
+            "A",
+            100
+          ],
+          [
+            2,
+            "A",
+            200
+          ],
+          [
+            3,
+            "B",
+            150
+          ],
+          [
+            4,
+            null,
+            300
+          ],
+          [
+            5,
+            "C",
+            100
+          ],
+          [
+            6,
+            "C",
+            250
+          ],
+          [
+            7,
+            "C",
+            50
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT COUNT(*)             AS A,\n       COUNT(CUST)          AS B,\n       COUNT(DISTINCT CUST) AS C\n  FROM ORD;",
+    "choices": [
+      "7, 6, 3",
+      "7, 7, 4",
+      "6, 6, 3",
+      "7, 6, 4"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. COUNT(*)는 모든 행 7개를, COUNT(CUST)는 CUST가 NULL이 아닌 6개를, COUNT(DISTINCT CUST)는 NULL을 뺀 서로 다른 값 A, B, C의 3개를 셉니다.\n\nCOUNT는 무엇을 세느냐에 따라 결과가 달라집니다. COUNT(*)는 컬럼 값과 상관없이 행 자체를 세므로 NULL이 있는 4번 행도 포함합니다. COUNT(컬럼)은 그 컬럼 값이 NULL이 아닌 행만 세므로 4번 행이 빠져 6이 됩니다. COUNT(DISTINCT 컬럼)은 NULL이 아닌 값 중 중복을 제거한 개수를 세므로 A, A, B, C, C, C에서 A, B, C의 3이 됩니다. DISTINCT나 GROUP BY에서는 NULL이 하나의 값으로 묶이지만, COUNT(DISTINCT)에서는 집계 함수의 원칙대로 NULL을 아예 세지 않는다는 점이 다릅니다.\n\n| A | B | C |\n|---|---|---|\n| 7 | 6 | 3 |\n\n②는 COUNT(컬럼)도 NULL을 센다고 보고, DISTINCT에서도 NULL을 하나의 값으로 센 경우입니다. ③은 COUNT(*)도 NULL 행을 뺀다고 본 경우이고, ④는 COUNT(DISTINCT)에서 NULL을 하나의 값으로 센 경우입니다.",
+    "examPoint": "COUNT(*)=모든 행, COUNT(컬럼)=NULL 제외, COUNT(DISTINCT 컬럼)=NULL 제외 후 중복 제거.",
+    "tags": [
+      "COUNT",
+      "NULL",
+      "DISTINCT"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-05-0003",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "GROUP BY와 NULL 그룹",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DEPT",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            100
+          ],
+          [
+            2,
+            10,
+            200
+          ],
+          [
+            3,
+            20,
+            300
+          ],
+          [
+            4,
+            null,
+            400
+          ],
+          [
+            5,
+            null,
+            500
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT DEPT, SUM(SAL) AS TOTAL\n  FROM EMP\n GROUP BY DEPT;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "4건"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. GROUP BY는 DEPT가 NULL인 행들을 하나의 그룹으로 묶으므로 10, 20, NULL의 3개 그룹이 만들어집니다.\n\nGROUP BY는 기준 컬럼의 값이 같은 행끼리 묶어 그룹마다 한 행을 만듭니다. NULL끼리는 = 비교로 같다고 할 수 없지만, GROUP BY와 DISTINCT에서는 NULL을 하나의 그룹으로 모은다는 규칙이 있습니다. 그래서 4번과 5번 행은 사라지지 않고 DEPT가 NULL인 그룹 하나가 되어, 합계 900을 가진 행으로 결과에 나타납니다.\n\n| DEPT | TOTAL |\n|---|---|\n| 10 | 300 |\n| 20 | 300 |\n| NULL | 900 |\n\n②는 NULL 행이 그룹에서 빠진다고 생각한 경우입니다. ④는 NULL끼리는 같지 않으므로 NULL 행이 각각 그룹이 된다고 생각한 경우입니다. NULL 그룹을 결과에서 빼고 싶다면 WHERE DEPT IS NOT NULL로 미리 걸러야 합니다.",
+    "examPoint": "GROUP BY는 NULL들을 하나의 그룹으로 묶는다(빠지지도, 따로 나뉘지도 않음).",
+    "tags": [
+      "GROUP BY",
+      "NULL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S1-05-0004",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "WHERE 후 GROUP BY 후 HAVING",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DEPT",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            100
+          ],
+          [
+            2,
+            10,
+            300
+          ],
+          [
+            3,
+            10,
+            400
+          ],
+          [
+            4,
+            20,
+            300
+          ],
+          [
+            5,
+            20,
+            200
+          ],
+          [
+            6,
+            20,
+            100
+          ],
+          [
+            7,
+            30,
+            500
+          ],
+          [
+            8,
+            30,
+            600
+          ],
+          [
+            9,
+            30,
+            350
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT DEPT, COUNT(*) AS CNT\n  FROM EMP\n WHERE SAL >= 300\n GROUP BY DEPT\nHAVING COUNT(*) >= 2;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "4건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. WHERE가 먼저 SAL이 300 이상인 행만 남긴 뒤 그룹을 만들므로, 10번 부서 2명, 20번 부서 1명, 30번 부서 3명이 되고, HAVING이 2명 이상인 10번과 30번 부서만 남깁니다.\n\n실행 순서는 FROM → WHERE → GROUP BY → HAVING → SELECT입니다. 단계별로 따라가 보겠습니다. 먼저 WHERE SAL >= 300이 행 단위로 걸러 2, 3, 4, 7, 8, 9번 행만 남깁니다. 그다음 GROUP BY DEPT가 남은 행을 부서별로 묶어 10번(300, 400), 20번(300), 30번(500, 600, 350) 그룹을 만듭니다. 마지막으로 HAVING COUNT(*) >= 2가 그룹 단위로 걸러 20번 부서를 제외합니다. WHERE는 그룹을 만들기 전의 개별 행을, HAVING은 만들어진 그룹을 거른다는 것이 핵심입니다.\n\n| DEPT | CNT |\n|---|---|\n| 10 | 2 |\n| 30 | 3 |\n\n③은 HAVING을 WHERE보다 먼저 적용해, 원래 3명씩인 세 부서가 모두 조건을 통과한다고 본 경우입니다. ①은 30번 부서만 남는다고 보았거나 10번 부서의 SAL = 300을 경계값에서 뺀 경우입니다.",
+    "examPoint": "WHERE(행 필터) → GROUP BY → HAVING(그룹 필터). WHERE가 먼저 걸러 낸 뒤의 행으로 COUNT가 계산된다.",
+    "tags": [
+      "GROUP BY",
+      "HAVING",
+      "WHERE",
+      "실행 순서"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S1-05-0005",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "AVG와 NULL",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행한 결과 (A, B, C)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "BONUS"
+        ],
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            null
+          ],
+          [
+            3,
+            200
+          ],
+          [
+            4,
+            null
+          ],
+          [
+            5,
+            300
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT AVG(BONUS)            AS A,\n       AVG(NVL(BONUS, 0))    AS B,\n       SUM(BONUS) / COUNT(*) AS C\n  FROM EMP;",
+    "sqlExec": "SELECT AVG(BONUS) AS A, AVG(IFNULL(BONUS, 0)) AS B, SUM(BONUS) * 1.0 / COUNT(*) AS C FROM EMP;",
+    "choices": [
+      "120, 120, 120",
+      "200, 200, 120",
+      "200, 120, 120",
+      "200, 120, 200"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. AVG(BONUS)는 NULL을 뺀 세 값의 평균 600 ÷ 3 = 200, AVG(NVL(BONUS, 0))은 NULL을 0으로 바꾼 다섯 값의 평균 600 ÷ 5 = 120, SUM(BONUS) / COUNT(*)는 합계 600을 전체 행 수 5로 나눈 120입니다.\n\n집계 함수는 NULL을 계산 대상에서 빼므로, AVG는 \"값이 있는 행들만의 평균\"이 됩니다. 이것이 업무 의도와 맞는지는 상황에 따라 다릅니다. 보너스가 NULL인 사원을 \"보너스 0원\"으로 보아야 한다면 NVL로 0을 넣어 계산해야 하고, 그러면 분모가 5가 되어 120이 됩니다. C처럼 SUM과 COUNT(*)를 직접 나누는 방식도 분모에 NULL 행을 포함하므로 B와 같은 값이 나옵니다. 반대로 SUM(BONUS) / COUNT(BONUS)라고 쓰면 분모가 3이 되어 A와 같아집니다.\n\n| A | B | C |\n|---|---|---|\n| 200 | 120 | 120 |\n\n①은 AVG도 NULL 행을 분모에 넣는다고 본 경우입니다. ②는 NVL을 써도 결과가 같다고 본 경우이고, ④는 COUNT(*)가 NULL 행을 세지 않는다고 본 경우입니다.",
+    "examPoint": "AVG(컬럼) = SUM / COUNT(컬럼)(NULL 제외). NULL을 0으로 보려면 AVG(NVL(컬럼, 0)) = SUM / COUNT(*).",
+    "tags": [
+      "AVG",
+      "NULL",
+      "NVL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-05-0006",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "HAVING에 쓸 수 있는 것",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블(ENO, DEPT, SAL)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT DEPT, COUNT(*) FROM EMP GROUP BY DEPT HAVING SAL > 100;",
+      "SELECT COUNT(*) FROM EMP HAVING COUNT(*) > 1;",
+      "SELECT DEPT FROM EMP GROUP BY DEPT HAVING MAX(SAL) > 500;",
+      "SELECT DEPT, SUM(SAL) FROM EMP WHERE SAL > 100 GROUP BY DEPT;"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. HAVING은 만들어진 그룹을 거르는 절이라서 GROUP BY 기준 컬럼이나 집계 함수만 쓸 수 있습니다. SAL은 그룹 안에 여러 값이 있는 개별 행의 컬럼이므로 \"GROUP BY 표현식이 아닙니다\" 오류가 납니다.\n\nGROUP BY를 실행하면 각 그룹은 한 행으로 줄어들고, 그 뒤의 HAVING, SELECT, ORDER BY는 이 그룹 단위 행을 다룹니다. 그룹 단위 행이 가진 값은 그룹 기준 컬럼(DEPT)과 집계 결과(COUNT, MAX, SUM 등)뿐입니다. 그래서 HAVING SAL > 100처럼 개별 행의 값을 쓰면 \"그룹 안의 어느 SAL을 말하는가\"를 정할 수 없어 오류가 됩니다. 개별 행을 거르고 싶다면 그룹을 만들기 전인 WHERE에 써야 합니다.\n\n②는 GROUP BY 없이 HAVING을 썼지만, Oracle은 이때 테이블 전체를 하나의 그룹으로 보므로 정상 실행됩니다. ③은 SELECT하지 않은 집계 함수(MAX(SAL))를 HAVING에 썼는데, 그룹 조건에는 SELECT 목록에 없는 집계 함수도 쓸 수 있습니다. ④는 개별 행 조건을 WHERE에 올바르게 쓴 SQL입니다.",
+    "examPoint": "HAVING에는 GROUP BY 기준 컬럼과 집계 함수만. 개별 행 조건은 WHERE에. GROUP BY 없는 HAVING은 전체를 한 그룹으로 본다.",
+    "tags": [
+      "HAVING",
+      "GROUP BY"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-05-0007",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "집계 함수의 특징",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "집계 함수에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "SUM, AVG, MAX, MIN은 계산할 때 NULL 값을 제외한다.",
+      "COUNT(*)도 다른 집계 함수처럼 NULL이 있는 행은 세지 않는다.",
+      "집계 함수는 여러 행을 입력받아 하나의 결과를 돌려준다.",
+      "GROUP BY 절이 없으면 테이블 전체가 하나의 그룹으로 집계된다."
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. COUNT(*)는 특정 컬럼의 값을 보지 않고 행 자체를 세므로, 모든 컬럼이 NULL인 행도 셉니다.\n\n집계 함수(다중행 함수)는 여러 행의 값을 모아 하나의 값을 만듭니다. SUM, AVG, MAX, MIN, COUNT(컬럼)은 대상 컬럼이 NULL인 행을 계산에서 빼는데, 이 때문에 AVG가 \"값이 있는 행만의 평균\"이 됩니다. 예외는 COUNT(*) 하나로, 행의 존재 자체를 세기 때문에 NULL과 무관합니다. 또 GROUP BY 없이 집계 함수를 쓰면 테이블 전체가 하나의 그룹이 되어 결과가 한 행으로 나옵니다. 이때 집계 대상 행이 하나도 없으면 COUNT는 0을, SUM이나 AVG 같은 나머지 함수는 NULL을 돌려준다는 점도 알아 두면 좋습니다.\n\n①·③·④는 집계 함수의 특징을 바르게 설명했습니다. ②는 \"집계 함수는 NULL을 무시한다\"는 규칙을 COUNT(*)에까지 넓혀 적용한 보기입니다.",
+    "examPoint": "집계 함수는 NULL을 제외하지만 COUNT(*)만은 예외. GROUP BY 없으면 전체가 한 그룹.",
+    "tags": [
+      "집계 함수",
+      "COUNT",
+      "NULL"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-05-0008",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "중첩 집계 함수",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [EMP] 테이블에 Oracle에서 SQL을 실행한 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DEPT",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            100
+          ],
+          [
+            2,
+            10,
+            300
+          ],
+          [
+            3,
+            10,
+            400
+          ],
+          [
+            4,
+            20,
+            300
+          ],
+          [
+            5,
+            20,
+            200
+          ],
+          [
+            6,
+            20,
+            100
+          ],
+          [
+            7,
+            30,
+            500
+          ],
+          [
+            8,
+            30,
+            600
+          ],
+          [
+            9,
+            30,
+            350
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT MAX(SUM(SAL)) AS MAX_TOTAL\n  FROM EMP\n GROUP BY DEPT;",
+    "sqlExec": "SELECT MAX(S) AS MAX_TOTAL FROM (SELECT SUM(SAL) AS S FROM EMP GROUP BY DEPT);",
+    "choices": [
+      "600",
+      "800",
+      "1450",
+      "2850"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. 안쪽 SUM(SAL)이 부서별 합계(800, 600, 1450)를 먼저 구하고, 바깥쪽 MAX가 그중 가장 큰 1450을 고릅니다.\n\nOracle에서는 GROUP BY와 함께 집계 함수를 두 번 겹쳐 쓸 수 있습니다. 이때 안쪽 함수는 GROUP BY 그룹마다 계산되고, 바깥쪽 함수는 그렇게 나온 그룹별 결과 전체를 다시 하나로 모읍니다. 그래서 결과는 항상 한 행입니다. 부서별 합계는 10번이 100 + 300 + 400 = 800, 20번이 300 + 200 + 100 = 600, 30번이 500 + 600 + 350 = 1450이므로 최댓값은 1450입니다. 중첩 집계를 쓸 때는 SELECT에 DEPT처럼 그룹 기준 컬럼을 함께 쓸 수 없다는 점도 기억해 두세요. 결과가 한 행으로 합쳐지므로 \"어느 부서인지\"를 함께 보여 줄 수 없기 때문입니다. (실행 검증용 SQLite는 중첩 집계를 지원하지 않아 같은 의미의 인라인 뷰로 바꿔 실행했습니다.)\n\n| MAX_TOTAL |\n|---|\n| 1450 |\n\n①은 MAX(SAL)를 구하듯 개별 급여의 최댓값을 고른 경우입니다. ②는 첫 번째 그룹의 합계만 본 경우이고, ④는 전체 합계(SUM(SAL))를 구한 경우입니다.",
+    "examPoint": "MAX(SUM(SAL)) ... GROUP BY: 안쪽은 그룹별, 바깥쪽은 그 결과 전체 → 결과 1행. 그룹 컬럼은 함께 SELECT 불가.",
+    "tags": [
+      "집계 함수",
+      "GROUP BY",
+      "중첩 집계"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-05-0009",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "HAVING을 WHERE로 옮기기",
+    "type": "sql_equivalent",
+    "difficulty": 2,
+    "stem": "다음 SQL과 **같은 결과**를 돌려주는 것은?\n\n```sql\nSELECT DEPT, COUNT(*) AS CNT\n  FROM EMP\n GROUP BY DEPT\nHAVING DEPT IN (10, 20);\n```",
+    "choices": [
+      "SELECT DEPT, COUNT(*) AS CNT FROM EMP WHERE DEPT IN (10, 20) GROUP BY DEPT;",
+      "SELECT DEPT, COUNT(*) AS CNT FROM EMP GROUP BY DEPT HAVING COUNT(*) IN (10, 20);",
+      "SELECT DEPT, COUNT(*) AS CNT FROM EMP WHERE COUNT(*) IN (10, 20) GROUP BY DEPT;",
+      "SELECT DEPT, COUNT(DEPT IN (10, 20)) AS CNT FROM EMP GROUP BY DEPT;"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. HAVING의 조건이 그룹 기준 컬럼(DEPT)에 대한 것이라면, 그룹을 만들기 전에 WHERE에서 걸러도 남는 그룹과 각 그룹의 행 수가 같습니다.\n\nHAVING DEPT IN (10, 20)은 모든 부서의 그룹을 만든 뒤 10번과 20번 그룹만 남깁니다. WHERE DEPT IN (10, 20)은 10번과 20번 부서의 행만 남긴 뒤 그룹을 만듭니다. 어느 쪽이든 10번 그룹에는 10번 부서의 모든 행이, 20번 그룹에는 20번 부서의 모든 행이 들어가므로 COUNT 결과도 같습니다. 오히려 WHERE에서 먼저 거르면 그룹으로 묶을 행이 줄어들어 효율이 좋습니다. 단, 조건이 집계 결과(COUNT, SUM 등)에 대한 것이라면 그룹을 만든 뒤에만 알 수 있으므로 반드시 HAVING에 써야 합니다.\n\n②는 부서 번호가 아니라 \"행 수가 10이나 20인 그룹\"을 찾는 전혀 다른 조건입니다. ③은 WHERE에 집계 함수를 써서 오류가 납니다. ④는 COUNT 안에 조건식을 넣은 잘못된 문법으로, 부서를 거르지도 못합니다.",
+    "examPoint": "그룹 기준 컬럼에 대한 조건은 HAVING ↔ WHERE로 옮겨도 같다(WHERE가 효율적). 집계 결과 조건은 HAVING만 가능.",
+    "tags": [
+      "HAVING",
+      "WHERE",
+      "동치"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-05-0010",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "그룹 조건 빈칸",
+    "type": "sql_fill",
+    "difficulty": 1,
+    "stem": "부서별 평균 급여가 3000 이상인 부서만 조회하려고 한다. (ㄱ)에 들어갈 내용으로 알맞은 것은?\n\n```sql\nSELECT DEPT, AVG(SAL) AS AVG_SAL\n  FROM EMP\n GROUP BY DEPT\n (ㄱ);\n```",
+    "choices": [
+      "WHERE AVG(SAL) >= 3000",
+      "HAVING SAL >= 3000",
+      "ORDER BY AVG(SAL) >= 3000",
+      "HAVING AVG(SAL) >= 3000"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. 부서별 평균은 그룹을 만든 뒤에야 계산되므로, 그룹 단위 조건을 거는 HAVING 절에 AVG(SAL) >= 3000을 써야 합니다.\n\nSQL의 실행 순서는 FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY입니다. WHERE는 그룹을 만들기 전에 개별 행을 거르는 단계라 이 시점에는 부서별 평균이 아직 없습니다. 그래서 집계 함수를 쓴 조건은 GROUP BY 다음 단계인 HAVING에만 쓸 수 있습니다. 또한 절의 순서도 정해져 있어서 WHERE는 GROUP BY보다 앞에 와야 하므로, GROUP BY 뒤의 빈칸에는 WHERE가 올 수 없습니다.\n\n①은 WHERE에 집계 함수를 써서 오류가 나고, 위치도 GROUP BY 뒤라 문법에 맞지 않습니다. ②는 HAVING에 그룹 기준이 아닌 개별 컬럼 SAL을 써서 오류가 납니다. ③은 ORDER BY에 비교식을 쓴 것으로, 정렬은 할 수 있어도 행을 걸러 내지는 못합니다.",
+    "examPoint": "집계 결과로 거르는 조건은 HAVING. WHERE는 GROUP BY 앞에서 개별 행을 거른다.",
+    "tags": [
+      "HAVING",
+      "집계 함수"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-05-0011",
+    "subject": 2,
+    "chapter": "S1-05",
+    "topic": "다중 컬럼 그룹과 COUNT(컬럼)",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [STAFF] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "STAFF",
+        "columns": [
+          "ENO",
+          "DEPT",
+          "JOB"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            "CLERK"
+          ],
+          [
+            2,
+            10,
+            "CLERK"
+          ],
+          [
+            3,
+            10,
+            "MGR"
+          ],
+          [
+            4,
+            20,
+            "CLERK"
+          ],
+          [
+            5,
+            20,
+            "MGR"
+          ],
+          [
+            6,
+            20,
+            "MGR"
+          ],
+          [
+            7,
+            30,
+            "CLERK"
+          ],
+          [
+            8,
+            30,
+            null
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT DEPT, JOB, COUNT(JOB) AS CNT\n  FROM STAFF\n GROUP BY DEPT, JOB\nHAVING COUNT(JOB) = 1;",
+    "choices": [
+      "2건",
+      "3건",
+      "4건",
+      "6건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. (DEPT, JOB) 조합으로 6개 그룹이 생기는데, COUNT(JOB)이 1인 그룹은 (10, MGR), (20, CLERK), (30, CLERK)의 3개입니다. (30, NULL) 그룹은 행이 1개 있지만 JOB이 NULL이라 COUNT(JOB)이 0입니다.\n\nGROUP BY에 컬럼을 두 개 쓰면 두 값의 조합이 같은 행끼리 묶입니다. 이 테이블은 (10, CLERK) 2행, (10, MGR) 1행, (20, CLERK) 1행, (20, MGR) 2행, (30, CLERK) 1행, (30, NULL) 1행으로 6개 그룹이 됩니다. NULL도 하나의 그룹 값이 되므로 (30, NULL) 그룹이 따로 만들어집니다. 그런데 HAVING에서 쓴 COUNT(JOB)은 JOB이 NULL인 행을 세지 않으므로, (30, NULL) 그룹의 COUNT(JOB)은 0이 됩니다. COUNT(*)였다면 1이 되어 이 그룹도 결과에 들어갔을 것입니다.\n\n| DEPT | JOB | CNT |\n|---|---|---|\n| 10 | MGR | 1 |\n| 20 | CLERK | 1 |\n| 30 | CLERK | 1 |\n\n③은 COUNT(JOB)을 COUNT(*)처럼 계산해 (30, NULL) 그룹까지 넣은 경우입니다. ①은 NULL 그룹을 빼는 것과 함께 (30, CLERK)도 빠뜨린 경우이고, ④는 HAVING 조건을 무시하고 그룹 수를 센 경우입니다.",
+    "examPoint": "GROUP BY는 NULL도 그룹으로 만들지만, 그 그룹의 COUNT(그 컬럼)은 0이다. COUNT(*)와 구분할 것.",
+    "tags": [
+      "GROUP BY",
+      "HAVING",
+      "COUNT",
+      "NULL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
   }
 ]

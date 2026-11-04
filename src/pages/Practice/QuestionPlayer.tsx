@@ -9,6 +9,7 @@ import {
   type StudyMode,
 } from '../../domain'
 import { getStorage, type StorageAdapter } from '../../storage'
+import { ReportIssue } from './ReportIssue'
 import styles from './QuestionPlayer.module.css'
 
 interface Props {
@@ -98,6 +99,7 @@ function PlayerInner({
               풀이 기록을 저장하지 못했습니다. 브라우저 저장 공간(사생활 보호 모드 등)을 확인하세요.
             </p>
           )}
+          <ReportIssue questionRef={refOf(question)} storage={storage} />
           {footer}
         </>
       )}

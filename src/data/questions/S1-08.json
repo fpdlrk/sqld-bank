@@ -86,5 +86,510 @@
       "executable": true,
       "expect": "rowCount"
     }
+  },
+  {
+    "id": "S1-08-0002",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "LEFT OUTER JOIN 결과 건수",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [EMP], [DEPT] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "DNO"
+        ],
+        "rows": [
+          [
+            1,
+            "AN",
+            10
+          ],
+          [
+            2,
+            "BO",
+            10
+          ],
+          [
+            3,
+            "CY",
+            20
+          ],
+          [
+            4,
+            "DA",
+            null
+          ],
+          [
+            5,
+            "EL",
+            40
+          ]
+        ]
+      },
+      {
+        "name": "DEPT",
+        "columns": [
+          "DNO",
+          "DNAME"
+        ],
+        "rows": [
+          [
+            10,
+            "SALES"
+          ],
+          [
+            20,
+            "DEV"
+          ],
+          [
+            30,
+            "HR"
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT E.ENAME, D.DNAME\n  FROM EMP E LEFT OUTER JOIN DEPT D\n    ON E.DNO = D.DNO;",
+    "choices": [
+      "3건",
+      "4건",
+      "5건",
+      "6건"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. LEFT OUTER JOIN은 왼쪽 테이블(EMP)의 모든 행을 남기므로, 짝이 있는 3행에 짝이 없는 DA와 EL이 DNAME = NULL로 더해져 5건입니다.\n\nOUTER JOIN은 조인 조건을 만족하지 못한 행도 결과에 남기는 조인입니다. LEFT는 FROM 절에서 왼쪽에 쓴 테이블을 기준으로 삼는다는 뜻이라서, EMP의 행은 짝이 있든 없든 모두 나오고 짝이 없으면 오른쪽(DEPT) 컬럼이 NULL로 채워집니다. DNO가 NULL인 DA와 DEPT에 없는 40번 부서의 EL이 이렇게 남습니다. 반면 오른쪽 테이블에만 있는 30번 부서(HR)는 기준이 아니므로 결과에 나오지 않습니다. 각 사원이 부서와 최대 한 번만 짝지어지므로, 결과 행 수는 EMP의 행 수와 같습니다.\n\n| ENAME | DNAME |\n|---|---|\n| AN | SALES |\n| BO | SALES |\n| CY | DEV |\n| DA | NULL |\n| EL | NULL |\n\n①은 INNER JOIN의 결과이고, ④는 양쪽의 짝 없는 행을 모두 남기는 FULL OUTER JOIN의 결과입니다. ②는 NULL인 DA만 빠진다고 본 경우입니다.",
+    "examPoint": "LEFT OUTER JOIN = 왼쪽 테이블 행 전부 + 짝 없으면 오른쪽 컬럼 NULL. 오른쪽에만 있는 행은 안 나온다.",
+    "tags": [
+      "표준 조인",
+      "OUTER JOIN"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S1-08-0003",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "FULL OUTER JOIN 결과 건수",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP], [DEPT] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "DNO"
+        ],
+        "rows": [
+          [
+            1,
+            "AN",
+            10
+          ],
+          [
+            2,
+            "BO",
+            10
+          ],
+          [
+            3,
+            "CY",
+            20
+          ],
+          [
+            4,
+            "DA",
+            null
+          ],
+          [
+            5,
+            "EL",
+            40
+          ]
+        ]
+      },
+      {
+        "name": "DEPT",
+        "columns": [
+          "DNO",
+          "DNAME"
+        ],
+        "rows": [
+          [
+            10,
+            "SALES"
+          ],
+          [
+            20,
+            "DEV"
+          ],
+          [
+            30,
+            "HR"
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT E.ENAME, D.DNAME\n  FROM EMP E FULL OUTER JOIN DEPT D\n    ON E.DNO = D.DNO;",
+    "choices": [
+      "3건",
+      "5건",
+      "6건",
+      "9건"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. FULL OUTER JOIN은 짝이 맞는 3행에, 왼쪽에만 있는 2행(DA, EL)과 오른쪽에만 있는 1행(HR)을 더해 6건을 만듭니다.\n\nFULL OUTER JOIN은 LEFT와 RIGHT OUTER JOIN의 결과를 합친 뒤 중복을 하나로 남긴 것과 같습니다. 그래서 \"짝이 맞는 행 + 왼쪽에만 있는 행 + 오른쪽에만 있는 행\"으로 세면 정확합니다. 짝이 맞는 행은 AN-SALES, BO-SALES, CY-DEV의 3행입니다. 왼쪽에만 있는 행은 DNO가 NULL인 DA와 존재하지 않는 부서 40의 EL이며, 오른쪽 컬럼은 NULL이 됩니다. 오른쪽에만 있는 행은 사원이 없는 HR이며, 왼쪽 컬럼은 NULL이 됩니다.\n\n| ENAME | DNAME |\n|---|---|\n| AN | SALES |\n| BO | SALES |\n| CY | DEV |\n| DA | NULL |\n| EL | NULL |\n| NULL | HR |\n\n①은 INNER JOIN의 결과이고, ②는 LEFT OUTER JOIN의 결과(5건)입니다. ④는 LEFT 결과 5건과 RIGHT 결과 4건을 그냥 더한 경우로, 짝이 맞는 3행을 두 번 센 것입니다. FULL OUTER JOIN은 두 결과를 합치되 짝이 맞는 행은 한 번만 남깁니다.",
+    "examPoint": "FULL OUTER JOIN 건수 = 짝 맞는 행 + 왼쪽에만 있는 행 + 오른쪽에만 있는 행.",
+    "tags": [
+      "표준 조인",
+      "FULL OUTER JOIN"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S1-08-0004",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "USING 절 컬럼의 접두사",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[EMP](ENO, ENAME, DNO)와 [DEPT](DNO, DNAME)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT DNO, ENAME, DNAME FROM EMP JOIN DEPT USING (DNO);",
+      "SELECT E.DNO, E.ENAME FROM EMP E JOIN DEPT D USING (DNO);",
+      "SELECT ENAME, DNAME FROM EMP NATURAL JOIN DEPT;",
+      "SELECT E.ENAME, D.DNAME FROM EMP E JOIN DEPT D ON E.DNO = D.DNO;"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. USING 절로 조인한 컬럼(DNO)은 두 테이블의 값이 하나로 합쳐진 공통 컬럼이 되므로, E.DNO처럼 테이블 별칭(접두사)을 붙이면 오류가 납니다.\n\nUSING과 NATURAL JOIN은 같은 이름의 컬럼으로 EQUI 조인을 하면서, 그 컬럼을 결과에 한 번만 보여 줍니다. 이 공통 컬럼은 어느 한 테이블의 것이 아니므로, SELECT나 WHERE 어디에서든 별칭 없이 DNO로만 써야 합니다. 반면 조인에 쓰이지 않은 다른 컬럼(ENAME, DNAME)에는 별칭을 붙여도 됩니다. ON 절을 쓰는 조인은 두 테이블의 DNO가 각각 따로 남기 때문에 오히려 E.DNO, D.DNO처럼 구분해서 써야 하고, 별칭 없이 DNO만 쓰면 어느 테이블의 것인지 모호하다는 오류가 납니다.\n\n①은 USING의 공통 컬럼을 접두사 없이 썼으므로 정상입니다. ③은 같은 이름 컬럼(DNO)으로 자동 조인하는 NATURAL JOIN을 접두사 없이 썼으므로 정상입니다. ④는 ON 절로 조인하고 각 컬럼에 별칭을 붙였으므로 정상입니다.",
+    "examPoint": "USING·NATURAL JOIN의 조인 컬럼에는 별칭(접두사)을 붙일 수 없다. ON 조인은 반대로 같은 이름 컬럼에 접두사가 필요.",
+    "tags": [
+      "표준 조인",
+      "USING",
+      "NATURAL JOIN"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-08-0005",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "OUTER JOIN 뒤의 COUNT",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [DEPT], [EMP] 테이블에 SQL을 실행한 결과 (A, B)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "DEPT",
+        "columns": [
+          "DNO",
+          "DNAME"
+        ],
+        "rows": [
+          [
+            10,
+            "SALES"
+          ],
+          [
+            20,
+            "DEV"
+          ],
+          [
+            30,
+            "HR"
+          ],
+          [
+            40,
+            "OPS"
+          ]
+        ]
+      },
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DNO"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            3,
+            20
+          ],
+          [
+            4,
+            null
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT COUNT(*)     AS A,\n       COUNT(E.ENO) AS B\n  FROM DEPT D LEFT OUTER JOIN EMP E\n    ON D.DNO = E.DNO;",
+    "choices": [
+      "5, 3",
+      "5, 5",
+      "3, 3",
+      "6, 4"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. DEPT 기준 LEFT OUTER JOIN의 결과는 10번 부서 2행, 20번 부서 1행, 사원이 없는 30·40번 부서가 각 1행씩으로 5행이고, 그중 E.ENO가 NULL이 아닌 행은 3행입니다.\n\nOUTER JOIN 뒤에 집계할 때는 COUNT(*)와 COUNT(컬럼)의 차이가 크게 드러납니다. 짝이 없는 30번과 40번 부서도 결과에 한 행씩 남는데, 이 행들은 EMP 쪽 컬럼이 모두 NULL입니다. COUNT(*)는 행 자체를 세므로 이 NULL 행까지 포함해 5가 되고, COUNT(E.ENO)는 NULL을 세지 않으므로 실제 사원이 연결된 3행만 셉니다. 그래서 \"부서별 사원 수\"를 구할 때 COUNT(*)를 쓰면 사원이 없는 부서가 0이 아니라 1명으로 나오는 실수가 생깁니다. 이럴 때는 COUNT(E.ENO)처럼 외부 조인으로 NULL이 채워지는 쪽의 컬럼을 세야 합니다. DNO가 NULL인 4번 사원은 어느 부서와도 짝이 없고, 기준 테이블이 DEPT이므로 결과에 나오지 않습니다.\n\n| DNO | ENO |\n|---|---|\n| 10 | 1 |\n| 10 | 2 |\n| 20 | 3 |\n| 30 | NULL |\n| 40 | NULL |\n\n②는 COUNT(E.ENO)도 NULL 행을 센다고 본 경우이고, ③은 OUTER JOIN을 INNER JOIN처럼 계산한 경우입니다. ④는 DNO가 NULL인 4번 사원까지 결과에 넣은 경우입니다.",
+    "examPoint": "OUTER JOIN 후 '건수'는 COUNT(NULL로 채워지는 쪽 컬럼)으로. COUNT(*)는 짝 없는 행도 1로 센다.",
+    "tags": [
+      "표준 조인",
+      "OUTER JOIN",
+      "COUNT"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-08-0006",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "CROSS JOIN",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [COLOR], [SIZES] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "COLOR",
+        "columns": [
+          "CNAME"
+        ],
+        "rows": [
+          [
+            "RED"
+          ],
+          [
+            "BLUE"
+          ],
+          [
+            "BLACK"
+          ]
+        ]
+      },
+      {
+        "name": "SIZES",
+        "columns": [
+          "SNAME"
+        ],
+        "rows": [
+          [
+            "S"
+          ],
+          [
+            "M"
+          ],
+          [
+            "L"
+          ],
+          [
+            "XL"
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT C.CNAME, S.SNAME\n  FROM COLOR C CROSS JOIN SIZES S;",
+    "choices": [
+      "3건",
+      "4건",
+      "7건",
+      "12건"
+    ],
+    "answer": 4,
+    "fixedOrder": true,
+    "explanation": "정답은 ④입니다. CROSS JOIN은 조인 조건 없이 한쪽의 모든 행을 다른 쪽의 모든 행과 짝지으므로 3 × 4 = 12건이 됩니다.\n\nCROSS JOIN은 두 테이블의 카티션 곱(Cartesian Product)을 만드는 조인입니다. 색상 3가지와 사이즈 4가지가 있을 때 만들 수 있는 모든 상품 조합(RED-S, RED-M, …, BLACK-XL)을 구하는 것처럼, 모든 경우의 수가 필요할 때 일부러 사용합니다. Oracle 방식으로는 FROM COLOR C, SIZES S처럼 조인 조건 없이 테이블을 나열하면 같은 결과가 나옵니다. 반대로 조인 조건을 실수로 빠뜨려도 이런 결과가 나오므로, 결과 행 수가 예상보다 크게 늘었다면 조인 조건 누락을 의심해 봐야 합니다.\n\n①과 ②는 한쪽 테이블의 행 수만 센 경우이고, ③은 두 테이블의 행 수를 더한 경우(UNION ALL처럼 위아래로 붙인 결과)입니다. 조인은 옆으로 붙이는 연산이므로 행 수가 곱해집니다.",
+    "examPoint": "CROSS JOIN = 카티션 곱 = 행 수의 곱(m × n). 조인 조건을 빠뜨려도 같은 결과가 생긴다.",
+    "tags": [
+      "표준 조인",
+      "CROSS JOIN"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S1-08-0007",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "NATURAL JOIN의 특징",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "NATURAL JOIN에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "두 테이블에서 이름이 같은 모든 컬럼을 조건으로 EQUI 조인한다.",
+      "조인에 사용된 공통 컬럼에는 테이블 별칭(접두사)을 붙일 수 없다.",
+      "이름이 같은 컬럼끼리는 데이터 타입도 비교할 수 있는 같은 계열이어야 한다.",
+      "NATURAL JOIN 뒤에 ON 절을 덧붙여 조인 조건을 추가로 지정할 수 있다."
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. NATURAL JOIN은 같은 이름의 컬럼을 자동으로 조인 조건으로 삼기 때문에 ON 절이나 USING 절을 함께 쓸 수 없습니다. 추가 조건이 필요하면 WHERE 절을 쓰거나, 처음부터 ON 절을 쓰는 조인으로 작성해야 합니다.\n\nNATURAL JOIN은 \"두 테이블에 이름이 같은 컬럼이 있으면, 그 컬럼들의 값이 모두 같은 행끼리 연결하라\"는 조인입니다. 조건을 따로 쓰지 않아도 되어 편리하지만, 이름이 같은 컬럼이 여러 개면 그 모두가 조건에 들어가므로 의도하지 않은 결과가 나올 수 있습니다. 조인에 쓰인 공통 컬럼은 결과에 한 번만 나타나며 어느 한 테이블의 것이 아니므로 접두사 없이 써야 합니다. 또 같은 이름이라도 한쪽은 숫자, 한쪽은 날짜처럼 비교할 수 없는 타입이면 오류가 납니다.\n\n①·②·③은 NATURAL JOIN의 특징을 바르게 설명했습니다. ④는 ON 절을 쓰는 일반 조인의 문법을 NATURAL JOIN에 섞은 보기입니다.",
+    "examPoint": "NATURAL JOIN: 같은 이름 컬럼 전부로 자동 EQUI 조인, 공통 컬럼에 접두사 불가, ON·USING과 함께 쓸 수 없다.",
+    "tags": [
+      "표준 조인",
+      "NATURAL JOIN"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-08-0008",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "LEFT·RIGHT OUTER JOIN 동치",
+    "type": "sql_equivalent",
+    "difficulty": 2,
+    "stem": "다음 SQL과 **같은 결과**를 돌려주는 것은?\n\n```sql\nSELECT D.DNAME, E.ENAME\n  FROM DEPT D LEFT OUTER JOIN EMP E\n    ON D.DNO = E.DNO;\n```",
+    "choices": [
+      "SELECT D.DNAME, E.ENAME FROM DEPT D, EMP E WHERE D.DNO(+) = E.DNO;",
+      "SELECT D.DNAME, E.ENAME FROM DEPT D RIGHT OUTER JOIN EMP E ON D.DNO = E.DNO;",
+      "SELECT D.DNAME, E.ENAME FROM DEPT D INNER JOIN EMP E ON D.DNO = E.DNO;",
+      "SELECT D.DNAME, E.ENAME FROM EMP E RIGHT OUTER JOIN DEPT D ON E.DNO = D.DNO;"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. 원래 SQL은 DEPT를 기준으로 하는 외부 조인입니다. ④는 테이블 순서를 바꿔 DEPT를 오른쪽에 두고 RIGHT OUTER JOIN을 썼으므로, 기준 테이블이 여전히 DEPT라서 결과가 같습니다.\n\nLEFT와 RIGHT는 \"FROM 절에서 어느 쪽에 쓴 테이블을 기준으로 할 것인가\"만 다릅니다. A LEFT OUTER JOIN B는 A가 기준이고, B RIGHT OUTER JOIN A도 A가 기준이므로 두 SQL은 같습니다. 조인 조건 D.DNO = E.DNO와 E.DNO = D.DNO는 = 의 양쪽을 바꾼 것일 뿐 의미가 같습니다. Oracle 방식으로 같은 결과를 내려면 NULL로 채워질 쪽(EMP)에 (+)를 붙여 WHERE D.DNO = E.DNO(+)라고 써야 합니다.\n\n①은 (+)를 DEPT 쪽에 붙여 EMP 기준 외부 조인이 되었습니다. ②는 테이블 순서는 그대로 두고 RIGHT로 바꿔 역시 EMP가 기준이 되었습니다. ③은 INNER JOIN이라 사원이 없는 부서가 결과에서 빠집니다.",
+    "examPoint": "A LEFT JOIN B = B RIGHT JOIN A (기준 테이블이 같으면 동치). Oracle (+)는 NULL로 채워질 쪽에 붙인다.",
+    "tags": [
+      "표준 조인",
+      "OUTER JOIN",
+      "동치"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-08-0009",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "NATURAL JOIN의 숨은 공통 컬럼",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [EMP], [DEPT] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DNO",
+          "LOC"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            "SEOUL"
+          ],
+          [
+            2,
+            10,
+            "BUSAN"
+          ],
+          [
+            3,
+            20,
+            "SEOUL"
+          ],
+          [
+            4,
+            30,
+            "DAEGU"
+          ]
+        ]
+      },
+      {
+        "name": "DEPT",
+        "columns": [
+          "DNO",
+          "DNAME",
+          "LOC"
+        ],
+        "rows": [
+          [
+            10,
+            "SALES",
+            "SEOUL"
+          ],
+          [
+            20,
+            "DEV",
+            "BUSAN"
+          ],
+          [
+            30,
+            "HR",
+            "DAEGU"
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT ENO, DNO, DNAME\n  FROM EMP NATURAL JOIN DEPT;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "4건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. 두 테이블에는 DNO뿐 아니라 LOC도 같은 이름으로 있으므로, NATURAL JOIN은 DNO와 LOC가 **모두** 같은 행끼리만 연결합니다. 이를 만족하는 사원은 1번(10, SEOUL)과 4번(30, DAEGU)뿐입니다.\n\nNATURAL JOIN은 조인 조건을 쓰지 않는 대신, 이름이 같은 컬럼을 전부 찾아 조건으로 삼습니다. 이 문제에서 EMP의 LOC는 사원의 근무지, DEPT의 LOC는 부서의 소재지로 의미가 다르지만, 이름이 같다는 이유만으로 조인 조건에 들어갑니다. 그 결과 조건은 EMP.DNO = DEPT.DNO AND EMP.LOC = DEPT.LOC가 됩니다. 2번 사원은 10번 부서지만 근무지가 BUSAN이라 SEOUL인 부서와 맞지 않고, 3번 사원은 20번 부서의 소재지(BUSAN)와 근무지(SEOUL)가 다릅니다. 부서 번호로만 조인하려면 JOIN DEPT USING (DNO)처럼 조인 컬럼을 직접 지정해야 하며, 그러면 4건이 나옵니다.\n\n| ENO | DNO | DNAME |\n|---|---|---|\n| 1 | 10 | SALES |\n| 4 | 30 | HR |\n\n④는 DNO만으로 조인된다고 본 경우로, NATURAL JOIN을 쓸 때 가장 흔한 착각입니다. ①과 ③은 공통 컬럼을 일부만 비교하거나 행을 잘못 대조한 경우입니다.",
+    "examPoint": "NATURAL JOIN은 이름이 같은 '모든' 컬럼으로 조인한다. 의미가 다른 동명 컬럼이 있으면 USING(컬럼)으로 지정할 것.",
+    "tags": [
+      "표준 조인",
+      "NATURAL JOIN",
+      "USING"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S1-08-0010",
+    "subject": 2,
+    "chapter": "S1-08",
+    "topic": "이름이 다른 컬럼의 조인",
+    "type": "sql_fill",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블의 부서 번호 컬럼은 DEPT_ID, [DEPT] 테이블의 부서 번호 컬럼은 ID이다. 사원 이름과 부서 이름을 함께 조회하려고 할 때 (ㄱ)에 들어갈 내용으로 알맞은 것은?\n\n```sql\nSELECT E.ENAME, D.DNAME\n  FROM EMP E JOIN DEPT D\n (ㄱ);\n```",
+    "choices": [
+      "USING (DEPT_ID)",
+      "ON E.DEPT_ID = D.ID",
+      "NATURAL",
+      "USING (E.DEPT_ID = D.ID)"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. 두 컬럼의 이름이 다르므로 같은 이름을 전제로 하는 USING이나 NATURAL JOIN은 쓸 수 없고, ON 절에 조인 조건을 직접 적어야 합니다.\n\n표준 조인에서 조인 조건을 지정하는 방법은 세 가지입니다. NATURAL JOIN은 이름이 같은 모든 컬럼을 자동으로 사용하고, USING (컬럼명)은 이름이 같은 컬럼 중 원하는 것만 골라 사용하며, ON은 이름과 상관없이 원하는 조건을 자유롭게 씁니다. 이번처럼 이름이 DEPT_ID와 ID로 다르면 ON E.DEPT_ID = D.ID처럼 써야 합니다. ON은 = 가 아닌 조건(예: BETWEEN)이나 여러 조건을 AND로 함께 쓸 수도 있어 가장 범용적입니다.\n\n①은 DEPT_ID라는 이름이 DEPT 테이블에 없으므로 오류가 납니다. ③의 NATURAL은 JOIN 앞에 붙는 키워드라 이 위치에 올 수 없고, 같은 이름 컬럼이 없으면 의도한 조인도 되지 않습니다. ④는 USING 괄호 안에 조건식과 접두사를 넣은 잘못된 문법으로, USING에는 컬럼 이름만 적습니다.",
+    "examPoint": "이름이 같은 컬럼 → NATURAL / USING(컬럼), 이름이 다르거나 조건이 복잡 → ON 조건. USING 괄호엔 컬럼 이름만.",
+    "tags": [
+      "표준 조인",
+      "ON",
+      "USING"
+    ],
+    "source": "claude"
   }
 ]

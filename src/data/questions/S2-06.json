@@ -1,0 +1,508 @@
+[
+  {
+    "id": "S2-06-0001",
+    "subject": 2,
+    "chapter": "S2-06",
+    "topic": "순방향 전개와 LEVEL",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "MGR"
+        ],
+        "rows": [
+          [
+            1,
+            "KING",
+            null
+          ],
+          [
+            2,
+            "JONES",
+            1
+          ],
+          [
+            3,
+            "BLAKE",
+            1
+          ],
+          [
+            4,
+            "SCOTT",
+            2
+          ],
+          [
+            5,
+            "FORD",
+            2
+          ],
+          [
+            6,
+            "ADAMS",
+            4
+          ],
+          [
+            7,
+            "ALLEN",
+            3
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT ENAME, LEVEL\n  FROM EMP\n WHERE LEVEL = 3\n START WITH MGR IS NULL\nCONNECT BY PRIOR ENO = MGR;",
+    "sqlExec": "WITH RECURSIVE T(ENO, ENAME, LV) AS (SELECT ENO, ENAME, 1 FROM EMP WHERE MGR IS NULL UNION ALL SELECT E.ENO, E.ENAME, T.LV + 1 FROM EMP E JOIN T ON E.MGR = T.ENO) SELECT ENAME FROM T WHERE LV = 3;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "4건"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. 관리자가 없는 KING에서 시작해(LEVEL 1) 부하 방향으로 내려가면 JONES·BLAKE가 LEVEL 2, SCOTT·FORD·ALLEN이 LEVEL 3이 되므로 3건입니다.\n\n계층형 질의는 START WITH로 시작점(루트)을 정하고, CONNECT BY로 다음 행을 찾는 규칙을 정합니다. PRIOR는 \"이전에 읽은 행(부모)\"을 가리키므로, PRIOR ENO = MGR은 \"부모의 ENO가 내 MGR과 같은 행\", 즉 부하 직원을 찾아 내려가는 순방향 전개입니다. LEVEL은 루트가 1이고 한 단계 내려갈 때마다 1씩 커지는 의사 컬럼입니다. WHERE 절은 계층을 모두 전개한 뒤 결과를 거르는 것이므로, WHERE LEVEL = 3은 전개된 트리에서 세 번째 단계의 행만 남깁니다. (실행 검증용 SQLite에는 CONNECT BY가 없어 같은 동작의 재귀 WITH로 바꿔 실행했습니다.)\n\n| ENAME | LEVEL |\n|---|---|\n| SCOTT | 3 |\n| FORD | 3 |\n| ALLEN | 3 |\n\n②는 BLAKE 쪽 가지(ALLEN)를 빠뜨린 경우입니다. ④는 ADAMS(LEVEL 4)까지 포함한 경우이고, ①은 LEVEL을 0부터 세어 ADAMS 한 명만 세 번째 단계로 본 경우입니다.",
+    "examPoint": "START WITH = 루트, CONNECT BY PRIOR ENO = MGR = 위에서 아래로(순방향). LEVEL은 루트가 1이고, WHERE는 전개가 끝난 뒤 거른다.",
+    "tags": [
+      "계층형 질의",
+      "CONNECT BY",
+      "LEVEL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-06-0002",
+    "subject": 2,
+    "chapter": "S2-06",
+    "topic": "역방향 전개",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "MGR"
+        ],
+        "rows": [
+          [
+            1,
+            "KING",
+            null
+          ],
+          [
+            2,
+            "JONES",
+            1
+          ],
+          [
+            3,
+            "BLAKE",
+            1
+          ],
+          [
+            4,
+            "SCOTT",
+            2
+          ],
+          [
+            5,
+            "FORD",
+            2
+          ],
+          [
+            6,
+            "ADAMS",
+            4
+          ],
+          [
+            7,
+            "ALLEN",
+            3
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT ENAME, LEVEL\n  FROM EMP\n START WITH ENAME = 'ADAMS'\nCONNECT BY PRIOR MGR = ENO;",
+    "sqlExec": "WITH RECURSIVE T(ENO, ENAME, MGR) AS (SELECT ENO, ENAME, MGR FROM EMP WHERE ENAME = 'ADAMS' UNION ALL SELECT E.ENO, E.ENAME, E.MGR FROM EMP E JOIN T ON E.ENO = T.MGR) SELECT ENAME FROM T;",
+    "choices": [
+      "1건",
+      "4건",
+      "5건",
+      "7건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. PRIOR MGR = ENO는 \"이전 행의 MGR과 같은 ENO를 가진 행\", 즉 상사를 찾아 위로 올라가는 역방향 전개입니다. ADAMS → SCOTT → JONES → KING 순으로 올라가 4건이 됩니다.\n\nCONNECT BY에서 PRIOR가 어느 컬럼에 붙느냐가 전개 방향을 결정합니다. PRIOR ENO = MGR은 부모(이전 행)의 사번을 상사로 가진 행을 찾으므로 아래로 내려가고, PRIOR MGR = ENO는 부모(이전 행)의 상사 사번을 사번으로 가진 행을 찾으므로 위로 올라갑니다. 역방향에서는 시작한 ADAMS가 LEVEL 1이고, 위로 갈수록 LEVEL이 커져 KING이 LEVEL 4가 됩니다. 위로 올라가는 길은 한 사람당 상사가 하나뿐이므로 가지가 갈라지지 않고 한 줄로 이어집니다.\n\n| ENAME | LEVEL |\n|---|---|\n| ADAMS | 1 |\n| SCOTT | 2 |\n| JONES | 3 |\n| KING | 4 |\n\n①은 ADAMS 아래에 부하가 없으니 시작 행만 나온다고 본 경우로, 방향을 순방향으로 착각한 것입니다. ③은 같은 상사를 둔 FORD까지 포함한 경우이고, ④는 전체 행을 모두 센 경우입니다.",
+    "examPoint": "PRIOR ENO = MGR → 순방향(부하로), PRIOR MGR = ENO → 역방향(상사로). PRIOR가 붙은 쪽이 이전(부모) 행.",
+    "tags": [
+      "계층형 질의",
+      "CONNECT BY",
+      "역방향"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-06-0003",
+    "subject": 2,
+    "chapter": "S2-06",
+    "topic": "CONNECT BY 조건과 WHERE 조건의 차이",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [EMP] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "MGR"
+        ],
+        "rows": [
+          [
+            1,
+            "KING",
+            null
+          ],
+          [
+            2,
+            "JONES",
+            1
+          ],
+          [
+            3,
+            "BLAKE",
+            1
+          ],
+          [
+            4,
+            "SCOTT",
+            2
+          ],
+          [
+            5,
+            "FORD",
+            2
+          ],
+          [
+            6,
+            "ADAMS",
+            4
+          ],
+          [
+            7,
+            "ALLEN",
+            3
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT ENAME, LEVEL\n  FROM EMP\n START WITH ENAME = 'JONES'\nCONNECT BY PRIOR ENO = MGR\n       AND ENAME <> 'SCOTT';",
+    "sqlExec": "WITH RECURSIVE T(ENO, ENAME) AS (SELECT ENO, ENAME FROM EMP WHERE ENAME = 'JONES' UNION ALL SELECT E.ENO, E.ENAME FROM EMP E JOIN T ON E.MGR = T.ENO WHERE E.ENAME <> 'SCOTT') SELECT ENAME FROM T;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "4건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. CONNECT BY 절의 조건은 \"다음 단계로 연결할 행\"을 정하므로, SCOTT으로는 연결되지 않고 그 아래의 ADAMS까지 함께 잘려 나갑니다. 결과는 JONES와 FORD의 2건입니다.\n\n계층형 질의에서 조건을 어디에 쓰느냐에 따라 결과가 달라집니다. CONNECT BY에 쓴 조건은 전개하는 도중에 적용되어, 조건을 만족하지 않는 행에서는 더 이상 내려가지 않습니다. 그래서 SCOTT이 빠지면 SCOTT을 통해서만 닿을 수 있는 ADAMS도 결과에 나오지 않습니다(가지치기). 반면 같은 조건을 WHERE ENAME <> 'SCOTT'로 쓰면, 먼저 JONES 아래를 모두 전개(JONES, SCOTT, ADAMS, FORD)한 다음 SCOTT 행 하나만 지우므로 JONES, ADAMS, FORD의 3건이 남습니다. 시작 행(JONES)은 START WITH로 정해지므로 CONNECT BY 조건과 상관없이 포함됩니다.\n\n| ENAME | LEVEL |\n|---|---|\n| JONES | 1 |\n| FORD | 2 |\n\n③은 조건을 WHERE에 쓴 것처럼 SCOTT 한 행만 뺀 경우입니다. ④는 조건을 무시하고 JONES 아래 전체를 센 경우이고, ①은 시작 행도 조건에 걸러진다고 본 경우입니다.",
+    "examPoint": "CONNECT BY의 조건 = 가지치기(그 아래 자손까지 제외), WHERE의 조건 = 전개 후 해당 행만 제외.",
+    "tags": [
+      "계층형 질의",
+      "CONNECT BY",
+      "WHERE"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-06-0004",
+    "subject": 2,
+    "chapter": "S2-06",
+    "topic": "계층형 질의 용어",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "Oracle 계층형 질의에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "LEVEL은 루트 노드에서 0부터 시작해 한 단계 내려갈 때마다 1씩 증가한다.",
+      "CONNECT_BY_ISLEAF는 현재 행이 자식이 없는 리프 노드이면 1, 아니면 0을 돌려준다.",
+      "SYS_CONNECT_BY_PATH(컬럼, '/')는 루트부터 현재 행까지의 경로를 구분자로 이어 보여 준다.",
+      "ORDER SIBLINGS BY는 계층 구조를 유지한 채 같은 부모를 가진 형제 노드끼리만 정렬한다."
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. LEVEL은 루트 노드가 1이고, 자식이 2, 손자가 3처럼 1부터 시작합니다.\n\n계층형 질의에서는 계층 구조를 다루기 위한 의사 컬럼과 함수를 함께 씁니다. LEVEL은 현재 행의 깊이를 나타내며 루트가 1입니다. CONNECT_BY_ISLEAF는 리프(자식이 없는 노드)이면 1을 돌려주어 말단 사원만 고를 때 쓰고, CONNECT_BY_ROOT 컬럼은 현재 행이 속한 루트 노드의 값을 돌려줍니다. SYS_CONNECT_BY_PATH는 루트에서 현재 행까지 거쳐 온 값을 구분자로 이어 경로 문자열을 만듭니다. 또 계층형 질의에 일반 ORDER BY를 쓰면 트리 순서가 깨지므로, 형제끼리만 정렬하고 싶을 때는 ORDER SIBLINGS BY를 씁니다.\n\n②·③·④는 각 기능을 바르게 설명했습니다. ①은 프로그래밍의 배열 인덱스처럼 0부터 센다고 착각하게 만든 보기입니다.",
+    "examPoint": "LEVEL은 루트=1. CONNECT_BY_ISLEAF(리프=1), CONNECT_BY_ROOT, SYS_CONNECT_BY_PATH(경로), ORDER SIBLINGS BY(형제 정렬).",
+    "tags": [
+      "계층형 질의",
+      "LEVEL"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-06-0005",
+    "subject": 2,
+    "chapter": "S2-06",
+    "topic": "PRIOR 위치와 전개 방향",
+    "type": "sql_fill",
+    "difficulty": 2,
+    "stem": "[EMP](ENO, ENAME, MGR) 테이블에서 사장(MGR이 NULL)부터 시작해 **부하 직원 방향으로** 조직도를 전개하려고 한다. (ㄱ)에 들어갈 조건으로 알맞은 것은?\n\n```sql\nSELECT LEVEL, ENAME\n  FROM EMP\n START WITH MGR IS NULL\nCONNECT BY (ㄱ);\n```",
+    "choices": [
+      "PRIOR MGR = ENO",
+      "PRIOR ENO = MGR",
+      "ENO = MGR",
+      "PRIOR ENO = PRIOR MGR"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. PRIOR ENO = MGR은 \"이전 행(상사)의 사번이 MGR인 행\"을 다음 행으로 찾으므로, 상사에서 부하로 내려가는 순방향 전개가 됩니다.\n\nCONNECT BY의 조건은 \"이전 행과 다음 행을 어떻게 연결할지\"를 정하며, PRIOR가 붙은 컬럼이 이전(이미 읽은) 행의 값입니다. 부하를 찾으려면 이전 행이 상사여야 하므로, 상사의 사번(PRIOR ENO)을 자신의 관리자 번호(MGR)로 가진 행을 찾으면 됩니다. 반대로 PRIOR MGR = ENO라고 쓰면 이전 행의 관리자 번호를 사번으로 가진 행, 즉 상사를 찾아 올라가게 됩니다. 순방향은 \"PRIOR 자식 쪽 키(PK) = 부모를 가리키는 컬럼(FK)\"이라고 외워 두면 편합니다.\n\n①은 역방향 전개라서 사장에서 시작하면 더 올라갈 상사가 없어 사장 한 명만 나옵니다. ③은 PRIOR가 없어 같은 행 안에서 사번과 관리자 번호를 비교하는 무의미한 조건이고, ④는 두 컬럼 모두 이전 행의 값이라 다음 행을 찾는 연결 조건이 되지 못합니다.",
+    "examPoint": "순방향(위→아래): CONNECT BY PRIOR PK = FK, 역방향(아래→위): CONNECT BY PRIOR FK = PK.",
+    "tags": [
+      "계층형 질의",
+      "PRIOR"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-06-0006",
+    "subject": 2,
+    "chapter": "S2-06",
+    "topic": "셀프 조인 결과 건수",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "MGR"
+        ],
+        "rows": [
+          [
+            1,
+            "KING",
+            null
+          ],
+          [
+            2,
+            "JONES",
+            1
+          ],
+          [
+            3,
+            "BLAKE",
+            1
+          ],
+          [
+            4,
+            "SCOTT",
+            2
+          ],
+          [
+            5,
+            "FORD",
+            2
+          ],
+          [
+            6,
+            "ADAMS",
+            4
+          ],
+          [
+            7,
+            "ALLEN",
+            3
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT E.ENAME AS WORKER, M.ENAME AS MANAGER\n  FROM EMP E, EMP M\n WHERE E.MGR = M.ENO;",
+    "choices": [
+      "5건",
+      "6건",
+      "7건",
+      "49건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. 같은 EMP 테이블을 사원(E)과 관리자(M) 두 역할로 조인하므로, 관리자가 있는 6명만 짝을 찾고 관리자가 없는 KING은 결과에서 빠집니다.\n\n셀프 조인은 한 테이블을 별칭 두 개로 나눠 마치 서로 다른 테이블처럼 조인하는 방법입니다. 이 SQL에서 E는 \"사원으로서의 EMP\", M은 \"관리자로서의 EMP\"이고, E.MGR = M.ENO로 각 사원의 관리자 행을 찾아 붙입니다. 일반 EQUI 조인이므로 짝이 없는 행은 빠지는데, KING은 MGR이 NULL이라 어떤 행과도 짝이 되지 않습니다. KING까지 보고 싶다면 E LEFT OUTER JOIN M ON E.MGR = M.ENO처럼 외부 조인을 써야 하며, 그때는 7건이 됩니다.\n\n| WORKER | MANAGER |\n|---|---|\n| JONES | KING |\n| BLAKE | KING |\n| SCOTT | JONES |\n| FORD | JONES |\n| ADAMS | SCOTT |\n| ALLEN | BLAKE |\n\n③은 외부 조인처럼 KING까지 포함한 경우이고, ④는 조인 조건이 없는 카티션 곱(7 × 7)입니다. ①은 관리자가 있는 사원 중 한 명을 빠뜨린 경우로, 짝을 하나씩 대어 보면 6명 모두 관리자를 찾습니다.",
+    "examPoint": "셀프 조인 = 같은 테이블에 별칭 두 개. EQUI 셀프 조인은 상위가 없는 루트 행이 빠진다(보려면 OUTER JOIN).",
+    "tags": [
+      "셀프 조인",
+      "조인"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-06-0007",
+    "subject": 2,
+    "chapter": "S2-06",
+    "topic": "셀프 조인으로 상사 찾기",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행한 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "MGR"
+        ],
+        "rows": [
+          [
+            1,
+            "KING",
+            null
+          ],
+          [
+            2,
+            "JONES",
+            1
+          ],
+          [
+            3,
+            "BLAKE",
+            1
+          ],
+          [
+            4,
+            "SCOTT",
+            2
+          ],
+          [
+            5,
+            "FORD",
+            2
+          ],
+          [
+            6,
+            "ADAMS",
+            4
+          ],
+          [
+            7,
+            "ALLEN",
+            3
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT M.ENAME\n  FROM EMP E JOIN EMP M\n    ON E.MGR = M.ENO\n WHERE E.ENAME = 'ADAMS';",
+    "choices": [
+      "SCOTT",
+      "JONES",
+      "FORD",
+      "KING"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. ADAMS의 MGR은 4이고, 사번 4인 사원은 SCOTT이므로 ADAMS의 관리자 이름은 SCOTT입니다.\n\n셀프 조인에서는 별칭마다 역할을 정해 두면 헷갈리지 않습니다. E는 조회 대상인 사원, M은 그 사원의 관리자입니다. WHERE E.ENAME = 'ADAMS'로 사원 행을 하나 고르고, ON E.MGR = M.ENO로 그 사원의 MGR 값(4)과 같은 사번을 가진 행을 M에서 찾습니다. 그 행의 ENAME을 M.ENAME으로 가져오면 관리자 이름이 됩니다. 한 단계 위(직속 상사)만 찾는 것이므로, 상사의 상사(JONES)까지 가려면 셀프 조인을 한 번 더 하거나 계층형 질의를 써야 합니다.\n\n| E.ENAME | E.MGR | M.ENO | M.ENAME |\n|---|---|---|---|\n| ADAMS | 4 | 4 | SCOTT |\n\n②는 상사의 상사까지 올라간 경우이고, ④는 최상위 관리자를 고른 경우입니다. ③은 같은 관리자(JONES)를 둔 SCOTT의 동료로, 관계를 잘못 읽은 경우입니다.",
+    "examPoint": "셀프 조인은 별칭별 역할(사원 E, 관리자 M)을 정하고 E.MGR = M.ENO로 연결한다. 직속 상위 한 단계만 찾는다.",
+    "tags": [
+      "셀프 조인"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S2-06-0008",
+    "subject": 2,
+    "chapter": "S2-06",
+    "topic": "SYS_CONNECT_BY_PATH",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [EMP] 테이블에 Oracle에서 SQL을 실행한 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "MGR"
+        ],
+        "rows": [
+          [
+            1,
+            "KING",
+            null
+          ],
+          [
+            2,
+            "JONES",
+            1
+          ],
+          [
+            3,
+            "BLAKE",
+            1
+          ],
+          [
+            4,
+            "SCOTT",
+            2
+          ],
+          [
+            5,
+            "FORD",
+            2
+          ],
+          [
+            6,
+            "ADAMS",
+            4
+          ],
+          [
+            7,
+            "ALLEN",
+            3
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT PATH\n  FROM (SELECT ENAME,\n               SYS_CONNECT_BY_PATH(ENAME, '/') AS PATH\n          FROM EMP\n         START WITH MGR IS NULL\n       CONNECT BY PRIOR ENO = MGR)\n WHERE ENAME = 'ADAMS';",
+    "sqlExec": "WITH RECURSIVE T(ENO, ENAME, P) AS (SELECT ENO, ENAME, '/' || ENAME FROM EMP WHERE MGR IS NULL UNION ALL SELECT E.ENO, E.ENAME, T.P || '/' || E.ENAME FROM EMP E JOIN T ON E.MGR = T.ENO) SELECT P FROM T WHERE ENAME = 'ADAMS';",
+    "choices": [
+      "/ADAMS/SCOTT/JONES/KING",
+      "/JONES/SCOTT/ADAMS",
+      "/KING/JONES/SCOTT/ADAMS",
+      "KING/JONES/SCOTT/ADAMS"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. SYS_CONNECT_BY_PATH는 루트(KING)부터 현재 행(ADAMS)까지 거쳐 온 값을, 각 값 앞에 구분자 '/'를 붙여 이어 줍니다.\n\nSYS_CONNECT_BY_PATH(컬럼, 구분자)는 계층을 전개하면서 지나온 경로를 문자열로 만들어 줍니다. 루트 행에서는 '/KING', 그 자식에서는 '/KING/JONES'처럼, 한 단계 내려갈 때마다 구분자와 현재 값을 뒤에 덧붙입니다. 구분자가 각 값의 \"앞\"에 붙기 때문에 경로는 항상 구분자로 시작합니다. 경로의 방향은 전개 방향을 따르므로, 순방향으로 전개한 이 SQL에서는 루트가 맨 앞, 현재 행이 맨 뒤에 옵니다. 인라인 뷰 안에서 계층 전체를 전개한 뒤 바깥에서 ADAMS 행만 골랐기 때문에, ADAMS까지의 완전한 경로가 나옵니다. (실행 검증에서는 같은 경로를 재귀 WITH로 만들어 확인했습니다.)\n\n| ENAME | PATH |\n|---|---|\n| KING | /KING |\n| JONES | /KING/JONES |\n| SCOTT | /KING/JONES/SCOTT |\n| ADAMS | /KING/JONES/SCOTT/ADAMS |\n\n①은 경로를 역방향으로 본 경우이고, ②는 루트를 JONES로 착각한 경우입니다. ④는 구분자가 값 사이에만 들어간다고 본 경우입니다.",
+    "examPoint": "SYS_CONNECT_BY_PATH(컬럼, '/') = 루트부터 현재 행까지의 경로, 각 값 앞에 구분자('/KING/JONES/...').",
+    "tags": [
+      "계층형 질의",
+      "SYS_CONNECT_BY_PATH"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  }
+]

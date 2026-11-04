@@ -8,10 +8,13 @@ export const PAGE_SIZE = 50
 
 interface Props {
   questions: readonly Question[]
+  /** 직접 추가 문제의 수정·삭제 (T7-2) — 기본 문제는 읽기 전용 */
+  onEdit?: (q: Question) => void
+  onDelete?: (q: Question) => void
 }
 
 /** 문제 목록 (T7-1) — 줄을 누르면 미리보기(문제·정답·해설)가 펼쳐진다 */
-export function BankQuestionList({ questions }: Props) {
+export function BankQuestionList({ questions, onEdit, onDelete }: Props) {
   const [open, setOpen] = useState<string | null>(null)
   const [limit, setLimit] = useState(PAGE_SIZE)
   const shown = questions.slice(0, limit)
@@ -45,6 +48,20 @@ export function BankQuestionList({ questions }: Props) {
                   <Markdown source={q.explanation} />
                   <p className={styles.point}>시험 포인트 · {q.examPoint}</p>
                   {q.tags && q.tags.length > 0 && <p className={styles.point}>태그 · {q.tags.join(', ')}</p>}
+                  {q.source === 'user' && (onEdit || onDelete) && (
+                    <div className={styles.rowActions}>
+                      {onEdit && (
+                        <Button variant="secondary" onClick={() => onEdit(q)}>
+                          수정
+                        </Button>
+                      )}
+                      {onDelete && (
+                        <Button variant="danger" onClick={() => onDelete(q)}>
+                          삭제
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </li>

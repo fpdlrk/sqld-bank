@@ -81,7 +81,16 @@ export {
   stageLabel,
 } from './wrongNote'
 export type { WrongNoteEntry, WrongNoteGroup, WrongNoteInfo } from './wrongNote'
-export { emptyNote, isMasteredAfter, setBookmark, setMastered, setMemo } from './notes'
+export {
+  REPORT_KIND_LABELS,
+  emptyNote,
+  isMasteredAfter,
+  reportedNotes,
+  setBookmark,
+  setMastered,
+  setMemo,
+  setReport,
+} from './notes'
 export {
   STATS_WINDOW_DAYS,
   WEAK_LIMIT,
@@ -95,3 +104,22 @@ export {
 export type { Accuracy, ChapterAccuracy, ChapterOf, ExamTrendPoint, StatsOptions } from './stats'
 export { EXAM_DATE_KEY, daysUntil, formatDDay, isValidDateString } from './dday'
 export { searchQuestions } from './questionSearch'
+export { parsePastedTable, tableToText } from './tablePaste'
+export type { TableParse } from './tablePaste'
+export { draftFromQuestion, draftToCandidate, emptyDraft, nextUserQuestionId } from './questionDraft'
+export type { DraftConversion, QuestionDraft, TableDraft } from './questionDraft'
+// 가져오기(questionImport.ts)는 zod를 쓰므로 여기서 내보내지 않는다 — 가져오기 화면에서 직접 import
+export { QUESTIONS_FILE_FORMAT, QUESTIONS_FILE_VERSION, buildQuestionsFile, fileDate } from './questionExport'
+export type { QuestionsFile } from './questionExport'
+export {
+  BACKUP_FILE_FORMAT,
+  BACKUP_REMIND_DAYS,
+  LAST_BACKUP_KEY,
+  backupReminder,
+  buildBackupFile,
+  countDump,
+  daysSince,
+  mergeDumps,
+  parseBackupFile,
+} from './backup'
+export type { BackupFile, BackupParse, DataDump, DumpCounts, DumpMergeResult, RestoreMode } from './backup'

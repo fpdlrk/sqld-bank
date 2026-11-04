@@ -60,5 +60,342 @@
       "executable": true,
       "expect": "value"
     }
+  },
+  {
+    "id": "S1-03-0002",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "SUBSTR·INSTR·LENGTH·TRIM",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 SQL의 실행 결과 (A, B, C)로 알맞은 것은?",
+    "sql": "SELECT SUBSTR('DATABASE', 3, 4)     AS A,\n       INSTR('DATABASE', 'BA')       AS B,\n       LENGTH(TRIM('  SQL  '))       AS C\n  FROM DUAL;",
+    "sqlExec": "SELECT SUBSTR('DATABASE', 3, 4) AS A, INSTR('DATABASE', 'BA') AS B, LENGTH(TRIM('  SQL  ')) AS C;",
+    "choices": [
+      "TABA, 5, 3",
+      "ATAB, 5, 3",
+      "TABA, 5, 7",
+      "TABA, 4, 3"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. SUBSTR('DATABASE', 3, 4)는 3번째 글자부터 4글자인 'TABA', INSTR('DATABASE', 'BA')는 'BA'가 처음 나타나는 위치인 5, LENGTH(TRIM('  SQL  '))은 앞뒤 공백을 지운 'SQL'의 길이인 3입니다.\n\n문자 함수의 위치는 1부터 셉니다. 'DATABASE'의 글자를 번호와 함께 적으면 D(1) A(2) T(3) A(4) B(5) A(6) S(7) E(8)입니다. SUBSTR(문자열, 시작 위치, 길이)은 시작 위치의 글자를 포함해 지정한 길이만큼 잘라 내므로 3번째 T부터 T, A, B, A를 가져와 'TABA'가 됩니다. INSTR(문자열, 찾을 문자열)은 찾는 문자열이 시작되는 위치를 돌려주므로, 'BA'의 B가 있는 5가 결과입니다. TRIM은 양쪽 공백을 모두 지우므로 '  SQL  '은 'SQL'이 되고 길이는 3입니다. Oracle에서는 테이블 없이 값을 계산할 때 DUAL이라는 1행짜리 테이블을 FROM에 씁니다.\n\n| A | B | C |\n|---|---|---|\n| TABA | 5 | 3 |\n\n②는 위치를 0부터 센 것처럼 2번째 글자부터 잘라 낸 경우입니다. ③은 TRIM을 적용하기 전 문자열의 길이(공백 포함 7)를 센 경우이고, ④는 INSTR이 찾은 문자열의 끝 위치나 앞 글자 위치를 돌려준다고 착각한 경우입니다.",
+    "examPoint": "문자 위치는 1부터. SUBSTR(s, 시작, 길이), INSTR(s, 찾을 값)=시작 위치, TRIM은 양쪽 공백 제거.",
+    "tags": [
+      "문자 함수",
+      "SUBSTR",
+      "INSTR"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-03-0003",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "ROUND·TRUNC·CEIL·FLOOR",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 SQL의 실행 결과 (A, B, C, D)로 알맞은 것은? (Oracle 기준)",
+    "sql": "SELECT ROUND(1234.567, -2) AS A,\n       TRUNC(1234.567, 1)  AS B,\n       CEIL(-3.2)          AS C,\n       FLOOR(-3.2)         AS D\n  FROM DUAL;",
+    "choices": [
+      "1234.57, 1234.5, -3, -4",
+      "1200, 1234.6, -3, -4",
+      "1200, 1234.5, -3, -4",
+      "1200, 1234.5, -4, -3"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. ROUND(1234.567, -2)는 십의 자리에서 반올림해 백의 자리까지 남긴 1200, TRUNC(1234.567, 1)은 소수 첫째 자리까지 남기고 버린 1234.5, CEIL(-3.2)는 -3.2 이상인 가장 작은 정수 -3, FLOOR(-3.2)는 -3.2 이하인 가장 큰 정수 -4입니다.\n\nROUND와 TRUNC의 두 번째 인자는 \"어느 자리까지 남길지\"를 정합니다. 양수 n이면 소수 n번째 자리까지, 0이면 정수까지, 음수 -n이면 정수 부분의 오른쪽 n자리를 0으로 만듭니다. 그래서 ROUND(1234.567, -2)는 일의 자리와 십의 자리를 정리하는데, 십의 자리가 3이라 반올림해도 올라가지 않으므로 1200이 됩니다. TRUNC는 반올림 없이 버리기만 하므로 1234.567에서 소수 둘째 자리 이하를 버려 1234.5가 됩니다. CEIL과 FLOOR는 음수에서 헷갈리기 쉬운데, 수직선에서 CEIL은 오른쪽(큰 쪽)의 정수로, FLOOR는 왼쪽(작은 쪽)의 정수로 간다고 생각하면 됩니다. -3.2의 오른쪽 정수는 -3, 왼쪽 정수는 -4입니다. (이 문제는 실행 검증용 SQLite가 음수 자리 ROUND를 Oracle과 다르게 처리해, 위 Oracle 규칙으로 정답을 확인했습니다.)\n\n| A | B | C | D |\n|---|---|---|---|\n| 1200 | 1234.5 | -3 | -4 |\n\n①은 -2를 소수 둘째 자리로 착각한 경우입니다. ②는 TRUNC도 반올림한다고 본 경우이고, ④는 CEIL과 FLOOR를 \"절댓값을 올림·내림\"으로 생각해 음수에서 반대로 계산한 경우입니다.",
+    "examPoint": "ROUND/TRUNC의 음수 자리 = 정수 부분을 정리. TRUNC는 버림만. 음수에서 CEIL은 큰 쪽(-3), FLOOR는 작은 쪽(-4).",
+    "tags": [
+      "숫자 함수",
+      "ROUND",
+      "TRUNC"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-03-0004",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "COALESCE·NULLIF·NVL2",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [ITEM] 테이블에 SQL을 실행한 결과 (A, B, C)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "ITEM",
+        "columns": [
+          "ID",
+          "P1",
+          "P2",
+          "P3"
+        ],
+        "rows": [
+          [
+            1,
+            null,
+            20,
+            30
+          ],
+          [
+            2,
+            null,
+            null,
+            50
+          ],
+          [
+            3,
+            10,
+            null,
+            null
+          ],
+          [
+            4,
+            null,
+            null,
+            null
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT SUM(COALESCE(P1, P2, P3)) AS A,\n       COUNT(NULLIF(P2, 20))     AS B,\n       SUM(NVL2(P3, P3, 1))      AS C\n  FROM ITEM;",
+    "sqlExec": "SELECT SUM(COALESCE(P1, P2, P3)) AS A, COUNT(NULLIF(P2, 20)) AS B, SUM(CASE WHEN P3 IS NOT NULL THEN P3 ELSE 1 END) AS C FROM ITEM;",
+    "choices": [
+      "80, 1, 82",
+      "80, 0, 82",
+      "90, 0, 82",
+      "80, 0, 80"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. A는 행마다 처음 나오는 NULL이 아닌 값(20, 50, 10, NULL)의 합 80, B는 NULLIF 결과가 모두 NULL이라 0, C는 P3가 있으면 P3, 없으면 1을 더해 30 + 50 + 1 + 1 = 82입니다.\n\n세 함수는 모두 NULL을 다루지만 하는 일이 다릅니다. COALESCE(a, b, c)는 왼쪽부터 보며 처음으로 NULL이 아닌 값을 돌려줍니다. 1행은 P1이 NULL이라 P2의 20, 2행은 P3의 50, 3행은 P1의 10이 선택되고, 4행은 모두 NULL이라 NULL입니다. SUM은 NULL을 건너뛰므로 80입니다. NULLIF(a, b)는 두 값이 같으면 NULL을, 다르면 a를 돌려줍니다. 1행은 P2가 20이라 NULL이 되고, 나머지 행은 P2가 원래 NULL이라 NULL입니다. 그래서 COUNT는 0입니다. NVL2(a, b, c)는 a가 NULL이 아니면 b, NULL이면 c를 돌려주므로 행마다 30, 50, 1, 1이 됩니다.\n\n| ID | COALESCE | NULLIF(P2, 20) | NVL2(P3, P3, 1) |\n|---|---|---|---|\n| 1 | 20 | NULL | 30 |\n| 2 | 50 | NULL | 50 |\n| 3 | 10 | NULL | 1 |\n| 4 | NULL | NULL | 1 |\n\n①은 NULLIF가 같은 값일 때 그 값을 남긴다고 착각했습니다. ③은 COALESCE가 마지막 NULL 아닌 값을 고른다고 보아 1행에서 30을 더했습니다. ④는 NVL2의 세 번째 인자를 무시하고 NULL로 계산한 경우입니다.",
+    "examPoint": "COALESCE=처음 NULL 아닌 값, NULLIF(a,b)=같으면 NULL·다르면 a, NVL2(a,b,c)=a가 있으면 b·없으면 c.",
+    "tags": [
+      "NULL 함수",
+      "COALESCE",
+      "NULLIF",
+      "NVL2"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-03-0005",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "CASE 조건 평가 순서",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행한 결과 (A_CNT, B_CNT, C_CNT)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            150
+          ],
+          [
+            2,
+            300
+          ],
+          [
+            3,
+            450
+          ],
+          [
+            4,
+            600
+          ],
+          [
+            5,
+            250
+          ],
+          [
+            6,
+            null
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT SUM(CASE WHEN GRADE = 'A' THEN 1 ELSE 0 END) AS A_CNT,\n       SUM(CASE WHEN GRADE = 'B' THEN 1 ELSE 0 END) AS B_CNT,\n       SUM(CASE WHEN GRADE = 'C' THEN 1 ELSE 0 END) AS C_CNT\n  FROM (SELECT CASE WHEN SAL >= 200 THEN 'B'\n                    WHEN SAL >= 500 THEN 'A'\n                    ELSE 'C'\n               END AS GRADE\n          FROM EMP);",
+    "choices": [
+      "1, 3, 2",
+      "1, 3, 1",
+      "0, 4, 2",
+      "0, 4, 1"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. CASE는 위에서부터 조건을 검사해 처음으로 참이 되는 WHEN의 값을 돌려주므로, SAL이 600인 행도 첫 번째 조건 SAL >= 200에서 먼저 'B'가 됩니다. 'A'가 되는 행은 하나도 없고, SAL이 NULL인 행은 어떤 조건도 참이 아니어서 ELSE의 'C'가 됩니다.\n\n안쪽 인라인 뷰가 행마다 등급을 매기는 과정을 따라가 보겠습니다. 150은 두 조건 모두 거짓이라 'C', 300·450·250은 첫 조건이 참이라 'B'입니다. 600은 두 번째 조건(SAL >= 500)도 참이지만, CASE는 첫 번째로 참인 조건에서 멈추므로 두 번째 조건까지 가지 않고 'B'가 됩니다. NULL은 NULL >= 200의 결과가 Unknown이라 참이 아니므로 다음 조건으로 넘어가고, 결국 ELSE로 가서 'C'가 됩니다. 범위 조건으로 등급을 나눌 때는 이런 실수를 막기 위해 더 좁은 조건(SAL >= 500)을 먼저 적어야 합니다.\n\n| ENO | SAL | GRADE |\n|---|---|---|\n| 1 | 150 | C |\n| 2 | 300 | B |\n| 3 | 450 | B |\n| 4 | 600 | B |\n| 5 | 250 | B |\n| 6 | NULL | C |\n\n바깥 쿼리가 등급별로 세면 A 0개, B 4개, C 2개입니다. ①과 ②는 600이 'A'가 된다고 보아 조건 순서를 무시했고, ②와 ④는 NULL 행이 ELSE로 가지 않는다고 본 경우입니다. ELSE는 \"어떤 WHEN도 참이 아닌 모든 경우\"이므로 NULL도 포함합니다.",
+    "examPoint": "CASE는 위에서부터 처음 참인 WHEN에서 멈춘다(넓은 범위를 먼저 쓰면 좁은 범위는 영영 안 걸림). NULL은 ELSE로 간다.",
+    "tags": [
+      "CASE",
+      "NULL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-03-0006",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "DECODE와 단순 CASE의 NULL 비교",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [T] 테이블에 SQL을 실행한 결과 (A, B, C)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T",
+        "columns": [
+          "ID",
+          "CODE"
+        ],
+        "rows": [
+          [
+            1,
+            "A"
+          ],
+          [
+            2,
+            null
+          ],
+          [
+            3,
+            "B"
+          ],
+          [
+            4,
+            null
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT SUM(DECODE(CODE, NULL, 1, 0))               AS A,\n       SUM(CASE CODE WHEN NULL THEN 1 ELSE 0 END)   AS B,\n       SUM(CASE WHEN CODE IS NULL THEN 1 ELSE 0 END) AS C\n  FROM T;",
+    "sqlExec": "SELECT SUM(CASE WHEN CODE IS NULL THEN 1 ELSE 0 END) AS A, SUM(CASE CODE WHEN NULL THEN 1 ELSE 0 END) AS B, SUM(CASE WHEN CODE IS NULL THEN 1 ELSE 0 END) AS C FROM T;",
+    "choices": [
+      "2, 0, 2",
+      "2, 2, 2",
+      "0, 0, 2",
+      "0, 2, 2"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. DECODE는 NULL과 NULL을 같다고 보아 NULL인 두 행에서 1을 돌려주지만(A = 2), 단순 CASE는 CODE = NULL로 비교하므로 언제나 참이 되지 않아 모든 행이 ELSE의 0이 됩니다(B = 0). IS NULL로 검사한 C는 2입니다.\n\n단순 CASE(CASE 컬럼 WHEN 값 ...)는 내부적으로 \"컬럼 = 값\"을 비교합니다. 그런데 NULL과의 = 비교는 결과가 Unknown이므로, WHEN NULL은 CODE가 NULL인 행에서도 참이 되지 않습니다. 그래서 NULL을 찾으려면 검색 CASE(CASE WHEN CODE IS NULL ...)를 써야 합니다. 반면 Oracle의 DECODE는 예외적으로 NULL끼리를 같은 값으로 취급하도록 만들어져 있어서, DECODE(CODE, NULL, 1, 0)은 NULL인 행에서 1을 돌려줍니다. 같은 일을 하는 것처럼 보이는 DECODE와 단순 CASE가 NULL에서만 다르게 동작한다는 점이 이 문제의 핵심입니다. (실행 검증에서는 DECODE를 docs/04 §6 규칙대로 IS NULL 검사로 바꿔 실행했습니다.)\n\n| ID | CODE | DECODE | 단순 CASE | IS NULL |\n|---|---|---|---|---|\n| 1 | A | 0 | 0 | 0 |\n| 2 | NULL | 1 | 0 | 1 |\n| 3 | B | 0 | 0 | 0 |\n| 4 | NULL | 1 | 0 | 1 |\n\n②는 단순 CASE도 NULL을 찾을 수 있다고 착각한 경우입니다. ③은 DECODE도 = 비교처럼 NULL을 못 찾는다고 본 경우이고, ④는 두 함수의 동작을 서로 바꾼 경우입니다.",
+    "examPoint": "DECODE는 NULL = NULL을 같다고 본다. 단순 CASE의 WHEN NULL은 절대 참이 안 됨 → CASE WHEN 컬럼 IS NULL을 써야 한다.",
+    "tags": [
+      "DECODE",
+      "CASE",
+      "NULL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-03-0007",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "날짜 함수 ADD_MONTHS",
+    "type": "sql_fill",
+    "difficulty": 1,
+    "stem": "[EMP] 테이블의 입사일(HIREDATE)로부터 정확히 3개월 뒤의 날짜를 구하려고 한다. (ㄱ)에 들어갈 함수로 알맞은 것은? (Oracle 기준)\n\n```sql\nSELECT ENAME, (ㄱ)(HIREDATE, 3) AS PROBATION_END\n  FROM EMP;\n```",
+    "choices": [
+      "MONTHS_BETWEEN",
+      "ADD_MONTHS",
+      "NEXT_DAY",
+      "LAST_DAY"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. ADD_MONTHS(날짜, n)은 날짜에 n개월을 더한 날짜를 돌려줍니다.\n\nOracle의 날짜는 숫자처럼 더하고 뺄 수 있는데, 기본 단위는 \"일\"입니다. 그래서 HIREDATE + 3은 3일 뒤가 되고, 3개월 뒤를 구하려면 월 단위 함수인 ADD_MONTHS를 써야 합니다. 달마다 날짜 수가 다르므로 HIREDATE + 90처럼 일수로 계산하면 정확히 3개월이 되지 않습니다. 함께 알아 둘 날짜 함수로는 두 날짜 사이의 개월 수를 돌려주는 MONTHS_BETWEEN(날짜1, 날짜2), 지정한 날짜 이후 처음 오는 특정 요일을 돌려주는 NEXT_DAY(날짜, '요일'), 그 달의 마지막 날을 돌려주는 LAST_DAY(날짜)가 있습니다. 날짜끼리 빼면(날짜1 - 날짜2) 그 사이의 일수가 나온다는 점도 자주 나옵니다.\n\n①은 개월 수를 \"구하는\" 함수라서 인자도 날짜 두 개를 받습니다. ③은 다음 특정 요일, ④는 월말 날짜를 구하는 함수라서 3개월 뒤를 계산할 수 없습니다.",
+    "examPoint": "날짜 + n = n일 뒤. 월 단위는 ADD_MONTHS(날짜, n), 개월 차이는 MONTHS_BETWEEN, 월말은 LAST_DAY.",
+    "tags": [
+      "날짜 함수",
+      "ADD_MONTHS"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-03-0008",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "변환 함수와 형변환",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "Oracle의 변환 함수와 형변환에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "TO_CHAR는 숫자나 날짜를 지정한 형식의 문자열로 바꾼다.",
+      "TO_DATE는 문자열을 지정한 형식에 맞춰 날짜로 바꾼다.",
+      "TO_NUMBER는 숫자로 해석할 수 있는 문자열을 숫자로 바꾼다.",
+      "암시적 형변환은 DBMS가 알아서 처리하므로 명시적 형변환보다 안전하고 성능에도 영향이 없어 권장된다."
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. 암시적 형변환은 DBMS가 자동으로 해 주지만 예상치 못한 변환 오류가 날 수 있고, 인덱스가 걸린 컬럼 쪽이 변환되면 인덱스를 쓰지 못해 성능이 떨어질 수 있습니다. 그래서 명시적 형변환이 권장됩니다.\n\n형변환은 데이터 타입이 다른 값을 비교하거나 연산할 때 필요합니다. 명시적 형변환은 TO_CHAR, TO_DATE, TO_NUMBER, CAST처럼 사용자가 함수를 써서 직접 바꾸는 것이고, 암시적 형변환은 DBMS가 상황을 보고 자동으로 바꾸는 것입니다. 예를 들어 문자 타입 컬럼 EMP_NO에 WHERE EMP_NO = 1001처럼 숫자를 비교하면, Oracle은 컬럼 쪽을 숫자로 바꾸어 비교합니다. 이때 컬럼 값을 가공해 비교하므로 EMP_NO의 인덱스를 제대로 활용하지 못하고, 숫자로 바꿀 수 없는 값이 섞여 있으면 실행 중에 오류가 납니다. WHERE EMP_NO = '1001'처럼 타입을 맞춰 쓰는 습관이 중요합니다.\n\n①·②·③은 세 변환 함수의 역할을 바르게 설명했습니다. ④는 \"자동이니 편하고 안전하다\"는 오해를 담은 보기입니다.",
+    "examPoint": "명시적 형변환(TO_CHAR·TO_DATE·TO_NUMBER·CAST) 권장. 암시적 형변환은 오류 위험·인덱스 미사용 가능.",
+    "tags": [
+      "변환 함수",
+      "형변환"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-03-0009",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "실행 중 오류가 나는 함수 호출",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "다음 SQL 중 실행했을 때 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT SUBSTR('ORACLE', -3, 2) FROM DUAL;",
+      "SELECT TO_NUMBER('1,234') FROM DUAL;",
+      "SELECT LPAD('7', 3, '0') FROM DUAL;",
+      "SELECT NVL(NULL, 0) FROM DUAL;"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. TO_NUMBER는 형식 모델 없이 쉼표가 들어간 문자열을 숫자로 바꿀 수 없어 \"수치가 부적합합니다\" 오류가 납니다. 쉼표를 포함한 문자열은 TO_NUMBER('1,234', '9,999')처럼 형식을 함께 알려 주어야 합니다.\n\n나머지 보기는 모두 정상적으로 실행됩니다. SUBSTR의 시작 위치가 음수이면 문자열의 뒤에서부터 셉니다. 'ORACLE'에서 뒤에서 3번째 글자는 C이므로 C부터 2글자인 'CL'이 결과입니다. LPAD('7', 3, '0')은 전체 길이가 3이 되도록 왼쪽을 '0'으로 채워 '007'을 만듭니다. NVL(NULL, 0)은 첫 번째 값이 NULL이므로 두 번째 값 0을 돌려줍니다.\n\n이 문제는 문법 오류가 아니라 실행 중 데이터 때문에 나는 오류를 묻습니다. ①은 음수 위치가 낯설어 오류처럼 보이도록, ③은 숫자 7을 문자열로 다루는 모습이 어색해 보이도록 만든 보기입니다. ④도 NULL을 직접 넘기는 모양이 낯설 수 있지만, NVL에 NULL 리터럴을 넘기는 것은 아무 문제가 없습니다.",
+    "examPoint": "TO_NUMBER('1,234')는 형식 없이 쉼표가 있어 오류. SUBSTR 음수 시작 = 뒤에서부터, LPAD는 왼쪽 채움.",
+    "tags": [
+      "변환 함수",
+      "TO_NUMBER",
+      "SUBSTR"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-03-0010",
+    "subject": 2,
+    "chapter": "S1-03",
+    "topic": "NVL2와 같은 식",
+    "type": "sql_equivalent",
+    "difficulty": 3,
+    "stem": "다음 식과 **모든 행에서 같은 결과**를 돌려주는 식은?\n\n```sql\nNVL2(COMM, SAL + COMM, SAL)\n```",
+    "choices": [
+      "CASE COMM WHEN NULL THEN SAL ELSE SAL + COMM END",
+      "NVL(SAL + COMM, 0)",
+      "COALESCE(COMM, SAL + COMM, SAL)",
+      "CASE WHEN COMM IS NOT NULL THEN SAL + COMM ELSE SAL END"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. NVL2(a, b, c)는 \"a가 NULL이 아니면 b, NULL이면 c\"이므로, IS NOT NULL로 검사하는 검색 CASE로 그대로 옮길 수 있습니다.\n\n각 식을 COMM이 NULL인 행과 NULL이 아닌 행으로 나눠 계산해 보면 차이가 드러납니다. SAL = 300, COMM = 50인 행에서 원래 식은 350, SAL = 300, COMM = NULL인 행에서는 300입니다. ④는 두 경우 모두 350과 300으로 같습니다. ①은 단순 CASE라서 WHEN NULL이 \"COMM = NULL\"로 비교되는데, 이 비교는 절대 참이 되지 않습니다. 그래서 COMM이 NULL인 행도 ELSE로 가서 SAL + NULL = NULL이 됩니다. ②는 COMM이 NULL인 행에서 SAL + COMM이 NULL이므로 0이 되어 300이 아닙니다. ③은 COMM이 NULL이 아니면 COMM 값 자체(50)를 돌려주므로 350이 아닙니다.\n\n| SAL | COMM | 원래 식 | ① | ② | ③ | ④ |\n|---|---|---|---|---|---|---|\n| 300 | 50 | 350 | 350 | 350 | 50 | 350 |\n| 300 | NULL | 300 | NULL | 0 | 300 | 300 |\n\n동치 문제는 이렇게 NULL인 경우와 아닌 경우를 표로 나눠 대입해 보면 실수 없이 풀 수 있습니다.",
+    "examPoint": "NVL2(a, b, c) = CASE WHEN a IS NOT NULL THEN b ELSE c END. 단순 CASE의 WHEN NULL은 NULL을 못 잡는다.",
+    "tags": [
+      "NVL2",
+      "CASE",
+      "동치"
+    ],
+    "source": "claude"
   }
 ]

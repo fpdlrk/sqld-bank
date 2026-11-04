@@ -79,5 +79,482 @@
       "순위 함수"
     ],
     "source": "claude"
+  },
+  {
+    "id": "S2-04-0002",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "동점이 있을 때 순위 함수 값",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [SCORE] 테이블에 SQL을 실행한 결과 (R1, R2, R3)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "SCORE",
+        "columns": [
+          "NAME",
+          "PT"
+        ],
+        "rows": [
+          [
+            "A",
+            90
+          ],
+          [
+            "B",
+            85
+          ],
+          [
+            "C",
+            85
+          ],
+          [
+            "D",
+            80
+          ],
+          [
+            "E",
+            70
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT R1, R2, R3\n  FROM (SELECT NAME,\n               RANK()       OVER (ORDER BY PT DESC) AS R1,\n               DENSE_RANK() OVER (ORDER BY PT DESC) AS R2,\n               ROW_NUMBER() OVER (ORDER BY PT DESC) AS R3\n          FROM SCORE)\n WHERE NAME = 'D';",
+    "choices": [
+      "4, 3, 4",
+      "3, 3, 4",
+      "4, 4, 4",
+      "4, 3, 3"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. 85점 동점자 B와 C가 있으므로 D(80점)의 순위는 RANK가 4, DENSE_RANK가 3, ROW_NUMBER가 4입니다.\n\n세 순위 함수는 동점을 처리하는 방식만 다릅니다. RANK는 동점자에게 같은 순위를 주고, 그 인원수만큼 다음 순위를 건너뜁니다. 그래서 A 1위, B·C 공동 2위 다음은 4위가 됩니다. DENSE_RANK는 동점자에게 같은 순위를 주되 다음 순위를 건너뛰지 않아, B·C 공동 2위 다음이 3위입니다. ROW_NUMBER는 동점이어도 서로 다른 번호를 붙여 1, 2, 3, 4, 5로 이어지며, 동점자끼리의 순서는 정해지지 않습니다. D는 동점자가 아니므로 ROW_NUMBER로는 항상 4번째입니다.\n\n| NAME | PT | RANK | DENSE_RANK | ROW_NUMBER |\n|---|---|---|---|---|\n| A | 90 | 1 | 1 | 1 |\n| B | 85 | 2 | 2 | 2 또는 3 |\n| C | 85 | 2 | 2 | 3 또는 2 |\n| D | 80 | 4 | 3 | 4 |\n| E | 70 | 5 | 4 | 5 |\n\n②는 RANK도 순위를 건너뛰지 않는다고 본 경우, ③은 DENSE_RANK도 건너뛴다고 본 경우입니다. ④는 ROW_NUMBER가 동점자에게 같은 번호를 준다고 착각한 경우입니다.",
+    "examPoint": "동점 다음 순위: RANK는 건너뜀(1,2,2,4), DENSE_RANK는 연속(1,2,2,3), ROW_NUMBER는 항상 고유 번호(1,2,3,4).",
+    "tags": [
+      "윈도우 함수",
+      "RANK",
+      "DENSE_RANK",
+      "ROW_NUMBER"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S2-04-0003",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "PARTITION BY 순위와 동점",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DEPT",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            500
+          ],
+          [
+            2,
+            10,
+            500
+          ],
+          [
+            3,
+            10,
+            300
+          ],
+          [
+            4,
+            20,
+            400
+          ],
+          [
+            5,
+            20,
+            200
+          ],
+          [
+            6,
+            30,
+            300
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT ENO\n  FROM (SELECT ENO,\n               RANK() OVER (PARTITION BY DEPT ORDER BY SAL DESC) AS RK\n          FROM EMP)\n WHERE RK = 1;",
+    "choices": [
+      "2건",
+      "3건",
+      "4건",
+      "6건"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. PARTITION BY DEPT로 부서마다 순위를 따로 매기므로 각 부서의 최고 급여자가 1위가 되고, 10번 부서는 500 동점자 두 명이 모두 1위라서 1, 2, 4, 6번의 4건입니다.\n\nPARTITION BY는 윈도우 함수가 계산할 범위를 그룹으로 나눕니다. GROUP BY와 비슷해 보이지만 행을 하나로 합치지 않고, 각 행을 그대로 둔 채 그룹 안에서의 순위나 합계를 옆에 붙인다는 점이 다릅니다. 10번 부서 안에서는 500, 500, 300 순이라 RANK가 1, 1, 3이 되고, 20번 부서는 400이 1위, 30번 부서는 혼자인 300이 1위입니다. 윈도우 함수는 WHERE 절에 직접 쓸 수 없기 때문에, 이렇게 인라인 뷰에서 순위를 먼저 구한 뒤 바깥에서 RK = 1로 거릅니다.\n\n| ENO | DEPT | SAL | RK |\n|---|---|---|---|\n| 1 | 10 | 500 | 1 |\n| 2 | 10 | 500 | 1 |\n| 3 | 10 | 300 | 3 |\n| 4 | 20 | 400 | 1 |\n| 5 | 20 | 200 | 2 |\n| 6 | 30 | 300 | 1 |\n\n②는 ROW_NUMBER처럼 동점자 중 한 명만 1위가 된다고 본 경우입니다. ①은 PARTITION BY를 무시하고 전체에서 1위(500 두 명)만 센 경우입니다.",
+    "examPoint": "PARTITION BY는 그룹별로 순위를 따로 매긴다(행은 합쳐지지 않음). RANK = 1은 동점자를 모두 포함한다.",
+    "tags": [
+      "윈도우 함수",
+      "PARTITION BY",
+      "RANK"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-04-0004",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "누적 합계와 동일 값(RANGE)",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행한 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            200
+          ],
+          [
+            3,
+            200
+          ],
+          [
+            4,
+            300
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT CUM\n  FROM (SELECT ENO,\n               SUM(SAL) OVER (ORDER BY SAL) AS CUM\n          FROM EMP)\n WHERE ENO = 2;",
+    "choices": [
+      "100",
+      "300",
+      "500",
+      "800"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. OVER 안에 ORDER BY만 쓰고 범위를 지정하지 않으면 기본 범위가 RANGE UNBOUNDED PRECEDING AND CURRENT ROW가 되어, 현재 행과 정렬 값이 같은 행까지 함께 더합니다. 그래서 SAL이 200인 2번과 3번 행은 모두 100 + 200 + 200 = 500이 됩니다.\n\nSUM() OVER (ORDER BY ...)는 정렬 순서대로 누적 합계를 구하는 대표적인 방법입니다. 이때 범위의 기준이 \"행(ROWS)\"이 아니라 \"값(RANGE)\"이라는 점이 함정입니다. RANGE는 현재 행까지가 아니라 \"현재 행의 값까지\"를 범위로 잡기 때문에, 같은 값을 가진 행들은 한 덩어리로 묶여 같은 누적값을 갖습니다. 행 단위로 하나씩 더해 가려면 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW를 명시해야 하며, 그러면 2번 행은 300, 3번 행은 500이 됩니다(동점 행끼리의 순서는 보장되지 않음).\n\n| ENO | SAL | CUM (기본 RANGE) | ROWS로 지정 시 |\n|---|---|---|---|\n| 1 | 100 | 100 | 100 |\n| 2 | 200 | 500 | 300 |\n| 3 | 200 | 500 | 500 |\n| 4 | 300 | 800 | 800 |\n\n②는 ROWS 기준으로 계산한 경우이고, ④는 누적이 아니라 전체 합계로 계산한 경우입니다. ①은 현재 행 값만 본 경우입니다.",
+    "examPoint": "OVER(ORDER BY x)만 쓰면 기본은 RANGE ... CURRENT ROW → 같은 값의 행은 같은 누적값. 행 단위 누적은 ROWS를 명시.",
+    "tags": [
+      "윈도우 함수",
+      "누적 합계",
+      "RANGE",
+      "ROWS"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S2-04-0005",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "LAG와 LEAD",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행한 결과 (PREV, NXT)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            200
+          ],
+          [
+            3,
+            300
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT PREV, NXT\n  FROM (SELECT ENO,\n               LAG(SAL, 1, 0) OVER (ORDER BY ENO) AS PREV,\n               LEAD(SAL)      OVER (ORDER BY ENO) AS NXT\n          FROM EMP)\n WHERE ENO = 1;",
+    "choices": [
+      "NULL, 200",
+      "0, 200",
+      "0, NULL",
+      "100, 200"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. 1번 행은 첫 번째 행이라 이전 행이 없으므로 LAG는 세 번째 인자로 준 기본값 0을 돌려주고, LEAD는 다음 행인 2번의 SAL 200을 돌려줍니다.\n\nLAG(컬럼, n, 기본값)는 정렬 순서에서 n행 앞의 값을, LEAD(컬럼, n, 기본값)는 n행 뒤의 값을 가져옵니다. n을 생략하면 1, 기본값을 생략하면 가져올 행이 없을 때 NULL이 됩니다. 이 SQL에서 LAG는 기본값 0을 지정했으므로 첫 행의 PREV는 NULL이 아니라 0이고, LEAD는 기본값이 없지만 1번 행에는 다음 행이 있으므로 200입니다. 마지막 3번 행이었다면 NXT가 NULL이 되었을 것입니다. 이 함수들은 전월 대비 증감처럼 앞뒤 행과 비교하는 계산에 자주 쓰입니다.\n\n| ENO | SAL | PREV | NXT |\n|---|---|---|---|\n| 1 | 100 | 0 | 200 |\n| 2 | 200 | 100 | 300 |\n| 3 | 300 | 200 | NULL |\n\n①은 LAG의 세 번째 인자(기본값)를 무시한 경우입니다. ③은 LEAD도 기본값이 적용된다고 보거나 마지막 행과 헷갈린 경우이고, ④는 LAG가 자기 자신의 값을 돌려준다고 본 경우입니다.",
+    "examPoint": "LAG(컬럼, n, 기본값)=n행 앞, LEAD=n행 뒤. 가져올 행이 없으면 기본값, 기본값이 없으면 NULL.",
+    "tags": [
+      "윈도우 함수",
+      "LAG",
+      "LEAD"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S2-04-0006",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "ROWS 이동 범위 합계",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행한 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            200
+          ],
+          [
+            3,
+            300
+          ],
+          [
+            4,
+            400
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT MS\n  FROM (SELECT ENO,\n               SUM(SAL) OVER (ORDER BY ENO\n                              ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS MS\n          FROM EMP)\n WHERE ENO = 4;",
+    "choices": [
+      "400",
+      "700",
+      "900",
+      "1000"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING은 \"앞 1행 + 현재 행 + 뒤 1행\"을 범위로 잡는데, 4번 행은 마지막 행이라 뒤 행이 없으므로 300 + 400 = 700이 됩니다.\n\nWINDOWING 절은 윈도우 함수가 계산할 행의 범위를 지정합니다. UNBOUNDED PRECEDING은 파티션의 첫 행, n PRECEDING은 n행 앞, CURRENT ROW는 현재 행, n FOLLOWING은 n행 뒤, UNBOUNDED FOLLOWING은 마지막 행을 뜻합니다. 이 SQL처럼 앞뒤 한 행씩을 잡으면 3행 이동 합계(이동 평균의 바탕)가 됩니다. 범위가 파티션의 끝을 벗어나면 없는 행은 그냥 빠지고 오류가 나지 않습니다. 그래서 첫 행과 마지막 행은 두 행만 더해집니다.\n\n| ENO | SAL | 범위 | MS |\n|---|---|---|---|\n| 1 | 100 | 1~2 | 300 |\n| 2 | 200 | 1~3 | 600 |\n| 3 | 300 | 2~4 | 900 |\n| 4 | 400 | 3~4 | 700 |\n\n③은 범위를 \"앞 2행부터 현재 행까지\"로 잘못 잡아 200 + 300 + 400을 계산한 경우입니다. ④는 전체 합계로 계산한 경우이고, ①은 현재 행의 값만 본 경우입니다.",
+    "examPoint": "ROWS BETWEEN n PRECEDING AND m FOLLOWING = 앞 n행~뒤 m행. 범위를 벗어난 행은 그냥 제외된다.",
+    "tags": [
+      "윈도우 함수",
+      "WINDOWING",
+      "ROWS"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S2-04-0007",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "윈도우 함수의 분류",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "윈도우 함수와 그 분류를 짝지은 것으로 **옳지 않은** 것은?",
+    "choices": [
+      "RANK, DENSE_RANK, ROW_NUMBER - 순위 함수",
+      "SUM, AVG, MAX, MIN, COUNT - 집계 함수",
+      "FIRST_VALUE, LAST_VALUE - 행 순서 함수",
+      "LAG, LEAD - 그룹 내 비율 함수"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. LAG와 LEAD는 앞뒤 행의 값을 가져오는 행 순서 함수이며, 그룹 내 비율 함수에는 RATIO_TO_REPORT, PERCENT_RANK, CUME_DIST, NTILE이 있습니다.\n\n윈도우 함수는 하는 일에 따라 네 가지로 나눕니다. 순위 함수(RANK, DENSE_RANK, ROW_NUMBER)는 정렬 순서에 따른 순위를 매기고, 집계 함수(SUM, AVG, MAX, MIN, COUNT)는 OVER와 함께 쓰여 행을 합치지 않은 채 그룹별·누적 집계를 붙입니다. 행 순서 함수(FIRST_VALUE, LAST_VALUE, LAG, LEAD)는 범위 안에서 특정 위치의 행 값을 가져옵니다. 그룹 내 비율 함수는 전체에서 차지하는 비율이나 상대적 위치를 계산하는데, RATIO_TO_REPORT는 합계 대비 비율, PERCENT_RANK는 (순위 - 1) / (전체 행 수 - 1), CUME_DIST는 현재 값 이하인 행의 누적 비율, NTILE(n)은 n개 그룹으로 나눈 번호를 돌려줍니다.\n\n①·②·③은 분류가 바르게 짝지어졌습니다. ④는 같은 \"행 순서 함수\"에 속하는 LAG·LEAD를 비율 함수로 잘못 분류한 보기입니다.",
+    "examPoint": "순위: RANK·DENSE_RANK·ROW_NUMBER / 집계: SUM 등 / 행 순서: FIRST_VALUE·LAST_VALUE·LAG·LEAD / 비율: RATIO_TO_REPORT·PERCENT_RANK·CUME_DIST·NTILE.",
+    "tags": [
+      "윈도우 함수"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-04-0008",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "윈도우 함수를 쓸 수 있는 위치",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블(ENO, DEPT, SAL)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT ENO, SUM(SAL) OVER (PARTITION BY DEPT) AS DEPT_SUM FROM EMP;",
+      "SELECT * FROM (SELECT ENO, RANK() OVER (ORDER BY SAL DESC) AS RK FROM EMP) WHERE RK <= 3;",
+      "SELECT ENO FROM EMP WHERE RANK() OVER (ORDER BY SAL DESC) <= 3;",
+      "SELECT ENO, SAL FROM EMP ORDER BY RANK() OVER (ORDER BY SAL DESC);"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 윈도우 함수는 SELECT 절과 ORDER BY 절에서만 쓸 수 있으며, WHERE 절에 쓰면 \"윈도우 함수를 사용할 수 없습니다\" 오류가 납니다.\n\n윈도우 함수는 WHERE, GROUP BY, HAVING이 모두 끝나 결과 행이 정해진 뒤에 계산됩니다. 순위나 누적 합계는 \"어떤 행들이 남았는가\"에 따라 달라지기 때문입니다. 그래서 그보다 먼저 실행되는 WHERE에서는 윈도우 함수의 결과를 알 수 없습니다. 상위 3명처럼 윈도우 함수 결과로 행을 거르고 싶다면, ②처럼 인라인 뷰에서 순위를 먼저 계산하고 바깥 쿼리의 WHERE에서 그 별칭으로 거르는 것이 정석입니다.\n\n①은 SELECT 절에서 PARTITION BY만 쓴 집계 윈도우 함수로, 부서 합계를 각 행 옆에 붙이므로 정상입니다. ②는 인라인 뷰로 순위를 먼저 구했으므로 정상입니다. ④는 ORDER BY 절에서 윈도우 함수를 썼는데, ORDER BY는 마지막에 실행되므로 허용됩니다.",
+    "examPoint": "윈도우 함수는 SELECT·ORDER BY에서만. 결과로 거르려면 인라인 뷰에서 계산한 뒤 바깥 WHERE에서.",
+    "tags": [
+      "윈도우 함수",
+      "인라인 뷰"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-04-0009",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "RATIO_TO_REPORT",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 Oracle에서 SQL을 실행한 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            300
+          ],
+          [
+            3,
+            600
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT R\n  FROM (SELECT ENO,\n               RATIO_TO_REPORT(SAL) OVER () AS R\n          FROM EMP)\n WHERE ENO = 2;",
+    "sqlExec": "SELECT R FROM (SELECT ENO, SAL * 1.0 / SUM(SAL) OVER () AS R FROM EMP) WHERE ENO = 2;",
+    "choices": [
+      "0.1",
+      "0.5",
+      "0.3",
+      "3"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. RATIO_TO_REPORT(SAL)은 현재 행의 SAL이 전체 합계에서 차지하는 비율을 구하므로 300 ÷ (100 + 300 + 600) = 300 ÷ 1000 = 0.3입니다.\n\nRATIO_TO_REPORT는 그룹 내 비율 함수로, \"내 값 ÷ 범위 안의 합계\"를 0과 1 사이의 값으로 돌려줍니다. OVER ()처럼 괄호를 비워 두면 전체 행이 하나의 범위가 되고, OVER (PARTITION BY DEPT)처럼 쓰면 부서 안에서의 비율이 됩니다. 결과에 100을 곱하면 백분율이 되며, 모든 행의 비율을 더하면 1이 됩니다. 같은 값을 SAL / SUM(SAL) OVER ()로 직접 계산할 수도 있습니다. (실행 검증용 SQLite에는 이 함수가 없어 이 식으로 바꿔 실행했습니다.)\n\n| ENO | SAL | R |\n|---|---|---|\n| 1 | 100 | 0.1 |\n| 2 | 300 | 0.3 |\n| 3 | 600 | 0.6 |\n\n②는 최댓값(600) 대비 비율을 구한 경우이고, ①은 다른 행의 비율을 고른 경우입니다. ④는 비율을 최솟값(100) 대비 배수로 계산한 경우입니다.",
+    "examPoint": "RATIO_TO_REPORT(x) OVER (...) = x ÷ 범위 합계(0~1). 전체 비율을 합하면 1.",
+    "tags": [
+      "윈도우 함수",
+      "RATIO_TO_REPORT"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S2-04-0010",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "부서별 순위 빈칸",
+    "type": "sql_fill",
+    "difficulty": 2,
+    "stem": "부서별로 급여가 높은 순서대로 순위를 매기려고 한다. (ㄱ)에 들어갈 키워드로 알맞은 것은?\n\n```sql\nSELECT ENAME, DEPT, SAL,\n       RANK() OVER ((ㄱ) DEPT ORDER BY SAL DESC) AS RK\n  FROM EMP;\n```",
+    "choices": [
+      "GROUP BY",
+      "ORDER BY",
+      "PARTITION",
+      "PARTITION BY"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. OVER 절 안에서 순위를 계산할 그룹을 나누는 키워드는 PARTITION BY입니다.\n\nOVER 절은 세 부분으로 구성됩니다. PARTITION BY는 계산 범위를 그룹으로 나누고, ORDER BY는 그 안에서 순서를 정하며, ROWS·RANGE(WINDOWING 절)는 순서상 어디부터 어디까지를 계산에 넣을지 정합니다. 이 SQL에서 PARTITION BY DEPT는 부서마다 순위를 1부터 다시 시작하게 하고, ORDER BY SAL DESC는 급여가 높은 사원부터 순위를 매기게 합니다. PARTITION BY를 생략하면 전체 사원을 한 그룹으로 보아 회사 전체 순위가 됩니다.\n\n①의 GROUP BY는 SELECT문의 절이라 OVER 안에 쓸 수 없고, 쓰더라도 행을 합쳐 버리는 기능입니다. ②의 ORDER BY는 이미 뒤에 정렬 기준으로 쓰였고, 그룹을 나누는 기능이 없습니다. ③은 BY가 빠진 잘못된 문법입니다.",
+    "examPoint": "OVER (PARTITION BY 그룹 ORDER BY 정렬 [ROWS|RANGE 범위]). PARTITION BY를 빼면 전체가 한 그룹.",
+    "tags": [
+      "윈도우 함수",
+      "PARTITION BY"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-04-0011",
+    "subject": 2,
+    "chapter": "S2-04",
+    "topic": "LAST_VALUE의 기본 범위",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행한 결과 (F, L)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            200
+          ],
+          [
+            3,
+            300
+          ],
+          [
+            4,
+            400
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT F, L\n  FROM (SELECT ENO,\n               FIRST_VALUE(SAL) OVER (ORDER BY SAL) AS F,\n               LAST_VALUE(SAL)  OVER (ORDER BY SAL) AS L\n          FROM EMP)\n WHERE ENO = 2;",
+    "choices": [
+      "100, 200",
+      "100, 400",
+      "200, 400",
+      "100, 100"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. OVER에 ORDER BY만 있으면 기본 범위가 \"첫 행부터 현재 행까지\"(RANGE UNBOUNDED PRECEDING AND CURRENT ROW)이므로, 2번 행에서 FIRST_VALUE는 첫 행의 100, LAST_VALUE는 범위의 마지막인 현재 행의 200을 돌려줍니다.\n\nFIRST_VALUE와 LAST_VALUE는 윈도우 범위 안에서 첫 번째와 마지막 행의 값을 가져옵니다. 문제는 범위를 지정하지 않았을 때의 기본값입니다. ORDER BY를 쓰면 범위가 현재 행에서 끝나기 때문에, LAST_VALUE는 전체의 마지막 값(400)이 아니라 \"지금까지의 마지막\", 즉 현재 행의 값이 됩니다. 전체 중 가장 큰 값을 얻으려면 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING으로 범위를 끝까지 넓혀야 합니다. FIRST_VALUE는 범위의 시작이 항상 첫 행이라 이런 문제가 없습니다.\n\n| ENO | SAL | F | L (기본 범위) | L (범위를 끝까지) |\n|---|---|---|---|---|\n| 1 | 100 | 100 | 100 | 400 |\n| 2 | 200 | 100 | 200 | 400 |\n| 3 | 300 | 100 | 300 | 400 |\n| 4 | 400 | 100 | 400 | 400 |\n\n②는 LAST_VALUE가 항상 전체의 마지막 값을 돌려준다고 본 경우로, 이 함수에서 가장 흔한 착각입니다. ③은 FIRST_VALUE를 현재 행 값으로 본 경우이고, ④는 두 함수가 같은 값을 돌려준다고 본 경우입니다.",
+    "examPoint": "ORDER BY만 있는 LAST_VALUE는 현재 행 값이 된다(기본 범위가 현재 행까지). 전체 마지막은 UNBOUNDED FOLLOWING까지 지정.",
+    "tags": [
+      "윈도우 함수",
+      "FIRST_VALUE",
+      "LAST_VALUE",
+      "WINDOWING"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
   }
 ]

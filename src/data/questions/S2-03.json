@@ -1,0 +1,301 @@
+[
+  {
+    "id": "S2-03-0001",
+    "subject": 2,
+    "chapter": "S2-03",
+    "topic": "ROLLUP 결과 건수",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [SALES] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "SALES",
+        "columns": [
+          "DEPT",
+          "JOB",
+          "AMT"
+        ],
+        "rows": [
+          [
+            10,
+            "CLERK",
+            100
+          ],
+          [
+            10,
+            "CLERK",
+            200
+          ],
+          [
+            10,
+            "MGR",
+            300
+          ],
+          [
+            20,
+            "CLERK",
+            150
+          ],
+          [
+            20,
+            "ANALYST",
+            250
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT DEPT, JOB, SUM(AMT) AS TOTAL\n  FROM SALES\n GROUP BY ROLLUP(DEPT, JOB);",
+    "sqlExec": "SELECT DEPT, JOB, SUM(AMT) FROM SALES GROUP BY DEPT, JOB UNION ALL SELECT DEPT, NULL, SUM(AMT) FROM SALES GROUP BY DEPT UNION ALL SELECT NULL, NULL, SUM(AMT) FROM SALES;",
+    "choices": [
+      "4건",
+      "6건",
+      "7건",
+      "10건"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. ROLLUP(DEPT, JOB)은 (DEPT, JOB)별 집계 4행, DEPT별 소계 2행, 전체 합계 1행을 만들어 모두 7건입니다.\n\nROLLUP은 나열한 컬럼을 오른쪽부터 하나씩 빼 가며 단계별 소계를 만듭니다. ROLLUP(DEPT, JOB)은 GROUP BY DEPT, JOB(가장 자세한 집계), GROUP BY DEPT(부서별 소계), 그리고 GROUP BY ()(전체 합계)를 한 번에 실행해 합친 것과 같습니다. 그래서 컬럼이 n개면 n + 1개 수준의 집계가 나옵니다. 이 데이터의 (DEPT, JOB) 조합은 (10, CLERK), (10, MGR), (20, CLERK), (20, ANALYST)의 4개이고, 부서는 10과 20의 2개입니다. 소계 행에서는 집계에서 빠진 컬럼이 NULL로 표시됩니다. (실행 검증용 SQLite에는 ROLLUP이 없어 같은 의미의 UNION ALL로 바꿔 실행했습니다.)\n\n| DEPT | JOB | TOTAL |\n|---|---|---|\n| 10 | CLERK | 300 |\n| 10 | MGR | 300 |\n| 10 | NULL | 600 |\n| 20 | ANALYST | 250 |\n| 20 | CLERK | 150 |\n| 20 | NULL | 400 |\n| NULL | NULL | 1000 |\n\n①은 일반 GROUP BY DEPT, JOB의 결과이고, ②는 전체 합계 행을 빠뜨린 경우입니다. ④는 JOB별 소계까지 만드는 CUBE의 결과입니다.",
+    "examPoint": "ROLLUP(A, B) = GROUP BY (A,B) + (A) + () → 오른쪽부터 빼 가는 계층형 소계 + 총계.",
+    "tags": [
+      "그룹 함수",
+      "ROLLUP"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-03-0002",
+    "subject": 2,
+    "chapter": "S2-03",
+    "topic": "CUBE 결과 건수",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [SALES] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "SALES",
+        "columns": [
+          "DEPT",
+          "JOB",
+          "AMT"
+        ],
+        "rows": [
+          [
+            10,
+            "CLERK",
+            100
+          ],
+          [
+            10,
+            "CLERK",
+            200
+          ],
+          [
+            10,
+            "MGR",
+            300
+          ],
+          [
+            20,
+            "CLERK",
+            150
+          ],
+          [
+            20,
+            "ANALYST",
+            250
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT DEPT, JOB, SUM(AMT) AS TOTAL\n  FROM SALES\n GROUP BY CUBE(DEPT, JOB);",
+    "sqlExec": "SELECT DEPT, JOB, SUM(AMT) FROM SALES GROUP BY DEPT, JOB UNION ALL SELECT DEPT, NULL, SUM(AMT) FROM SALES GROUP BY DEPT UNION ALL SELECT NULL, JOB, SUM(AMT) FROM SALES GROUP BY JOB UNION ALL SELECT NULL, NULL, SUM(AMT) FROM SALES;",
+    "choices": [
+      "5건",
+      "7건",
+      "9건",
+      "10건"
+    ],
+    "answer": 4,
+    "fixedOrder": true,
+    "explanation": "정답은 ④입니다. CUBE(DEPT, JOB)은 (DEPT, JOB)별 4행, DEPT별 2행, JOB별 3행, 전체 합계 1행을 모두 만들어 10건입니다.\n\nCUBE는 나열한 컬럼으로 만들 수 있는 모든 조합의 집계를 구합니다. 컬럼이 2개면 (DEPT, JOB), (DEPT), (JOB), ()의 2² = 4가지 조합이 됩니다. ROLLUP이 \"부서 → 부서 안의 직무\"처럼 한 방향의 계층만 소계로 만든다면, CUBE는 직무별 소계까지 양방향으로 모두 만듭니다. 이 데이터에서 직무는 CLERK, MGR, ANALYST의 3가지이므로 직무별 소계가 3행 생깁니다. 모든 조합을 계산하므로 컬럼 수가 늘수록 집계 양이 크게 늘어난다는 점도 알아 두세요.\n\n| 집계 수준 | 행 수 |\n|---|---|\n| (DEPT, JOB) | 4 |\n| (DEPT) | 2 |\n| (JOB) | 3 |\n| () 전체 | 1 |\n\n②는 ROLLUP의 결과(4 + 2 + 1)입니다. ③은 전체 합계 행을 빠뜨린 경우이고, ①은 소계 행만 센 경우입니다.",
+    "examPoint": "CUBE(A, B) = (A,B) + (A) + (B) + () → 모든 조합(2ⁿ가지)의 소계와 총계.",
+    "tags": [
+      "그룹 함수",
+      "CUBE"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-03-0003",
+    "subject": 2,
+    "chapter": "S2-03",
+    "topic": "GROUPING SETS 결과 건수",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [SALES] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "SALES",
+        "columns": [
+          "DEPT",
+          "JOB",
+          "AMT"
+        ],
+        "rows": [
+          [
+            10,
+            "CLERK",
+            100
+          ],
+          [
+            10,
+            "CLERK",
+            200
+          ],
+          [
+            10,
+            "MGR",
+            300
+          ],
+          [
+            20,
+            "CLERK",
+            150
+          ],
+          [
+            20,
+            "ANALYST",
+            250
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT DEPT, JOB, SUM(AMT) AS TOTAL\n  FROM SALES\n GROUP BY GROUPING SETS(DEPT, JOB);",
+    "sqlExec": "SELECT DEPT, NULL, SUM(AMT) FROM SALES GROUP BY DEPT UNION ALL SELECT NULL, JOB, SUM(AMT) FROM SALES GROUP BY JOB;",
+    "choices": [
+      "3건",
+      "5건",
+      "6건",
+      "7건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. GROUPING SETS(DEPT, JOB)은 DEPT별 집계 2행과 JOB별 집계 3행만 만들어 5건이며, 전체 합계나 (DEPT, JOB) 조합 집계는 만들지 않습니다.\n\nGROUPING SETS는 괄호 안에 적은 집계 기준만 골라서 계산합니다. GROUPING SETS(DEPT, JOB)은 GROUP BY DEPT의 결과와 GROUP BY JOB의 결과를 UNION ALL로 합친 것과 같습니다. 그래서 각 기준을 따로따로 집계할 뿐, 두 컬럼을 함께 묶은 집계나 전체 합계는 포함되지 않습니다. 전체 합계가 필요하면 GROUPING SETS(DEPT, JOB, ())처럼 빈 괄호를 추가하고, 조합 집계가 필요하면 (DEPT, JOB)을 추가하면 됩니다. 이렇게 원하는 수준만 지정할 수 있어서 ROLLUP과 CUBE를 모두 GROUPING SETS로 표현할 수 있습니다. 또 GROUPING SETS 안에 나열한 순서는 결과 행 수에 영향을 주지 않습니다.\n\n| DEPT | JOB | TOTAL |\n|---|---|---|\n| 10 | NULL | 600 |\n| 20 | NULL | 400 |\n| NULL | CLERK | 450 |\n| NULL | MGR | 300 |\n| NULL | ANALYST | 250 |\n\n③은 전체 합계 행까지 더한 경우이고, ④는 ROLLUP의 결과와 같은 7건으로 계산한 경우입니다. ①은 부서별 집계와 전체 합계만 생각한 경우입니다.",
+    "examPoint": "GROUPING SETS(A, B) = GROUP BY A UNION ALL GROUP BY B. 총계·조합 집계는 적은 것만 나온다(총계는 ()).",
+    "tags": [
+      "그룹 함수",
+      "GROUPING SETS"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-03-0004",
+    "subject": 2,
+    "chapter": "S2-03",
+    "topic": "그룹 함수 비교",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "ROLLUP, CUBE, GROUPING SETS에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "ROLLUP(A, B)는 (A, B), (A), 전체의 세 수준으로 집계한다.",
+      "ROLLUP(A, B)와 ROLLUP(B, A)는 나열 순서와 상관없이 항상 같은 결과를 낸다.",
+      "CUBE(A, B)는 (A, B), (A), (B), 전체의 모든 조합으로 집계한다.",
+      "GROUPING SETS는 지정한 집계 기준만 골라 각각 집계한 결과를 합친다."
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. ROLLUP은 나열한 순서대로 계층을 만들기 때문에, ROLLUP(A, B)는 A별 소계를, ROLLUP(B, A)는 B별 소계를 만듭니다. 순서가 바뀌면 결과도 달라집니다.\n\n세 그룹 함수의 차이는 \"어떤 수준의 집계를 만드는가\"입니다. ROLLUP은 오른쪽 컬럼부터 하나씩 빼 가며 (A, B) → (A) → ()의 계층형 소계를 만듭니다. 그래서 ROLLUP(부서, 직무)는 부서별 소계를, ROLLUP(직무, 부서)는 직무별 소계를 만드는 식으로 순서가 의미를 가집니다. CUBE는 순서와 상관없이 모든 조합을 만들기 때문에 CUBE(A, B)와 CUBE(B, A)는 같은 집계 수준을 만듭니다. GROUPING SETS는 괄호 안에 적은 기준만 집계하며, 그 순서도 결과 집합에 영향을 주지 않습니다.\n\n①·③·④는 각 함수의 집계 수준을 바르게 설명했습니다. ②는 CUBE와 GROUPING SETS의 특징(순서 무관)을 ROLLUP에 잘못 적용한 보기입니다.",
+    "examPoint": "ROLLUP은 컬럼 순서가 중요(계층형). CUBE·GROUPING SETS는 순서가 바뀌어도 같은 집계 수준.",
+    "tags": [
+      "그룹 함수",
+      "ROLLUP",
+      "CUBE",
+      "GROUPING SETS"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-03-0005",
+    "subject": 2,
+    "chapter": "S2-03",
+    "topic": "GROUPING 함수로 소계 표시",
+    "type": "sql_fill",
+    "difficulty": 2,
+    "stem": "ROLLUP으로 만든 부서별 소계 행의 JOB 칸에 'NULL' 대신 '소계'라고 표시하려고 한다. (ㄱ)에 들어갈 조건으로 가장 알맞은 것은? (JOB 컬럼에는 원래 NULL 값도 저장되어 있다.)\n\n```sql\nSELECT DEPT,\n       CASE WHEN (ㄱ) THEN '소계' ELSE JOB END AS JOB,\n       SUM(AMT) AS TOTAL\n  FROM SALES\n GROUP BY ROLLUP(DEPT, JOB);\n```",
+    "choices": [
+      "GROUPING(JOB) = 0",
+      "JOB IS NULL",
+      "ROLLUP(JOB) = 1",
+      "GROUPING(JOB) = 1"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. GROUPING(JOB)은 그 행이 JOB을 묶지 않고 합쳐서 만든 소계·합계 행일 때 1, 실제 JOB 값으로 묶은 행일 때 0을 돌려줍니다. 따라서 GROUPING(JOB) = 1인 행이 소계 행입니다.\n\nROLLUP이나 CUBE로 만든 소계 행에서는 집계에서 빠진 컬럼이 NULL로 표시됩니다. 그런데 원래 데이터에도 JOB이 NULL인 행이 있으면, 화면에 보이는 NULL이 \"직무가 없는 사원들의 집계\"인지 \"부서 전체의 소계\"인지 구분할 수 없습니다. GROUPING 함수는 이 둘을 구별해 주는 함수로, ROLLUP·CUBE·GROUPING SETS와 함께 쓰며 집계로 생긴 NULL에서만 1을 돌려줍니다. 그래서 CASE WHEN GROUPING(JOB) = 1 THEN '소계' 처럼 소계 행에 이름을 붙이는 데 주로 사용합니다.\n\n①은 조건이 반대라서 실제 데이터 행에 '소계'를 붙이게 됩니다. ②는 소계 행과 원래 JOB이 NULL인 행을 구분하지 못해, 직무가 없는 사원들의 집계 행에도 '소계'가 붙습니다. ③의 ROLLUP은 GROUP BY 절에서 쓰는 기능이지 값을 돌려주는 함수가 아니므로 오류가 납니다.",
+    "examPoint": "GROUPING(컬럼) = 1이면 그 컬럼이 집계로 합쳐진 소계·총계 행. 원래 NULL과 소계의 NULL을 구별할 때 사용.",
+    "tags": [
+      "그룹 함수",
+      "GROUPING",
+      "ROLLUP"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-03-0006",
+    "subject": 2,
+    "chapter": "S2-03",
+    "topic": "ROLLUP과 GROUPING SETS의 동치",
+    "type": "sql_equivalent",
+    "difficulty": 3,
+    "stem": "다음 GROUP BY 절과 **같은 결과**를 만드는 것은?\n\n```sql\nGROUP BY ROLLUP(DEPT, JOB)\n```",
+    "choices": [
+      "GROUP BY GROUPING SETS((DEPT, JOB), (DEPT), ())",
+      "GROUP BY GROUPING SETS((DEPT, JOB), (JOB), ())",
+      "GROUP BY GROUPING SETS(DEPT, JOB)",
+      "GROUP BY CUBE(DEPT, JOB)"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. ROLLUP(DEPT, JOB)은 (DEPT, JOB), (DEPT), 전체 합계 ()의 세 수준을 집계하므로, 이 세 기준을 그대로 나열한 GROUPING SETS와 같습니다.\n\nGROUPING SETS는 원하는 집계 수준을 직접 나열하는 방식이라, ROLLUP과 CUBE를 모두 풀어서 표현할 수 있습니다. ROLLUP은 오른쪽 컬럼부터 하나씩 빼 가므로 (DEPT, JOB) → (DEPT) → ()가 되고, CUBE는 모든 조합이므로 (DEPT, JOB), (DEPT), (JOB), ()가 됩니다. 이렇게 풀어 보면 ROLLUP이 CUBE의 일부 수준만 뽑은 것이라는 점도 보입니다. 시험에서는 이처럼 \"같은 집계를 다른 그룹 함수로 쓴 것\"을 찾는 문제가 자주 나오므로, 각 함수를 GROUPING SETS 형태로 바꿔 보는 습관이 도움이 됩니다.\n\n②는 (DEPT) 대신 (JOB)을 넣어 ROLLUP(JOB, DEPT)와 같은 결과가 됩니다. ③은 괄호 안의 DEPT와 JOB이 각각 별개의 집계 기준이 되어 (DEPT)와 (JOB)만 집계하므로, 조합 집계와 전체 합계가 없습니다. ④는 (JOB) 수준까지 포함하는 CUBE라서 행이 더 많습니다.",
+    "examPoint": "ROLLUP(A,B) = GROUPING SETS((A,B),(A),()), CUBE(A,B) = GROUPING SETS((A,B),(A),(B),()).",
+    "tags": [
+      "그룹 함수",
+      "ROLLUP",
+      "GROUPING SETS",
+      "동치"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-03-0007",
+    "subject": 2,
+    "chapter": "S2-03",
+    "topic": "집계 수준의 개수",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "세 컬럼 A, B, C에 대해 그룹 함수를 사용할 때 만들어지는 **집계 수준(그룹 기준 조합)의 개수**로 옳은 것은? (전체 합계도 하나의 수준으로 센다.)",
+    "choices": [
+      "ROLLUP(A, B, C): 3개 / CUBE(A, B, C): 6개",
+      "ROLLUP(A, B, C): 4개 / CUBE(A, B, C): 8개",
+      "ROLLUP(A, B, C): 4개 / CUBE(A, B, C): 7개",
+      "ROLLUP(A, B, C): 8개 / CUBE(A, B, C): 4개"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. ROLLUP은 컬럼이 n개일 때 n + 1개 수준을, CUBE는 2ⁿ개 수준을 만듭니다. 컬럼이 3개이므로 ROLLUP은 4개, CUBE는 8개입니다.\n\nROLLUP(A, B, C)는 오른쪽부터 하나씩 빼 가며 (A, B, C), (A, B), (A), ()의 4개 수준을 만듭니다. CUBE(A, B, C)는 세 컬럼 각각을 \"포함한다 / 포함하지 않는다\"의 두 경우로 고른 모든 조합을 만들므로 2 × 2 × 2 = 8개 수준입니다. 나열하면 (A, B, C), (A, B), (A, C), (B, C), (A), (B), (C), ()입니다. 결과 행 수는 각 수준에서 실제로 나오는 그룹의 수를 더한 값이므로 데이터에 따라 달라지지만, 집계 수준의 개수는 이렇게 컬럼 수만으로 정해집니다.\n\n①은 두 함수 모두 전체 합계 수준을 빠뜨린 경우입니다. ③은 CUBE에서 전체 합계 ()를 빠뜨린 경우이고, ④는 두 함수의 값을 서로 바꿔 놓은 보기입니다.",
+    "examPoint": "컬럼 n개: ROLLUP = n+1개 수준(계층), CUBE = 2ⁿ개 수준(모든 조합). 둘 다 전체 합계 포함.",
+    "tags": [
+      "그룹 함수",
+      "ROLLUP",
+      "CUBE"
+    ],
+    "source": "claude"
+  }
+]

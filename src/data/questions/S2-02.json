@@ -1,0 +1,407 @@
+[
+  {
+    "id": "S2-02-0001",
+    "subject": 2,
+    "chapter": "S2-02",
+    "topic": "UNION의 중복 제거",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [T1], [T2] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "T1",
+        "columns": [
+          "V"
+        ],
+        "rows": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ]
+      },
+      {
+        "name": "T2",
+        "columns": [
+          "V"
+        ],
+        "rows": [
+          [
+            3
+          ],
+          [
+            4
+          ],
+          [
+            4
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT V FROM T1\nUNION\nSELECT V FROM T2;",
+    "choices": [
+      "4건",
+      "5건",
+      "6건",
+      "7건"
+    ],
+    "answer": 1,
+    "fixedOrder": true,
+    "explanation": "정답은 ①입니다. UNION은 두 결과를 합친 뒤 중복을 모두 제거하므로, 1, 2, 3, 4의 4건이 남습니다.\n\nUNION은 위아래 SELECT 결과를 하나로 합치는 합집합 연산자입니다. 합집합이므로 같은 값은 한 번만 나타나는데, 이때 제거되는 중복은 두 테이블 사이의 중복(양쪽에 있는 3)뿐 아니라 한 테이블 안의 중복(T1의 2 두 개, T2의 4 두 개)도 포함됩니다. 그래서 합쳐진 7개 값 1, 2, 2, 3, 3, 4, 4에서 중복을 지우면 1, 2, 3, 4만 남습니다. 중복을 제거하려면 정렬이나 해시 같은 추가 작업이 필요하므로, 중복이 없다는 것이 확실하거나 중복을 그대로 원할 때는 UNION ALL이 더 효율적입니다.\n\n| V |\n|---|\n| 1 |\n| 2 |\n| 3 |\n| 4 |\n\n②는 두 테이블에 공통인 3만 하나로 합치고 테이블 안의 중복은 남긴다고 본 경우입니다. ④는 중복을 하나도 제거하지 않는 UNION ALL의 결과입니다.",
+    "examPoint": "UNION = 합집합 + 중복 제거(테이블 안의 중복까지). UNION ALL은 중복 그대로.",
+    "tags": [
+      "집합 연산자",
+      "UNION"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-02-0002",
+    "subject": 2,
+    "chapter": "S2-02",
+    "topic": "UNION ALL의 결과 건수",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [T1], [T2] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "T1",
+        "columns": [
+          "V"
+        ],
+        "rows": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ]
+      },
+      {
+        "name": "T2",
+        "columns": [
+          "V"
+        ],
+        "rows": [
+          [
+            3
+          ],
+          [
+            4
+          ],
+          [
+            4
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT V FROM T1\nUNION ALL\nSELECT V FROM T2;",
+    "choices": [
+      "4건",
+      "5건",
+      "6건",
+      "7건"
+    ],
+    "answer": 4,
+    "fixedOrder": true,
+    "explanation": "정답은 ④입니다. UNION ALL은 중복을 제거하지 않고 두 결과를 그대로 이어 붙이므로 4 + 3 = 7건입니다.\n\nUNION ALL은 정렬이나 중복 검사 없이 위 SELECT의 결과 아래에 아래 SELECT의 결과를 붙입니다. 그래서 결과 행 수는 항상 두 결과의 행 수를 더한 값이 되고, 중복 제거 작업이 없어 UNION보다 빠릅니다. 같은 값(2, 3, 4)이 여러 번 나와도 모두 그대로 남습니다. 예를 들어 월별 매출 테이블을 이어 붙여 연간 데이터를 만들 때처럼, 행이 겹치더라도 모두 의미가 있는 경우에 사용합니다.\n\n| V |\n|---|\n| 1 |\n| 2 |\n| 2 |\n| 3 |\n| 3 |\n| 4 |\n| 4 |\n\n①은 UNION처럼 중복을 모두 제거한 결과이고, ②와 ③은 두 테이블 사이의 중복이나 테이블 안의 중복 중 일부만 제거된다고 본 경우입니다. UNION ALL에서는 어떤 중복도 제거되지 않습니다.",
+    "examPoint": "UNION ALL 건수 = 두 결과 건수의 합. 중복 제거·정렬이 없어 UNION보다 빠르다.",
+    "tags": [
+      "집합 연산자",
+      "UNION ALL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-02-0003",
+    "subject": 2,
+    "chapter": "S2-02",
+    "topic": "MINUS의 차집합",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [CLASS_A], [CLASS_B] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "CLASS_A",
+        "columns": [
+          "NAME"
+        ],
+        "rows": [
+          [
+            "KIM"
+          ],
+          [
+            "LEE"
+          ],
+          [
+            "LEE"
+          ],
+          [
+            "PARK"
+          ],
+          [
+            "CHOI"
+          ]
+        ]
+      },
+      {
+        "name": "CLASS_B",
+        "columns": [
+          "NAME"
+        ],
+        "rows": [
+          [
+            "LEE"
+          ],
+          [
+            "CHOI"
+          ],
+          [
+            "JUNG"
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT NAME FROM CLASS_A\nMINUS\nSELECT NAME FROM CLASS_B;",
+    "sqlExec": "SELECT NAME FROM CLASS_A EXCEPT SELECT NAME FROM CLASS_B;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "4건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. MINUS는 첫 번째 결과에서 두 번째 결과에 있는 값을 뺀 차집합을 중복 없이 돌려주므로, CLASS_A에만 있는 KIM과 PARK 2건이 남습니다.\n\nMINUS(표준 SQL과 SQL Server에서는 EXCEPT)는 \"위쪽 결과에는 있지만 아래쪽 결과에는 없는 행\"을 구합니다. CLASS_A의 이름은 KIM, LEE, LEE, PARK, CHOI이고, 이 중 LEE와 CHOI는 CLASS_B에도 있으므로 빠집니다. LEE는 CLASS_A에 두 번 있지만 CLASS_B에 한 번만 있어도 두 행 모두 제거됩니다. 집합 연산자인 MINUS는 결과에서 중복도 제거하기 때문입니다. 또 MINUS는 순서가 중요해서, CLASS_B MINUS CLASS_A라고 쓰면 JUNG 1건이 나옵니다.\n\n| NAME |\n|---|\n| KIM |\n| PARK |\n\n③은 LEE가 두 번 있으니 하나는 남는다고 본 경우입니다. ①은 아래쪽 테이블을 기준으로 차집합을 구한 경우(JUNG)이고, ④는 MINUS가 적용되지 않은 것처럼 CLASS_A의 서로 다른 이름 4개(KIM, LEE, PARK, CHOI)를 센 경우입니다.",
+    "examPoint": "A MINUS B = A에만 있는 값(중복 제거). 순서가 바뀌면 결과도 바뀐다. 표준 SQL에서는 EXCEPT.",
+    "tags": [
+      "집합 연산자",
+      "MINUS"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-02-0004",
+    "subject": 2,
+    "chapter": "S2-02",
+    "topic": "INTERSECT와 NULL",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [T1], [T2] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "T1",
+        "columns": [
+          "A",
+          "B"
+        ],
+        "rows": [
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            "X"
+          ],
+          [
+            3,
+            "Y"
+          ]
+        ]
+      },
+      {
+        "name": "T2",
+        "columns": [
+          "A",
+          "B"
+        ],
+        "rows": [
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            "Y"
+          ],
+          [
+            3,
+            "Y"
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT A, B FROM T1\nINTERSECT\nSELECT A, B FROM T2;",
+    "choices": [
+      "0건",
+      "1건",
+      "2건",
+      "3건"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "explanation": "정답은 ③입니다. INTERSECT는 양쪽 결과에 모두 있는 행을 돌려주는데, 집합 연산자는 NULL끼리를 같은 값으로 보므로 (1, NULL)과 (3, Y) 2건이 교집합이 됩니다.\n\nINTERSECT는 모든 컬럼의 값이 같은 행끼리를 공통 행으로 봅니다. (2, X)와 (2, Y)는 A는 같지만 B가 달라 공통 행이 아닙니다. 눈여겨볼 행은 (1, NULL)입니다. WHERE 절에서는 NULL = NULL이 참이 아니어서 조인이나 비교로는 이 행을 짝지을 수 없지만, UNION·INTERSECT·MINUS 같은 집합 연산자와 DISTINCT, GROUP BY는 중복을 판단할 때 NULL끼리를 같다고 봅니다. 그래서 (1, NULL)은 교집합에 포함됩니다.\n\n| A | B |\n|---|---|\n| 1 | NULL |\n| 3 | Y |\n\n②는 NULL끼리는 같지 않다고 보아 (1, NULL)을 뺀 경우로, 같은 결과를 조인으로 구하려 할 때 생기는 차이입니다. ④는 A 컬럼만 비교해 세 행이 모두 공통이라고 본 경우입니다.",
+    "examPoint": "집합 연산자(UNION·INTERSECT·MINUS)는 NULL끼리를 같은 값으로 본다. 모든 컬럼이 같아야 같은 행.",
+    "tags": [
+      "집합 연산자",
+      "INTERSECT",
+      "NULL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  },
+  {
+    "id": "S2-02-0005",
+    "subject": 2,
+    "chapter": "S2-02",
+    "topic": "집합 연산자 작성 규칙",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[T1](A, B)과 [T2](C, D)의 컬럼은 모두 숫자 타입이다. 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT A FROM T1 UNION SELECT C FROM T2 ORDER BY 1;",
+      "SELECT A, B FROM T1 UNION SELECT C FROM T2;",
+      "SELECT A AS X FROM T1 UNION SELECT C FROM T2 ORDER BY X;",
+      "SELECT A FROM T1 UNION ALL SELECT C FROM T2;"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. 집합 연산자로 연결하는 SELECT문들은 컬럼 개수가 같아야 하는데, 위쪽은 2개(A, B), 아래쪽은 1개(C)라서 \"질의 블록은 부정확한 수의 결과 열을 가지고 있습니다\" 오류가 납니다.\n\n집합 연산자에는 몇 가지 작성 규칙이 있습니다. 첫째, 각 SELECT의 컬럼 개수가 같아야 하고, 같은 위치의 컬럼끼리 데이터 타입이 호환되어야 합니다. 둘째, 결과의 컬럼 이름은 첫 번째 SELECT의 컬럼 이름(또는 별칭)을 따릅니다. 셋째, ORDER BY는 전체 결과를 정렬하는 것이므로 맨 마지막에 한 번만 쓸 수 있으며, 위치 번호나 첫 번째 SELECT의 컬럼명·별칭으로 지정합니다.\n\n①은 마지막에 위치 번호로 정렬했으므로 정상입니다. ③은 첫 번째 SELECT의 별칭 X로 정렬했으므로 정상입니다. ④는 컬럼 개수와 타입이 맞는 UNION ALL이라 정상입니다.",
+    "examPoint": "집합 연산자: 컬럼 개수·타입 일치 필수, 결과 컬럼명은 첫 번째 SELECT 기준, ORDER BY는 맨 끝에 한 번.",
+    "tags": [
+      "집합 연산자",
+      "UNION"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-02-0006",
+    "subject": 2,
+    "chapter": "S2-02",
+    "topic": "집합 연산자의 특징",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "집합 연산자에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "UNION은 합집합을 구하며 중복을 제거한다.",
+      "INTERSECT는 양쪽 결과에 모두 있는 행을 중복 없이 돌려준다.",
+      "결과에 표시되는 컬럼 이름은 마지막 SELECT문의 컬럼 이름을 따른다.",
+      "MINUS는 첫 번째 결과에서 두 번째 결과에 있는 행을 뺀 차집합을 돌려준다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 집합 연산 결과의 컬럼 이름은 첫 번째 SELECT문의 컬럼 이름이나 별칭을 따릅니다.\n\n집합 연산자는 여러 SELECT의 결과를 위아래로 합치기 때문에, 결과의 머리글(컬럼 이름)을 하나로 정해야 합니다. 이때 기준은 맨 처음에 나온 SELECT입니다. 그래서 별칭을 붙이고 싶다면 첫 번째 SELECT에 붙이고, ORDER BY에서도 그 이름을 씁니다. 연산자별로 정리하면 UNION은 합집합(중복 제거), UNION ALL은 합집합(중복 유지), INTERSECT는 교집합(중복 제거), MINUS(EXCEPT)는 차집합(중복 제거)입니다. UNION ALL을 제외한 나머지는 모두 결과에서 중복을 제거한다는 점도 기억해 두세요.\n\n①·②·④는 각 연산자의 동작을 바르게 설명했습니다. ③은 기준을 첫 번째가 아닌 마지막 SELECT로 바꿔 놓은 보기입니다.",
+    "examPoint": "결과 컬럼 이름 = 첫 번째 SELECT 기준. UNION ALL만 중복 유지, 나머지(UNION·INTERSECT·MINUS)는 중복 제거.",
+    "tags": [
+      "집합 연산자"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-02-0007",
+    "subject": 2,
+    "chapter": "S2-02",
+    "topic": "집합 연산자 연속 사용 순서",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 세 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "T1",
+        "columns": [
+          "V"
+        ],
+        "rows": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ]
+      },
+      {
+        "name": "T2",
+        "columns": [
+          "V"
+        ],
+        "rows": [
+          [
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      },
+      {
+        "name": "T3",
+        "columns": [
+          "V"
+        ],
+        "rows": [
+          [
+            1
+          ],
+          [
+            4
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT V FROM T1\nUNION\nSELECT V FROM T2\nMINUS\nSELECT V FROM T3;",
+    "sqlExec": "SELECT V FROM T1 UNION SELECT V FROM T2 EXCEPT SELECT V FROM T3;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "4건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. Oracle의 집합 연산자는 우선순위가 같아 위에서부터 차례로 처리되므로, (T1 UNION T2) = {1, 2, 3, 4}를 먼저 구한 뒤 T3의 {1, 4}를 빼서 {2, 3}의 2건이 됩니다.\n\n산술 연산에서 곱셈이 덧셈보다 먼저인 것과 달리, Oracle에서 UNION, UNION ALL, INTERSECT, MINUS는 같은 우선순위를 가지며 적힌 순서대로 왼쪽(위)부터 계산됩니다. 그래서 이 SQL은 \"두 반의 합집합에서 T3에 있는 값을 뺀다\"는 의미가 됩니다. 만약 T2 MINUS T3을 먼저 계산하고 싶다면 SELECT V FROM T1 UNION (SELECT V FROM T2 MINUS SELECT V FROM T3)처럼 괄호로 묶어야 하며, 이때 결과는 T1 ∪ {3} = {1, 2, 3}의 3건이 됩니다.\n\n| V |\n|---|\n| 2 |\n| 3 |\n\n③은 MINUS를 먼저 계산해 T1 UNION (T2 MINUS T3)으로 본 경우입니다. ④는 MINUS가 적용되지 않은 합집합의 결과이고, ①은 3까지 T3에 있다고 보아 잘못 뺀 경우입니다.",
+    "examPoint": "Oracle 집합 연산자는 우선순위가 같아 위에서부터 순서대로 계산. 다른 순서를 원하면 괄호로 묶는다.",
+    "tags": [
+      "집합 연산자",
+      "UNION",
+      "MINUS"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    }
+  }
+]

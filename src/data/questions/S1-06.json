@@ -1,0 +1,194 @@
+[
+  {
+    "id": "S1-06-0001",
+    "subject": 2,
+    "chapter": "S1-06",
+    "topic": "내림차순 정렬과 NULL 위치",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [EMP] 테이블에 Oracle에서 SQL을 실행했을 때 **첫 번째 행**의 ENAME으로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENAME",
+          "COMM"
+        ],
+        "rows": [
+          [
+            "KAI",
+            300
+          ],
+          [
+            "LUNA",
+            null
+          ],
+          [
+            "MIO",
+            500
+          ],
+          [
+            "NOA",
+            0
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT ENAME\n  FROM EMP\n ORDER BY COMM DESC;",
+    "sqlExec": "SELECT ENAME FROM EMP ORDER BY COMM DESC NULLS FIRST;",
+    "choices": [
+      "LUNA",
+      "MIO",
+      "NOA",
+      "KAI"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. Oracle은 정렬할 때 NULL을 가장 큰 값으로 취급하므로, 내림차순(DESC)에서는 NULL인 LUNA가 맨 앞에 옵니다.\n\nORDER BY에서 NULL의 위치는 DBMS마다 다릅니다. Oracle은 NULL을 어떤 값보다도 크다고 보아, 오름차순(ASC)에서는 맨 뒤에, 내림차순(DESC)에서는 맨 앞에 둡니다. 반대로 SQL Server는 NULL을 가장 작은 값으로 취급합니다. 원하는 위치가 따로 있다면 ORDER BY COMM DESC NULLS LAST처럼 NULLS FIRST / NULLS LAST를 명시하면 됩니다. 0은 NULL이 아니라 실제 값이므로 가장 작은 값으로 맨 뒤에 갑니다.\n\n| 순서 | ENAME | COMM |\n|---|---|---|\n| 1 | LUNA | NULL |\n| 2 | MIO | 500 |\n| 3 | KAI | 300 |\n| 4 | NOA | 0 |\n\n②는 NULL이 정렬에서 맨 뒤로 간다고 보아 실제 최댓값 500을 첫 행으로 고른 경우입니다. ③은 NULL을 0과 같다고 보거나 오름차순으로 착각한 경우이고, ④는 입력 순서대로 나온다고 본 경우입니다.",
+    "examPoint": "Oracle은 NULL을 가장 큰 값으로 정렬: ASC면 맨 뒤, DESC면 맨 앞. 위치를 바꾸려면 NULLS FIRST/LAST.",
+    "tags": [
+      "ORDER BY",
+      "NULL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-06-0002",
+    "subject": 2,
+    "chapter": "S1-06",
+    "topic": "여러 기준 정렬과 위치 번호",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행했을 때 결과의 **세 번째 행**의 ENAME으로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENAME",
+          "DEPT",
+          "SAL"
+        ],
+        "rows": [
+          [
+            "A1",
+            10,
+            300
+          ],
+          [
+            "B2",
+            20,
+            200
+          ],
+          [
+            "C3",
+            10,
+            100
+          ],
+          [
+            "D4",
+            20,
+            400
+          ],
+          [
+            "E5",
+            30,
+            250
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT ENAME, DEPT, SAL\n  FROM EMP\n ORDER BY 2 DESC, 3;",
+    "sqlExec": "SELECT ENAME FROM EMP ORDER BY DEPT DESC, SAL LIMIT 1 OFFSET 2;",
+    "choices": [
+      "B2",
+      "D4",
+      "C3",
+      "E5"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. ORDER BY 2 DESC, 3은 SELECT 목록의 두 번째 컬럼(DEPT)으로 내림차순 정렬하고, DEPT가 같으면 세 번째 컬럼(SAL)으로 오름차순 정렬하라는 뜻입니다. 그 결과 E5, B2, D4, C3, A1 순서가 되어 세 번째 행은 D4입니다.\n\nORDER BY에는 컬럼 이름 대신 SELECT 목록에서의 위치 번호를 쓸 수 있습니다. 여기서 2와 3은 값이 아니라 \"두 번째, 세 번째 컬럼\"을 뜻합니다. 또 정렬 방향(ASC/DESC)은 기준마다 따로 정해지므로, 2 DESC의 DESC는 DEPT에만 적용되고 3은 기본값인 오름차순입니다. 정렬은 먼저 DEPT 내림차순으로 30, 20, 10 순서로 묶고, 같은 부서 안에서 SAL이 작은 순으로 나열합니다. 20번 부서는 B2(200), D4(400), 10번 부서는 C3(100), A1(300) 순이 됩니다.\n\n| 순서 | ENAME | DEPT | SAL |\n|---|---|---|---|\n| 1 | E5 | 30 | 250 |\n| 2 | B2 | 20 | 200 |\n| 3 | D4 | 20 | 400 |\n| 4 | C3 | 10 | 100 |\n| 5 | A1 | 10 | 300 |\n\n①은 DESC가 SAL에도 적용된다고 본 경우로, 그러면 20번 부서가 D4, B2 순이 되어 세 번째 행이 B2가 됩니다. ③은 2와 3을 컬럼 위치가 아니라 정렬에 영향이 없는 상수로 보아 입력 순서(A1, B2, C3) 그대로 세 번째 행을 고른 경우입니다. ④는 첫 번째 행을 고른 경우로, 문제에서 묻는 위치를 확인하지 않은 실수입니다.",
+    "examPoint": "ORDER BY 숫자 = SELECT 목록의 위치. ASC/DESC는 기준마다 따로 적용(생략하면 ASC).",
+    "tags": [
+      "ORDER BY",
+      "정렬"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S1-06-0003",
+    "subject": 2,
+    "chapter": "S1-06",
+    "topic": "ORDER BY의 특징과 실행 순서",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "ORDER BY 절과 SELECT문의 실행 순서에 대한 설명으로 **옳지 않은** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT문은 FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY 순서로 실행된다.",
+      "ORDER BY는 가장 마지막에 실행되므로 SELECT 절에서 정의한 별칭을 사용할 수 있다.",
+      "ORDER BY에는 SELECT 목록에 없는 컬럼을 사용할 수 없다.",
+      "정렬 방향을 지정하지 않으면 오름차순(ASC)으로 정렬된다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 일반적인 SELECT문에서는 SELECT 목록에 없는 컬럼으로도 정렬할 수 있습니다. 예를 들어 SELECT ENAME FROM EMP ORDER BY SAL은 정상 실행됩니다.\n\nORDER BY는 SELECT문에서 가장 마지막에 실행되므로, SELECT 절의 별칭은 물론 위치 번호도 쓸 수 있습니다. 또 Oracle은 정렬할 때 FROM 절 테이블의 원래 컬럼에도 접근할 수 있어서, 화면에 보여 주지 않는 컬럼으로 정렬하는 것도 가능합니다. 다만 예외가 있습니다. SELECT DISTINCT를 쓰거나 GROUP BY로 그룹을 만든 경우에는, 결과 행이 원래 행과 일대일로 대응하지 않으므로 SELECT 목록이나 그룹 기준·집계 함수에 있는 것으로만 정렬할 수 있습니다.\n\n①은 실행 순서를, ②는 그 결과로 ORDER BY에서 별칭을 쓸 수 있다는 점을, ④는 기본 정렬 방향을 바르게 설명했습니다. ③은 DISTINCT나 GROUP BY가 있을 때의 제약을 일반적인 경우로 넓혀 버린 보기입니다.",
+    "examPoint": "ORDER BY는 마지막 실행: 별칭·위치 번호 사용 가능, SELECT에 없는 컬럼도 가능(단, DISTINCT·GROUP BY가 있으면 제한).",
+    "tags": [
+      "ORDER BY",
+      "실행 순서"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-06-0004",
+    "subject": 2,
+    "chapter": "S1-06",
+    "topic": "GROUP BY 뒤의 ORDER BY",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블(ENAME, DEPT, SAL)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT DEPT, SUM(SAL) FROM EMP GROUP BY DEPT ORDER BY SUM(SAL) DESC;",
+      "SELECT ENAME FROM EMP ORDER BY SAL;",
+      "SELECT DEPT, SUM(SAL) FROM EMP GROUP BY DEPT ORDER BY SAL;",
+      "SELECT DEPT, SUM(SAL) AS TOT FROM EMP GROUP BY DEPT ORDER BY TOT;"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. GROUP BY로 부서별 한 행이 만들어진 뒤에는 개별 행의 SAL 값이 남아 있지 않으므로, ORDER BY SAL은 \"GROUP BY 표현식이 아닙니다\" 오류가 납니다.\n\nGROUP BY를 실행하면 같은 부서의 여러 행이 하나로 합쳐집니다. 이후 단계인 HAVING, SELECT, ORDER BY는 이 합쳐진 행만 볼 수 있고, 합쳐진 행이 가진 값은 그룹 기준(DEPT)과 집계 결과뿐입니다. 그래서 ORDER BY에도 DEPT나 SUM(SAL), MAX(SAL) 같은 집계 함수, 또는 그 별칭만 쓸 수 있습니다. ORDER BY SAL은 \"부서 안의 어느 직원의 SAL로 정렬하라는 것인가\"가 정해지지 않으므로 오류입니다.\n\n①은 집계 함수로 정렬했으므로 정상입니다. ②는 GROUP BY가 없는 일반 SELECT라서 SELECT 목록에 없는 SAL로도 정렬할 수 있습니다. ④는 SELECT에서 붙인 집계 결과의 별칭으로 정렬했으므로 정상입니다.",
+    "examPoint": "GROUP BY 쿼리의 ORDER BY에는 그룹 기준 컬럼, 집계 함수, 그 별칭만 쓸 수 있다.",
+    "tags": [
+      "ORDER BY",
+      "GROUP BY"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-06-0005",
+    "subject": 2,
+    "chapter": "S1-06",
+    "topic": "NULLS LAST",
+    "type": "sql_fill",
+    "difficulty": 1,
+    "stem": "수당(COMM)이 많은 순서로 정렬하되, 수당이 NULL인 사원은 맨 뒤에 나오게 하려고 한다. (ㄱ)에 들어갈 내용으로 알맞은 것은? (Oracle 기준)\n\n```sql\nSELECT ENAME, COMM\n  FROM EMP\n ORDER BY COMM DESC (ㄱ);\n```",
+    "choices": [
+      "NULLS FIRST",
+      "NULLS LAST",
+      "NULL LAST",
+      "IS NULL LAST"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. NULLS LAST를 붙이면 정렬 방향과 상관없이 NULL이 맨 뒤로 갑니다.\n\nOracle은 NULL을 가장 큰 값으로 보기 때문에 COMM DESC만 쓰면 NULL인 사원이 맨 앞에 나옵니다. 이번 요구는 \"많은 순서, 단 NULL은 맨 뒤\"이므로 기본 동작을 바꿔야 하고, 이때 쓰는 것이 NULLS FIRST / NULLS LAST 옵션입니다. 이 옵션은 정렬 기준마다 ASC나 DESC 뒤에 붙이며, ORDER BY COMM DESC NULLS LAST, ENAME처럼 여러 기준과 함께 쓸 수도 있습니다. NVL(COMM, -1)처럼 NULL을 작은 값으로 바꿔 정렬하는 방법도 있지만, 실제 값과 겹칠 위험이 있어 NULLS LAST가 더 명확합니다.\n\n①의 NULLS FIRST는 NULL을 맨 앞으로 보내므로 요구와 반대입니다. ③과 ④는 키워드 철자가 틀린 잘못된 문법입니다. 정확한 키워드는 복수형 NULLS입니다.",
+    "examPoint": "ORDER BY 컬럼 [ASC|DESC] NULLS FIRST|LAST로 NULL 위치 지정. 키워드는 복수형 NULLS.",
+    "tags": [
+      "ORDER BY",
+      "NULL",
+      "NULLS LAST"
+    ],
+    "source": "claude"
+  }
+]

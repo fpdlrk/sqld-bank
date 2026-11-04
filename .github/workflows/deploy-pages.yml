@@ -1,0 +1,53 @@
+# GitHub Pages 배포 (T9-2)
+#
+# 사용 전 준비 (한 번만):
+#   1) 저장소를 공개(Public)로 바꾸거나, GitHub Pro 등 비공개 저장소 Pages를 지원하는 요금제여야 한다.
+#   2) 저장소 Settings → Pages → Build and deployment → Source를 "GitHub Actions"로 바꾼다.
+#
+# 실행: Actions 탭 → "Deploy to GitHub Pages" → Run workflow
+# push할 때마다 자동 배포하려면 아래 on: 에 push 블록의 주석을 푼다.
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포가 겹치면 진행 중인 것을 끝까지 두고 다음 것만 기다리게 한다
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      # 저장소 이름이 하위 경로가 된다: https://아이디.github.io/저장소이름/
+      - run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

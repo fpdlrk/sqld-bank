@@ -111,6 +111,24 @@
   gap: var(--space-2);
 }
 
+/* 백업 권장 배너 (T7-4) */
+.backupBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-warning-soft);
+  border: var(--border-width) solid var(--color-warning);
+  border-radius: var(--radius-md);
+}
+
+.bannerText {
+  flex: 1 1 18rem;
+  margin: 0;
+}
+
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: minmax(0, 1fr);

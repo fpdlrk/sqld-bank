@@ -239,6 +239,19 @@ export interface Note {
   masteredAt?: IsoDateTime
   /** 마지막으로 바뀐 시각 (메모·북마크 포함) */
   updatedAt: IsoDateTime
+  /** "문제 오류 의심" 신고 (T7-5). 신고를 취소하면 없앤다 */
+  report?: QuestionReport
+}
+
+/** 오류 신고 종류 (T7-5) */
+export type ReportKind = 'answer' | 'explanation' | 'typo' | 'sql' | 'other'
+
+/** 문제 오류 의심 신고 — 나중에 문제를 고칠 때 참고하는 메모 */
+export interface QuestionReport {
+  kind: ReportKind
+  /** 사유 (비워도 됨) */
+  detail: string
+  at: IsoDateTime
 }
 
 /** 설정·시험일·스키마 버전 등 key-value (IndexedDB meta) */

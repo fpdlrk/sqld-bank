@@ -23,5 +23,172 @@
       "DROP"
     ],
     "source": "claude"
+  },
+  {
+    "id": "S3-03-0002",
+    "subject": 2,
+    "chapter": "S3-03",
+    "topic": "제약조건의 종류",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "제약조건에 대한 설명으로 **옳지 않은** 것은? (Oracle 기준)",
+    "choices": [
+      "PRIMARY KEY는 NOT NULL과 UNIQUE의 성질을 함께 가지며, 테이블당 하나만 정의할 수 있다.",
+      "UNIQUE 제약조건이 걸린 컬럼에는 NULL 값을 넣을 수 없다.",
+      "CHECK 제약조건은 컬럼에 들어갈 수 있는 값의 범위나 조건을 지정한다.",
+      "FOREIGN KEY는 다른 테이블의 기본키(또는 UNIQUE 키) 값만 참조하도록 제한한다."
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. UNIQUE 제약조건은 값의 중복만 막을 뿐 NULL은 허용합니다. NULL은 \"값이 없음\"이라 다른 값과 같다고 비교되지 않으므로, 여러 행에 NULL이 들어가도 중복으로 보지 않습니다.\n\n제약조건은 테이블에 잘못된 데이터가 들어오지 않도록 막는 규칙입니다. PRIMARY KEY는 행을 식별하는 기본키로, 값이 반드시 있어야 하고(NOT NULL) 겹치면 안 되며(UNIQUE), 테이블에 하나만 정의할 수 있습니다(여러 컬럼을 묶은 복합 기본키도 하나로 칩니다). UNIQUE는 중복만 금지하고 NULL은 허용하며, 테이블에 여러 개 둘 수 있습니다. NOT NULL은 빈 값을 금지하고, CHECK는 \"SAL > 0\" 같은 조건을 만족하는 값만 받습니다. FOREIGN KEY는 참조 대상 테이블에 실제로 있는 값(또는 NULL)만 허용해 참조 무결성을 지킵니다.\n\n①·③·④는 각 제약조건을 바르게 설명했습니다. ②는 UNIQUE를 기본키와 같은 성질로 착각하게 만든 보기입니다. 기본키와 UNIQUE의 차이는 바로 NULL 허용 여부입니다.",
+    "examPoint": "PK = NOT NULL + UNIQUE(테이블당 1개), UNIQUE = 중복 금지·NULL 허용(여러 개 가능), CHECK = 값 조건, FK = 참조 무결성.",
+    "tags": [
+      "DDL",
+      "제약조건"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-03-0003",
+    "subject": 2,
+    "chapter": "S3-03",
+    "topic": "ALTER TABLE 문법",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블(ENO, ENAME, PHONE)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "ALTER TABLE EMP ADD (EMAIL VARCHAR2(50));",
+      "ALTER TABLE EMP MODIFY (ENAME VARCHAR2(100));",
+      "ALTER TABLE EMP RENAME COLUMN ENAME TO EMP_NAME;",
+      "ALTER TABLE EMP DROP PHONE;"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. Oracle에서 컬럼을 삭제할 때는 ALTER TABLE EMP DROP COLUMN PHONE;처럼 COLUMN 키워드를 써야 합니다. 괄호를 쓰는 형식이라면 DROP (PHONE)도 가능하지만, 키워드 없이 컬럼 이름만 쓰면 오류가 납니다.\n\nALTER TABLE은 이미 만든 테이블의 구조를 바꾸는 DDL로, 무엇을 바꾸느냐에 따라 문법이 다릅니다. 컬럼 추가는 ADD (컬럼 타입), 컬럼의 타입이나 크기 변경은 MODIFY (컬럼 타입), 컬럼 이름 변경은 RENAME COLUMN 기존 TO 새이름, 컬럼 삭제는 DROP COLUMN 컬럼명입니다. 제약조건을 추가·삭제할 때도 ADD CONSTRAINT, DROP CONSTRAINT를 씁니다. 다른 DBMS(SQL Server 등)는 이 문법이 조금씩 달라서, 시험에서는 Oracle 기준 문법을 정확히 구분하는 문제가 자주 나옵니다.\n\n①은 컬럼 추가, ②는 컬럼 크기 변경, ③은 컬럼 이름 변경으로 모두 올바른 Oracle 문법입니다.",
+    "examPoint": "Oracle ALTER TABLE: ADD (컬럼 타입) / MODIFY (컬럼 타입) / RENAME COLUMN a TO b / DROP COLUMN 컬럼.",
+    "tags": [
+      "DDL",
+      "ALTER TABLE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-03-0004",
+    "subject": 2,
+    "chapter": "S3-03",
+    "topic": "ON DELETE CASCADE",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "다음과 같이 [DEPT]와 [EMP] 테이블을 만들고 데이터를 넣었다. 이어서 DELETE를 실행한 뒤 EMP의 행 수로 알맞은 것은? (Oracle 기준)\n\n```sql\nCREATE TABLE DEPT (DNO NUMBER PRIMARY KEY);\nCREATE TABLE EMP (\n  ENO NUMBER PRIMARY KEY,\n  DNO NUMBER REFERENCES DEPT(DNO) ON DELETE CASCADE\n);\n-- DEPT: 10, 20\n-- EMP : (1, 10), (2, 10), (3, 20), (4, NULL)\nDELETE FROM DEPT WHERE DNO = 10;\nSELECT COUNT(*) FROM EMP;\n```",
+    "choices": [
+      "2",
+      "4",
+      "0",
+      "오류가 발생해 삭제되지 않는다"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. ON DELETE CASCADE는 부모 행이 삭제될 때 그 행을 참조하는 자식 행도 함께 삭제합니다. 10번 부서를 지우면 10번 부서 사원 1, 2번이 함께 지워져 3, 4번의 2행이 남습니다.\n\n외래키는 부모 행을 지울 때 자식 행을 어떻게 처리할지 옵션으로 정할 수 있습니다. 아무 옵션도 주지 않으면(기본값) 자식 행이 남아 있는 부모 행은 지울 수 없어 \"무결성 제약조건이 위배되었습니다 - 자식 레코드가 발견되었습니다\" 오류가 납니다. ON DELETE CASCADE를 주면 자식 행을 함께 삭제하고, ON DELETE SET NULL을 주면 자식 행은 남기되 외래키 값을 NULL로 바꿉니다. DNO가 NULL인 4번 사원은 어느 부서도 참조하지 않으므로 부서 삭제의 영향을 받지 않습니다. (실행 검증용 SQLite는 외래키 동작을 기본으로 끄고 있어, 이 문제는 Oracle 규칙으로 정답을 확인했습니다.)\n\n| ENO | DNO | 처리 |\n|---|---|---|\n| 1 | 10 | 함께 삭제 |\n| 2 | 10 | 함께 삭제 |\n| 3 | 20 | 남음 |\n| 4 | NULL | 남음 |\n\n②는 자식 행이 그대로 남는다고 본 경우(SET NULL과 혼동)이고, ④는 옵션이 없는 기본 동작으로 착각한 경우입니다. ③은 CASCADE가 자식 테이블 전체를 지운다고 본 경우입니다.",
+    "examPoint": "FK 삭제 옵션: 기본(없음)=자식 있으면 부모 삭제 오류, CASCADE=자식도 삭제, SET NULL=자식 FK를 NULL로.",
+    "tags": [
+      "DDL",
+      "외래키",
+      "ON DELETE CASCADE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-03-0005",
+    "subject": 2,
+    "chapter": "S3-03",
+    "topic": "ON DELETE SET NULL",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "다음과 같이 테이블을 만들고 데이터를 넣은 뒤 DELETE를 실행했다. 마지막 SELECT의 결과 (A, B)로 알맞은 것은? (Oracle 기준)\n\n```sql\nCREATE TABLE DEPT (DNO NUMBER PRIMARY KEY);\nCREATE TABLE EMP (\n  ENO NUMBER PRIMARY KEY,\n  DNO NUMBER REFERENCES DEPT(DNO) ON DELETE SET NULL\n);\n-- DEPT: 10, 20\n-- EMP : (1, 10), (2, 10), (3, 20), (4, NULL)\nDELETE FROM DEPT WHERE DNO = 10;\nSELECT COUNT(*) AS A, COUNT(DNO) AS B FROM EMP;\n```",
+    "choices": [
+      "4, 1",
+      "2, 1",
+      "4, 3",
+      "4, 4"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. ON DELETE SET NULL은 부모 행이 삭제되면 그 행을 참조하던 자식 행의 외래키를 NULL로 바꿉니다. 사원 4명은 모두 남고(A = 4), DNO가 값으로 남은 사원은 20번 부서의 3번 한 명뿐입니다(B = 1).\n\nSET NULL 옵션은 \"부서가 없어져도 사원 정보는 남기고, 소속만 비워 둔다\"는 업무 규칙에 맞습니다. 10번 부서를 지우면 1, 2번 사원의 DNO가 NULL로 바뀌고, 원래 NULL이던 4번까지 합쳐 DNO가 NULL인 사원은 3명이 됩니다. COUNT(*)는 행을 세므로 4, COUNT(DNO)는 NULL이 아닌 값만 세므로 1입니다. 이 옵션을 쓰려면 외래키 컬럼이 NULL을 허용해야 하며, NOT NULL로 정의된 컬럼에는 SET NULL을 적용할 수 없습니다.\n\n| ENO | 삭제 전 DNO | 삭제 후 DNO |\n|---|---|---|\n| 1 | 10 | NULL |\n| 2 | 10 | NULL |\n| 3 | 20 | 20 |\n| 4 | NULL | NULL |\n\n②는 CASCADE처럼 자식 행이 삭제된다고 본 경우입니다. ③은 DNO가 바뀌지 않는다고 보고 원래 NULL인 4번만 뺀 경우이고, ④는 COUNT(DNO)도 NULL을 센다고 본 경우입니다.",
+    "examPoint": "ON DELETE SET NULL: 부모 삭제 시 자식 행은 남고 FK만 NULL. FK 컬럼이 NULL 허용이어야 한다.",
+    "tags": [
+      "DDL",
+      "외래키",
+      "ON DELETE SET NULL"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-03-0006",
+    "subject": 2,
+    "chapter": "S3-03",
+    "topic": "CREATE TABLE 규칙과 CTAS",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "테이블 생성에 대한 설명으로 **옳지 않은** 것은? (Oracle 기준)",
+    "choices": [
+      "테이블 이름은 문자로 시작해야 하며, 같은 사용자 안에서 다른 객체와 이름이 겹칠 수 없다.",
+      "컬럼에 DEFAULT 값을 지정하면, INSERT에서 그 컬럼을 생략했을 때 DEFAULT 값이 들어간다.",
+      "CREATE TABLE ... AS SELECT로 만든 테이블에는 원본 테이블의 기본키·외래키 제약조건이 모두 그대로 복사된다.",
+      "CREATE TABLE ... AS SELECT ... WHERE 1 = 2처럼 쓰면 데이터 없이 구조만 복사할 수 있다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. CTAS(CREATE TABLE ... AS SELECT)로 테이블을 만들면 컬럼 구조와 데이터는 복사되지만, 제약조건은 NOT NULL만 복사되고 기본키, UNIQUE, CHECK, 외래키는 복사되지 않습니다.\n\nCTAS는 SELECT 결과를 그대로 새 테이블로 만드는 편리한 방법으로, 백업 테이블이나 작업용 테이블을 만들 때 자주 씁니다. 하지만 결과 데이터를 담는 것이 목적이라 원본의 제약조건까지 옮기지는 않습니다. 그래서 CTAS로 만든 테이블에 기본키가 필요하면 ALTER TABLE ... ADD CONSTRAINT로 따로 추가해야 합니다. WHERE 1 = 2처럼 항상 거짓인 조건을 주면 행은 하나도 복사되지 않고 컬럼 구조만 만들어집니다. 테이블 이름은 문자로 시작하고, 예약어를 쓸 수 없으며, 같은 사용자(스키마) 안에서 중복될 수 없습니다.\n\n①은 테이블 이름 규칙, ②는 DEFAULT의 역할, ④는 구조만 복사하는 방법을 바르게 설명했습니다. ③은 CTAS의 복사 범위를 지나치게 넓게 본 보기입니다.",
+    "examPoint": "CTAS는 구조+데이터를 복사하지만 제약조건은 NOT NULL만 복사된다. WHERE 1 = 2로 구조만 복사.",
+    "tags": [
+      "DDL",
+      "CREATE TABLE",
+      "CTAS"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-03-0007",
+    "subject": 2,
+    "chapter": "S3-03",
+    "topic": "컬럼 이름 바꾸기",
+    "type": "sql_fill",
+    "difficulty": 1,
+    "stem": "[EMP] 테이블의 ENAME 컬럼 이름을 EMP_NAME으로 바꾸려고 한다. (ㄱ)에 들어갈 내용으로 알맞은 것은? (Oracle 기준)\n\n```sql\nALTER TABLE EMP (ㄱ) ENAME TO EMP_NAME;\n```",
+    "choices": [
+      "MODIFY",
+      "RENAME",
+      "RENAME COLUMN",
+      "CHANGE COLUMN"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. Oracle에서 컬럼 이름은 ALTER TABLE 테이블 RENAME COLUMN 기존이름 TO 새이름; 으로 바꿉니다.\n\nRENAME이라는 단어는 두 곳에서 쓰여 헷갈리기 쉽습니다. 테이블 이름을 바꿀 때는 RENAME EMP TO EMPLOYEE;처럼 RENAME을 단독 명령으로 쓰거나 ALTER TABLE EMP RENAME TO EMPLOYEE;로 쓰고, 컬럼 이름을 바꿀 때는 ALTER TABLE 안에서 RENAME COLUMN을 씁니다. 컬럼 이름을 바꿔도 데이터와 제약조건은 그대로 유지되지만, 그 컬럼을 쓰던 뷰나 SQL은 새 이름으로 고쳐야 합니다.\n\n①의 MODIFY는 컬럼의 타입·크기·DEFAULT 등을 바꾸는 키워드라 이름 변경에는 쓸 수 없습니다. ②처럼 COLUMN 없이 RENAME만 쓰면 테이블 이름 변경 문법으로 해석되어 오류가 납니다. ④의 CHANGE COLUMN은 MySQL의 문법입니다.",
+    "examPoint": "컬럼 이름 변경: ALTER TABLE t RENAME COLUMN a TO b. 테이블 이름 변경: RENAME t1 TO t2. 타입 변경: MODIFY.",
+    "tags": [
+      "DDL",
+      "ALTER TABLE",
+      "RENAME"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-03-0008",
+    "subject": 2,
+    "chapter": "S3-03",
+    "topic": "DELETE와 TRUNCATE의 ROLLBACK",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "[T1], [T2] 테이블에 각각 3행이 COMMIT되어 있다. Oracle에서 다음 SQL을 차례로 실행했을 때 마지막 SELECT의 결과 (A, B)로 알맞은 것은?\n\n```sql\nDELETE FROM T1;\nTRUNCATE TABLE T2;\nROLLBACK;\nSELECT (SELECT COUNT(*) FROM T1) AS A,\n       (SELECT COUNT(*) FROM T2) AS B\n  FROM DUAL;\n```",
+    "choices": [
+      "3, 0",
+      "0, 0",
+      "3, 3",
+      "0, 3"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. TRUNCATE는 DDL이라 실행 전에 자동으로 COMMIT하므로, 앞에서 실행한 DELETE FROM T1까지 확정됩니다. 따라서 마지막 ROLLBACK으로 되돌릴 변경이 남아 있지 않아 두 테이블 모두 0행입니다.\n\n이 문제에는 함정이 두 겹으로 있습니다. 첫째, TRUNCATE 자체는 DDL이라 ROLLBACK할 수 없으므로 T2는 0행입니다. 둘째, \"DELETE는 DML이니 ROLLBACK하면 되돌아온다\"고 생각하기 쉽지만, 그 사이에 실행된 TRUNCATE가 자동 COMMIT을 일으켜 DELETE도 확정해 버립니다. 그래서 T1도 0행입니다. 만약 순서가 DELETE → ROLLBACK → TRUNCATE였다면 T1은 3행으로 돌아왔을 것입니다. 이처럼 Oracle에서 DDL은 그 자체뿐 아니라 앞서 진행 중이던 트랜잭션까지 확정한다는 점을 늘 염두에 두어야 합니다.\n\n| 단계 | T1 | T2 |\n|---|---|---|\n| DELETE FROM T1 | 0 (미확정) | 3 |\n| TRUNCATE (자동 COMMIT) | 0 (확정) | 0 (확정) |\n| ROLLBACK | 0 | 0 |\n\n①은 DELETE만 ROLLBACK된다고 본 경우로 가장 흔한 오답입니다. ③은 TRUNCATE도 ROLLBACK된다고 본 경우이고, ④는 두 명령의 성질을 서로 바꿔 생각한 경우입니다.",
+    "examPoint": "TRUNCATE(DDL)는 실행 전 자동 COMMIT → 앞의 DELETE까지 확정된다. TRUNCATE 자체도 ROLLBACK 불가.",
+    "tags": [
+      "DDL",
+      "TRUNCATE",
+      "DELETE",
+      "자동 COMMIT"
+    ],
+    "source": "claude"
   }
 ]

@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { Layout } from './Layout'
 import {
@@ -13,6 +14,16 @@ import {
   SettingsPage,
   WrongNotePage,
 } from '../pages'
+
+// 문제 추가·수정 폼은 스키마 검증(zod)이 커서 따로 떼어 필요할 때만 불러온다 (T7-2)
+const QuestionEditorPage = lazy(() =>
+  import('../pages/Bank/QuestionEditorPage').then((m) => ({ default: m.QuestionEditorPage })),
+)
+const editor = (
+  <Suspense fallback={<p role="status">불러오는 중…</p>}>
+    <QuestionEditorPage />
+  </Suspense>
+)
 
 /**
  * 화면 경로 목록 (docs/01 §7).
@@ -30,6 +41,8 @@ export function AppRoutes() {
         <Route path="result/:sessionId" element={<ResultPage />} />
         <Route path="wrong" element={<WrongNotePage />} />
         <Route path="bank" element={<BankPage />} />
+        <Route path="bank/new" element={editor} />
+        <Route path="bank/edit/:id" element={editor} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="more" element={<MorePage />} />
         {/* 임시 컴포넌트 견본 (T1-4) — 메뉴에는 없음 */}

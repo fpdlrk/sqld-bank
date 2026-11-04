@@ -203,3 +203,24 @@ export function validateQuestionFiles(files: Record<string, unknown>): QuestionP
   }
   return problems
 }
+
+// ───────────────────────────── 문제 하나 검사 (직접 추가 폼, T7-2) ─────────────────────────────
+
+/** 폼에서 보여 줄 문제점 (어느 칸인지 + 내용) */
+export interface FieldProblem {
+  /** 예: "choices", "tables.0.rows.2" (문제 전체에 대한 것이면 "") */
+  path: string
+  message: string
+}
+
+export type QuestionValidation = { ok: true; question: Question } | { ok: false; problems: FieldProblem[] }
+
+/** 문제 하나를 스키마로 검사한다 (docs/04 §5). 직접 추가 문제의 createdAt·updatedAt은 빼고 넣는다. */
+export function validateQuestion(raw: unknown): QuestionValidation {
+  const result = questionSchema.safeParse(raw)
+  if (result.success) return { ok: true, question: result.data as Question }
+  return {
+    ok: false,
+    problems: result.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
+  }
+}

@@ -1,0 +1,549 @@
+[
+  {
+    "id": "S3-01-0001",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "INSERT·UPDATE·DELETE 연속 실행",
+    "type": "scenario",
+    "difficulty": 1,
+    "stem": "[T_ITEM] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_ITEM",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ]
+        ]
+      }
+    ],
+    "sql": "INSERT INTO T_ITEM VALUES (3, 30);\nUPDATE T_ITEM SET QTY = QTY * 2 WHERE ID >= 2;\nDELETE FROM T_ITEM WHERE QTY > 50;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ITEM;",
+    "choices": [
+      "2, 50",
+      "3, 110",
+      "2, 30",
+      "3, 60"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. INSERT로 3번 행(30)이 추가되고, UPDATE가 ID 2·3의 QTY를 두 배(40, 60)로 바꾼 뒤, DELETE가 50을 넘는 60인 행을 지우므로 남은 행은 (1, 10), (2, 40)입니다.\n\nDML은 앞의 문장이 바꾼 데이터를 다음 문장이 그대로 이어받습니다. 단계별로 테이블 상태를 적어 가면 실수가 없습니다. 처음 상태는 (1, 10), (2, 20)이고, INSERT 후에는 (3, 30)이 더해집니다. UPDATE의 WHERE ID >= 2는 방금 넣은 3번 행까지 포함하므로 20은 40, 30은 60이 됩니다. 마지막 DELETE는 이 바뀐 값을 기준으로 QTY > 50을 검사하므로 60인 3번 행만 지웁니다.\n\n| 단계 | 테이블 상태 (ID, QTY) |\n|---|---|\n| 처음 | (1, 10), (2, 20) |\n| INSERT 후 | (1, 10), (2, 20), (3, 30) |\n| UPDATE 후 | (1, 10), (2, 40), (3, 60) |\n| DELETE 후 | (1, 10), (2, 40) |\n\n②는 DELETE를 실행하지 않은 상태의 결과입니다. ③은 UPDATE가 적용되지 않은 값(10, 20)으로 계산한 경우이고, ④는 DELETE가 원래 값(30)을 기준으로 판단해 아무것도 지우지 않고 UPDATE도 일부만 적용된 것처럼 계산한 경우입니다.",
+    "examPoint": "DML은 앞 문장의 결과를 이어받는다. 단계별로 테이블 상태를 적어 가며 계산한다.",
+    "tags": [
+      "DML",
+      "INSERT",
+      "UPDATE",
+      "DELETE"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S3-01-0002",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "UPDATE와 NULL 산술",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (A, B)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "BONUS"
+        ],
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            null
+          ],
+          [
+            3,
+            200
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE EMP SET BONUS = BONUS + 100;\nSELECT SUM(BONUS) AS A, COUNT(BONUS) AS B FROM EMP;",
+    "choices": [
+      "600, 3",
+      "500, 2",
+      "500, 3",
+      "400, 2"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. UPDATE는 세 행 모두에 적용되지만, BONUS가 NULL인 2번 행은 NULL + 100 = NULL이 되어 여전히 NULL입니다. 그래서 합계는 200 + 300 = 500, NULL이 아닌 값은 2개입니다.\n\nWHERE 없는 UPDATE는 테이블의 모든 행을 바꿉니다. 하지만 SET 절의 식도 일반 산술 규칙을 따르므로, NULL이 포함된 계산 결과는 NULL입니다. \"모든 사원의 보너스를 100씩 올린다\"는 의도였다면 NULL인 사원은 그대로 남게 되어 의도와 달라집니다. NULL인 사원도 100을 받게 하려면 SET BONUS = NVL(BONUS, 0) + 100처럼 써야 합니다. 이렇게 하면 결과는 600, 3이 됩니다.\n\n| ENO | UPDATE 전 | UPDATE 후 |\n|---|---|---|\n| 1 | 100 | 200 |\n| 2 | NULL | NULL |\n| 3 | 200 | 300 |\n\n①은 NULL을 0으로 보고 100을 더한 경우(NVL을 쓴 결과)입니다. ③은 합계는 맞게 구했지만 COUNT(BONUS)가 NULL도 센다고 본 경우이고, ④는 UPDATE가 적용되지 않았다고 본 경우의 일부 계산입니다.",
+    "examPoint": "UPDATE의 SET 식도 NULL 산술 규칙을 따른다: NULL + 100 = NULL. 0으로 보려면 NVL(컬럼, 0) + 100.",
+    "tags": [
+      "DML",
+      "UPDATE",
+      "NULL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S3-01-0003",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "INSERT 문의 컬럼과 값 개수",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "다음과 같이 만든 [T] 테이블에 대해, 오류가 발생하는 INSERT 문은? (Oracle 기준, 테이블에는 A = 1인 행이 하나 있다.)\n\n```sql\nCREATE TABLE T (A NUMBER NOT NULL, B NUMBER, C VARCHAR2(10));\n```",
+    "choices": [
+      "INSERT INTO T VALUES (1, NULL, 'X');",
+      "INSERT INTO T (A, C) VALUES (2, 'Y');",
+      "INSERT INTO T (A, B) VALUES (3);",
+      "INSERT INTO T SELECT A, B, C FROM T WHERE A = 1;"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 컬럼 목록에는 A, B 두 개를 적었는데 VALUES에는 값이 하나뿐이라 \"값의 수가 충분하지 않습니다\" 오류가 납니다.\n\nINSERT 문에서 컬럼 목록과 값 목록은 개수와 순서가 정확히 맞아야 합니다. 컬럼 목록을 생략하면 테이블의 모든 컬럼에 정의 순서대로 값을 넣는다는 뜻이므로, 값도 모든 컬럼 수만큼 적어야 합니다. 컬럼 목록을 적으면 적은 컬럼에만 값을 넣고, 적지 않은 컬럼은 DEFAULT 값이 있으면 그 값, 없으면 NULL이 됩니다. 단, NOT NULL 제약이 있는 컬럼을 빼면 NULL을 넣을 수 없어 오류가 납니다.\n\n①은 컬럼 목록 없이 세 컬럼 모두에 값을 넣었고, B에 NULL을 명시한 것도 허용됩니다. ②는 NOT NULL인 A를 포함하고 B는 생략했으므로 B가 NULL로 저장됩니다. ④는 VALUES 대신 SELECT 결과를 넣는 INSERT ... SELECT로, 컬럼 수(3개)가 맞으므로 정상입니다. 이 테이블에는 기본키나 UNIQUE 제약이 없어 같은 값이 다시 들어가도 오류가 아닙니다.",
+    "examPoint": "INSERT의 컬럼 목록과 값 개수는 일치해야 한다. 생략한 컬럼은 DEFAULT 또는 NULL(NOT NULL 컬럼은 생략 불가).",
+    "tags": [
+      "DML",
+      "INSERT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0004",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "MERGE의 갱신과 삽입",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_STOCK]과 [S_IN] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은? (Oracle 기준)",
+    "tables": [
+      {
+        "name": "T_STOCK",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      },
+      {
+        "name": "S_IN",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            2,
+            25
+          ],
+          [
+            4,
+            40
+          ]
+        ]
+      }
+    ],
+    "sql": "MERGE INTO T_STOCK T\nUSING S_IN S\n   ON (T.ID = S.ID)\n WHEN MATCHED THEN\n      UPDATE SET T.QTY = S.QTY\n WHEN NOT MATCHED THEN\n      INSERT (ID, QTY) VALUES (S.ID, S.QTY);\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_STOCK;",
+    "sqlExec": "CREATE UNIQUE INDEX UX_STOCK ON T_STOCK(ID);\nINSERT INTO T_STOCK (ID, QTY) SELECT ID, QTY FROM S_IN WHERE true ON CONFLICT(ID) DO UPDATE SET QTY = excluded.QTY;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_STOCK;",
+    "choices": [
+      "4, 105",
+      "4, 100",
+      "3, 65",
+      "5, 125"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. S_IN의 ID 2는 T_STOCK에 있으므로 QTY가 25로 바뀌고(MATCHED), ID 4는 없으므로 새 행으로 들어갑니다(NOT MATCHED). 결과는 10, 25, 30, 40의 4행이고 합계는 105입니다.\n\nMERGE는 원본(USING) 테이블의 행마다 대상(INTO) 테이블에 ON 조건으로 짝이 있는지 확인해, 있으면 UPDATE, 없으면 INSERT를 한 번에 처리하는 DML입니다. \"있으면 고치고 없으면 넣는\" 작업을 UPDATE와 INSERT 두 문장으로 나눠 쓰지 않아도 됩니다. 원본에 없는 대상 행(ID 1, 3)은 MERGE의 영향을 받지 않고 그대로 남습니다. Oracle MERGE에서는 ON 절에 쓴 컬럼을 UPDATE SET 절에서 바꿀 수 없다는 제약도 함께 알아 두세요. (실행 검증용 SQLite에는 MERGE가 없어 같은 동작의 INSERT ... ON CONFLICT DO UPDATE로 바꿔 실행했습니다.)\n\n| ID | QTY | 처리 |\n|---|---|---|\n| 1 | 10 | 변화 없음 |\n| 2 | 25 | 갱신 (20 → 25) |\n| 3 | 30 | 변화 없음 |\n| 4 | 40 | 삽입 |\n\n②는 ID 2를 갱신하지 않고 20으로 둔 경우입니다. ③은 원본에 없는 대상 행이 지워지고 원본 행만 남는다고 본 경우이고, ④는 ID 2도 새 행으로 추가된다고 본 경우입니다.",
+    "examPoint": "MERGE: ON 조건으로 짝이 있으면 WHEN MATCHED(UPDATE), 없으면 WHEN NOT MATCHED(INSERT). 원본에 없는 대상 행은 그대로.",
+    "tags": [
+      "DML",
+      "MERGE"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S3-01-0005",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "MERGE UPDATE의 WHERE 조건",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "[T_STOCK]과 [S_IN] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은? (Oracle 기준)",
+    "tables": [
+      {
+        "name": "T_STOCK",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      },
+      {
+        "name": "S_IN",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            5
+          ],
+          [
+            3,
+            50
+          ],
+          [
+            5,
+            15
+          ]
+        ]
+      }
+    ],
+    "sql": "MERGE INTO T_STOCK T\nUSING S_IN S\n   ON (T.ID = S.ID)\n WHEN MATCHED THEN\n      UPDATE SET T.QTY = S.QTY\n       WHERE S.QTY > T.QTY\n WHEN NOT MATCHED THEN\n      INSERT (ID, QTY) VALUES (S.ID, S.QTY);\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_STOCK;",
+    "sqlExec": "CREATE UNIQUE INDEX UX_STOCK ON T_STOCK(ID);\nINSERT INTO T_STOCK (ID, QTY) SELECT ID, QTY FROM S_IN WHERE true ON CONFLICT(ID) DO UPDATE SET QTY = excluded.QTY WHERE excluded.QTY > T_STOCK.QTY;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_STOCK;",
+    "choices": [
+      "4, 90",
+      "4, 95",
+      "3, 80",
+      "5, 135"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. ID 1은 짝이 있지만 S.QTY(5) > T.QTY(10)가 거짓이라 갱신되지 않고, ID 3은 50 > 30이라 50으로 갱신되며, ID 5는 짝이 없어 삽입됩니다. 결과는 10, 20, 50, 15로 4행, 합계 95입니다.\n\nOracle MERGE의 WHEN MATCHED THEN UPDATE 뒤에는 WHERE 절을 붙여, 짝이 있는 행 중에서도 조건을 만족하는 행만 갱신하게 할 수 있습니다. 이 예처럼 \"새 값이 더 클 때만 바꾼다\" 같은 규칙을 MERGE 한 문장으로 표현할 수 있습니다. 조건을 만족하지 않는 짝은 갱신되지 않을 뿐 삭제되거나 새로 삽입되지 않습니다. 짝이 없는 원본 행은 UPDATE의 WHERE와 무관하게 NOT MATCHED 절에 따라 삽입됩니다. (실행 검증에서는 같은 동작을 ON CONFLICT DO UPDATE ... WHERE로 바꿔 확인했습니다.)\n\n| ID | 처리 | QTY |\n|---|---|---|\n| 1 | 짝 있음, 5 > 10 거짓 → 그대로 | 10 |\n| 2 | 원본에 없음 → 그대로 | 20 |\n| 3 | 짝 있음, 50 > 30 참 → 갱신 | 50 |\n| 5 | 짝 없음 → 삽입 | 15 |\n\n①은 WHERE 조건을 무시하고 ID 1도 5로 바꾼 경우입니다. ③은 짝이 없는 ID 5의 삽입을 빠뜨린 경우이고, ④는 짝이 있는 ID 1·3까지 새 행으로 추가된다고 본 경우입니다.",
+    "examPoint": "MERGE의 UPDATE 뒤 WHERE는 짝이 있는 행 중 조건을 만족하는 것만 갱신한다. 짝 없는 행의 INSERT와는 무관.",
+    "tags": [
+      "DML",
+      "MERGE"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S3-01-0006",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "DML의 특징",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "DML에 대한 설명으로 **옳지 않은** 것은? (Oracle 기준)",
+    "choices": [
+      "WHERE 절이 없는 UPDATE와 DELETE는 테이블의 모든 행에 적용된다.",
+      "INSERT INTO 테이블 SELECT ... 형태로 다른 쿼리의 결과를 한 번에 여러 행 넣을 수 있다.",
+      "DELETE는 행만 삭제하고 테이블 구조는 그대로 남긴다.",
+      "한 세션에서 DELETE를 실행하면 COMMIT하기 전이라도 다른 세션에서 조회할 때 삭제된 결과가 보인다."
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. COMMIT하기 전의 변경 내용은 그 변경을 한 세션에서만 보이고, 다른 세션은 COMMIT 전까지 변경 전의 데이터를 봅니다.\n\nDML(INSERT, UPDATE, DELETE, MERGE)로 바꾼 데이터는 COMMIT하기 전까지는 \"확정되지 않은\" 상태입니다. 이 상태에서는 변경한 세션만 바뀐 데이터를 볼 수 있고, 다른 사용자는 마지막으로 확정된 데이터를 봅니다(읽기 일관성). 또 변경 중인 행에는 잠금이 걸려 다른 세션이 같은 행을 수정하려 하면 기다려야 합니다. COMMIT하면 변경이 확정되어 모두에게 보이고, ROLLBACK하면 변경 전으로 돌아갑니다.\n\n①은 WHERE를 빠뜨렸을 때 일어나는 일로 실무에서 특히 주의할 점이고, ②는 INSERT ... SELECT의 사용법, ③은 DELETE가 DROP과 달리 구조를 남긴다는 점을 바르게 설명했습니다. ④는 COMMIT의 의미를 놓친 보기입니다.",
+    "examPoint": "COMMIT 전 변경은 변경한 세션에서만 보이고 다른 세션은 이전 데이터를 본다(읽기 일관성). WHERE 없는 UPDATE·DELETE는 전체 행.",
+    "tags": [
+      "DML",
+      "COMMIT",
+      "읽기 일관성"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0007",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "INSERT ... SELECT",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "[SRC]와 빈 테이블 [DST]에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (A, B)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "SRC",
+        "columns": [
+          "ID",
+          "GRADE"
+        ],
+        "rows": [
+          [
+            1,
+            "A"
+          ],
+          [
+            2,
+            "B"
+          ],
+          [
+            3,
+            "A"
+          ],
+          [
+            4,
+            "C"
+          ],
+          [
+            5,
+            "A"
+          ]
+        ]
+      },
+      {
+        "name": "DST",
+        "columns": [
+          "ID",
+          "GRADE"
+        ],
+        "rows": []
+      }
+    ],
+    "sql": "INSERT INTO DST SELECT * FROM SRC WHERE GRADE = 'A';\nINSERT INTO DST SELECT * FROM SRC WHERE ID <= 2;\nSELECT COUNT(*) AS A, COUNT(DISTINCT ID) AS B FROM DST;",
+    "choices": [
+      "5, 4",
+      "4, 4",
+      "5, 5",
+      "3, 3"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. 첫 번째 INSERT가 등급이 A인 1, 3, 5번 행을, 두 번째 INSERT가 ID가 2 이하인 1, 2번 행을 넣으므로 DST에는 5행이 들어가고, 1번이 두 번 들어가 서로 다른 ID는 4개입니다.\n\nINSERT ... SELECT는 SELECT 결과 전체를 한 번에 넣는 방법으로, VALUES 대신 쿼리를 씁니다. 두 INSERT는 서로 독립적으로 실행되며, DST에 기본키나 UNIQUE 제약이 없으므로 이미 들어간 1번 행이 다시 들어가도 오류 없이 중복으로 저장됩니다. 만약 DST의 ID에 기본키가 있었다면 두 번째 INSERT가 1번 행 때문에 중복 오류를 내고, 그 문장 전체가 실패해 2번 행도 들어가지 않았을 것입니다.\n\n| DST.ID | 들어온 INSERT |\n|---|---|\n| 1 | 첫 번째 |\n| 3 | 첫 번째 |\n| 5 | 첫 번째 |\n| 1 | 두 번째 |\n| 2 | 두 번째 |\n\n②는 중복된 1번이 자동으로 걸러진다고 본 경우이고, ③은 COUNT(DISTINCT)를 COUNT처럼 계산한 경우입니다. ④는 첫 번째 INSERT만 실행된 것으로 본 경우입니다.",
+    "examPoint": "INSERT ... SELECT는 결과를 그대로 넣는다. 제약조건이 없으면 중복 행도 저장된다.",
+    "tags": [
+      "DML",
+      "INSERT",
+      "INSERT SELECT"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S3-01-0008",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "UPDATE 안의 서브쿼리 시점",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DEPT",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            100
+          ],
+          [
+            2,
+            10,
+            200
+          ],
+          [
+            3,
+            20,
+            300
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE EMP\n   SET SAL = SAL + (SELECT MAX(SAL) FROM EMP)\n WHERE DEPT = 10;\nSELECT SUM(SAL) AS TOTAL FROM EMP;",
+    "choices": [
+      "900",
+      "1200",
+      "1300",
+      "1500"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. SET 절의 서브쿼리는 UPDATE가 시작되는 시점의 데이터로 계산되므로 MAX(SAL)은 300입니다. 10번 부서의 두 행이 각각 400, 500이 되어 합계는 400 + 500 + 300 = 1200입니다.\n\n하나의 SQL 문장은 실행을 시작한 시점의 데이터를 기준으로 처리됩니다(문장 수준 읽기 일관성). 그래서 UPDATE가 첫 번째 행을 400으로 바꿨다고 해서, 두 번째 행을 처리할 때 서브쿼리의 MAX가 400으로 바뀌지는 않습니다. 모든 행이 같은 기준값 300을 더합니다. 만약 행을 하나 바꿀 때마다 서브쿼리를 새로 계산한다면 두 번째 행은 200 + 400 = 600이 되어 합계가 1300이 되겠지만, Oracle은 이렇게 동작하지 않습니다.\n\n| ENO | DEPT | 변경 전 | 변경 후 |\n|---|---|---|---|\n| 1 | 10 | 100 | 400 |\n| 2 | 10 | 200 | 500 |\n| 3 | 20 | 300 | 300 |\n\n③은 앞 행의 변경이 서브쿼리에 바로 반영된다고 본 경우입니다. ①은 UPDATE 전의 합계 600에 300을 한 번만 더한 경우이고, ④는 20번 부서까지 갱신된 것으로 계산한 경우입니다.",
+    "examPoint": "한 문장 안의 서브쿼리는 문장 시작 시점의 데이터로 계산된다. 앞 행의 변경이 같은 문장의 다음 행 계산에 반영되지 않는다.",
+    "tags": [
+      "DML",
+      "UPDATE",
+      "서브쿼리"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S3-01-0009",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "MERGE 문 구조",
+    "type": "sql_fill",
+    "difficulty": 2,
+    "stem": "다음 MERGE 문의 (ㄱ)에 들어갈 키워드로 알맞은 것은? (Oracle 기준)\n\n```sql\nMERGE INTO T_STOCK T\nUSING S_IN S\n  (ㄱ) (T.ID = S.ID)\n WHEN MATCHED THEN\n      UPDATE SET T.QTY = S.QTY\n WHEN NOT MATCHED THEN\n      INSERT (ID, QTY) VALUES (S.ID, S.QTY);\n```",
+    "choices": [
+      "WHERE",
+      "ON",
+      "WHEN",
+      "SET"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. MERGE에서 대상 테이블과 원본 테이블의 행을 짝지을 조건은 USING 다음의 ON 절에 괄호로 감싸 적습니다.\n\nMERGE 문은 다음 순서로 구성됩니다. MERGE INTO에 바꿀 대상 테이블을, USING에 비교할 원본(테이블, 뷰, 서브쿼리)을, ON에 두 쪽 행을 짝짓는 조건을 쓰고, 이어서 WHEN MATCHED THEN에 짝이 있을 때의 UPDATE(또는 DELETE)를, WHEN NOT MATCHED THEN에 짝이 없을 때의 INSERT를 씁니다. ON 조건은 조인 조건과 같은 역할을 하므로 보통 양쪽의 키 컬럼을 비교합니다. Oracle에서는 ON 조건을 괄호로 감싸야 한다는 점도 문법상 특징입니다.\n\n①의 WHERE는 MERGE에서 UPDATE·INSERT 절 뒤에 붙여 추가 조건을 줄 때 쓰며, 짝짓기 조건 자리에는 올 수 없습니다. ③의 WHEN은 MATCHED·NOT MATCHED 절을 시작할 때 쓰고, ④의 SET은 UPDATE 절에서 바꿀 값을 지정할 때 씁니다.",
+    "examPoint": "MERGE INTO 대상 USING 원본 ON (조건) WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...",
+    "tags": [
+      "DML",
+      "MERGE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0010",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "DELETE 조건의 평균 계산 시점",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "[EMP] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            200
+          ],
+          [
+            3,
+            300
+          ],
+          [
+            4,
+            400
+          ],
+          [
+            5,
+            500
+          ]
+        ]
+      }
+    ],
+    "sql": "DELETE FROM EMP\n WHERE SAL < (SELECT AVG(SAL) FROM EMP);\nSELECT COUNT(*) AS CNT FROM EMP;",
+    "choices": [
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. 서브쿼리의 평균은 DELETE가 시작되는 시점의 데이터로 한 번 계산되어 300이므로, 300보다 작은 100과 200만 삭제되고 3행이 남습니다.\n\nDELETE도 UPDATE와 마찬가지로 문장 시작 시점의 데이터를 기준으로 조건을 판단합니다. 그래서 100을 지운 순간 남은 행의 평균이 350으로 올라가더라도, 그 변화가 같은 문장의 판단 기준에 반영되지 않습니다. 만약 행을 지울 때마다 평균을 다시 계산한다면, 평균이 계속 올라가 300까지 지워지고 2행만 남는 엉뚱한 결과가 나올 것입니다. 이처럼 한 문장의 결과가 처리 순서에 따라 달라지지 않도록 보장하는 것이 문장 수준 읽기 일관성입니다.\n\n| ENO | SAL | 300 미만? | 결과 |\n|---|---|---|---|\n| 1 | 100 | 예 | 삭제 |\n| 2 | 200 | 예 | 삭제 |\n| 3 | 300 | 아니오 | 남음 |\n| 4 | 400 | 아니오 | 남음 |\n| 5 | 500 | 아니오 | 남음 |\n\n①은 삭제할 때마다 평균이 다시 계산된다고 본 경우입니다. ③은 100 하나만 지워진다고 본 경우이고, ④는 서브쿼리 조건을 만족하는 행이 없다고 보아 아무것도 지우지 않은 경우입니다.",
+    "examPoint": "DELETE·UPDATE의 서브쿼리 조건은 문장 시작 시점에 한 번 계산된다(문장 수준 읽기 일관성).",
+    "tags": [
+      "DML",
+      "DELETE",
+      "서브쿼리"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  },
+  {
+    "id": "S3-01-0011",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "컬럼을 생략한 INSERT",
+    "type": "scenario",
+    "difficulty": 1,
+    "stem": "[T] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (A, B, C)로 알맞은 것은? (QTY 컬럼에는 DEFAULT 값이 정의되어 있지 않다.)",
+    "tables": [
+      {
+        "name": "T",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ]
+        ]
+      }
+    ],
+    "sql": "INSERT INTO T (ID) VALUES (3);\nSELECT COUNT(*) AS A, COUNT(QTY) AS B, SUM(QTY) AS C FROM T;",
+    "choices": [
+      "3, 2, 30",
+      "3, 3, 30",
+      "2, 2, 30",
+      "3, 3, NULL"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. INSERT에서 QTY를 생략했고 DEFAULT 값도 없으므로 3번 행의 QTY는 NULL입니다. 그래서 행은 3개, QTY 값이 있는 행은 2개, 합계는 10 + 20 = 30입니다.\n\nINSERT의 컬럼 목록에 적지 않은 컬럼은 테이블을 만들 때 정한 DEFAULT 값으로 채워지고, DEFAULT가 없으면 NULL이 됩니다. NULL이 저장된 행도 엄연히 하나의 행이므로 COUNT(*)에는 포함되지만, COUNT(QTY)와 SUM(QTY)은 NULL을 건너뜁니다. 만약 테이블을 CREATE TABLE T (ID NUMBER, QTY NUMBER DEFAULT 0)처럼 만들었다면 3번 행의 QTY는 0이 되어 결과가 3, 3, 30이 되었을 것입니다.\n\n| ID | QTY |\n|---|---|\n| 1 | 10 |\n| 2 | 20 |\n| 3 | NULL |\n\n②는 생략한 컬럼이 0으로 채워진다고 본 경우입니다. ③은 컬럼을 생략한 INSERT가 실패한다고 본 경우이고, ④는 NULL이 하나라도 있으면 SUM 전체가 NULL이 된다고 본 경우입니다.",
+    "examPoint": "INSERT에서 생략한 컬럼 = DEFAULT 값, 없으면 NULL. NULL 행도 COUNT(*)에는 포함된다.",
+    "tags": [
+      "DML",
+      "INSERT",
+      "NULL"
+    ],
+    "source": "claude",
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    }
+  }
+]

@@ -10,6 +10,7 @@ import {
   type Session,
 } from '../../domain'
 import { SingleChips } from '../Practice/OptionChips'
+import { ReportIssue } from '../Practice/ReportIssue'
 import styles from './Result.module.css'
 
 type Filter = 'all' | 'wrong' | 'unanswered' | 'flagged'
@@ -91,6 +92,7 @@ export function ResultQuestionList({ session, questionsByRef }: Props) {
                 <div className={styles.detail}>
                   <QuestionView question={r.q} number={r.no} order={r.order} selected={r.chosen} answer={r.q.answer} />
                   <AnswerFeedback question={r.q} chosen={r.chosen} order={r.order} />
+                  <ReportIssue questionRef={r.ref} />
                 </div>
               )}
             </li>
