@@ -55,12 +55,15 @@ describe('T4-7 출제 후보에 변형 문제 섞기', () => {
       'TP01',
       'TP01',
     ])
-    // 유형으로도 거른다: 시나리오형 = 고정 S3-02 + TP10
+    // 유형으로도 거른다: 시나리오형 = 고정 S3-02 + TP10 + TP18
     expect(kinds(practiceItems(fixed, TEMPLATE_INFO, settings({ types: ['scenario'] }), new Map()))).toEqual([
       'S3-02-0001',
       'TP10',
       'TP10',
       'TP10',
+      'TP18',
+      'TP18',
+      'TP18',
     ])
   })
 

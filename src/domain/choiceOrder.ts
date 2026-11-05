@@ -37,8 +37,27 @@ const MARK_TO_NO: Record<string, ChoiceNumber> = { '①': 1, '②': 2, '③': 3,
  */
 export function remapChoiceMarks(text: string, order: readonly ChoiceNumber[]): string {
   if (!isValidChoiceOrder(order)) return text
-  return text.replace(/[①②③④]/g, (mark) => {
-    const original = MARK_TO_NO[mark] as ChoiceNumber
-    return CHOICE_MARKS[(order.indexOf(original) + 1) as ChoiceNumber]
+  // 번호가 바뀌면 뒤의 조사도 맞춘다: ①(일)·③(삼)은 받침 있음, ②(이)·④(사)는 받침 없음
+  // 예) "①은" → ②로 바뀌면 "②는"
+  return text.replace(/([①②③④])(은|는|이|가|을|를|과|와)?(?![가-힣])|([①②③④])/g, (_m, mark, particle, single) => {
+    const m = (mark ?? single) as string
+    const next = CHOICE_MARKS[(order.indexOf(MARK_TO_NO[m] as ChoiceNumber) + 1) as ChoiceNumber]
+    if (!particle) return next
+    return next + particleFor(next, particle as string)
   })
+}
+
+/** 받침 유무에 맞는 조사 */
+const PAIRS: Record<string, [string, string]> = {
+  // [받침 있음, 받침 없음]
+  은: ['은', '는'], 는: ['은', '는'],
+  이: ['이', '가'], 가: ['이', '가'],
+  을: ['을', '를'], 를: ['을', '를'],
+  과: ['과', '와'], 와: ['과', '와'],
+}
+function particleFor(mark: string, particle: string): string {
+  const pair = PAIRS[particle]
+  if (!pair) return particle
+  const hasFinal = mark === '①' || mark === '③'
+  return hasFinal ? pair[0] : pair[1]
 }

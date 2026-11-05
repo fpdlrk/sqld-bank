@@ -214,5 +214,455 @@
       "executable": true,
       "expect": "rowCount"
     }
+  },
+  {
+    "id": "S2-07-0005",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "COUNT로 PIVOT하기",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [SALES] 테이블에 Oracle에서 SQL을 실행했을 때 **첫 번째 행**의 (YR, Q1, Q2)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "SALES",
+        "columns": [
+          "YR",
+          "QTR",
+          "AMT"
+        ],
+        "rows": [
+          [
+            2024,
+            "Q1",
+            100
+          ],
+          [
+            2024,
+            "Q2",
+            200
+          ],
+          [
+            2024,
+            "Q1",
+            50
+          ],
+          [
+            2025,
+            "Q1",
+            300
+          ],
+          [
+            2025,
+            "Q3",
+            150
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT *\n  FROM (SELECT YR, QTR FROM SALES)\n PIVOT (COUNT(*) FOR QTR IN ('Q1' AS Q1, 'Q2' AS Q2))\n ORDER BY YR;",
+    "sqlExec": "SELECT YR, SUM(CASE WHEN QTR = 'Q1' THEN 1 ELSE 0 END) AS Q1, SUM(CASE WHEN QTR = 'Q2' THEN 1 ELSE 0 END) AS Q2 FROM SALES GROUP BY YR ORDER BY YR LIMIT 1;",
+    "choices": [
+      "2024, 2, 0",
+      "2024, 150, 200",
+      "2024, 1, 1",
+      "2024, 2, 1"
+    ],
+    "answer": 4,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ④입니다. 2024년에는 Q1 행이 2개(100, 50), Q2 행이 1개(200)이므로 COUNT(*)로 피벗하면 Q1 = 2, Q2 = 1입니다.\n\nPIVOT은 FOR 뒤의 컬럼(QTR) 값을 가로 컬럼으로 펼치고, 나머지 컬럼(YR)으로 그룹을 만듭니다. 각 칸에는 그 그룹과 그 값에 해당하는 행들에 집계 함수를 적용한 결과가 들어갑니다. 여기서는 COUNT(*)이므로 금액이 아니라 행의 개수가 들어갑니다. COUNT는 해당하는 행이 하나도 없을 때 NULL이 아니라 0을 돌려주므로, 2025년 행의 Q2는 0이 됩니다.\n\n| YR | Q1 | Q2 |\n|---|---|---|\n| 2024 | 2 | 1 |\n| 2025 | 1 | 0 |\n\n②는 COUNT를 SUM으로 착각한 경우이고, ③은 Q1의 같은 값 행을 하나로 본 경우입니다. ①은 2025년의 Q2 값을 2024년 행에 적용한 경우입니다.",
+    "examPoint": "PIVOT: FOR 컬럼 값 → 가로 컬럼, 나머지 컬럼 → 그룹. COUNT 피벗은 해당 행이 없으면 0.",
+    "tags": [
+      "PIVOT",
+      "COUNT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0006",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "IN 목록에 없는 값",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [SALES] 테이블에 Oracle에서 SQL을 실행한 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "SALES",
+        "columns": [
+          "YR",
+          "QTR",
+          "AMT"
+        ],
+        "rows": [
+          [
+            2024,
+            "Q1",
+            100
+          ],
+          [
+            2024,
+            "Q2",
+            200
+          ],
+          [
+            2024,
+            "Q1",
+            50
+          ],
+          [
+            2025,
+            "Q1",
+            300
+          ],
+          [
+            2025,
+            "Q3",
+            150
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT *\n  FROM (SELECT YR, QTR, AMT FROM SALES)\n PIVOT (SUM(AMT) FOR QTR IN ('Q1' AS Q1, 'Q2' AS Q2))\n WHERE YR = 2025;",
+    "sqlExec": "SELECT YR, SUM(CASE WHEN QTR = 'Q1' THEN AMT END) AS Q1, SUM(CASE WHEN QTR = 'Q2' THEN AMT END) AS Q2 FROM SALES WHERE YR = 2025 GROUP BY YR;",
+    "choices": [
+      "2025, 450, NULL",
+      "2025, 300, 0",
+      "2025, 300, NULL",
+      "2025, 300, 150"
+    ],
+    "answer": 3,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ③입니다. 2025년의 Q1 합계는 300이고, Q2 행은 없으므로 SUM 결과가 NULL입니다. Q3 행(150)은 IN 목록에 없어 어느 컬럼에도 들어가지 않습니다.\n\nPIVOT의 IN 목록은 \"어떤 값을 어떤 이름의 컬럼으로 만들지\"를 정합니다. 목록에 없는 값(Q3)의 행은 결과 어디에도 반영되지 않고 조용히 버려지므로, 합계가 원본보다 작아질 수 있다는 점에 주의해야 합니다. 또 SUM, MAX 같은 집계는 대상 행이 하나도 없으면 NULL을 돌려줍니다. 0으로 보이게 하려면 바깥에서 NVL(Q2, 0)처럼 처리해야 합니다.\n\n| YR | Q1 | Q2 |\n|---|---|---|\n| 2025 | 300 | NULL |\n\n②는 데이터가 없는 칸이 0이 된다고 본 경우이고, ①은 Q3 금액까지 Q1에 더한 경우입니다. ④는 IN 목록에 없는 Q3 값을 Q2 자리에 넣은 경우입니다.",
+    "examPoint": "PIVOT IN 목록에 없는 값은 버려진다. SUM 피벗에서 해당 행이 없으면 NULL(0 아님).",
+    "tags": [
+      "PIVOT",
+      "NULL"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0007",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "여러 집계의 컬럼 이름",
+    "type": "concept",
+    "difficulty": 3,
+    "stem": "다음 SQL을 실행했을 때 YR 외에 만들어지는 결과 컬럼의 이름으로 알맞은 것은? (Oracle 기준)\n\n```sql\nSELECT *\n  FROM (SELECT YR, QTR, AMT FROM SALES)\n PIVOT (SUM(AMT) AS S, COUNT(*) AS C\n        FOR QTR IN ('Q1' AS Q1));\n```",
+    "choices": [
+      "Q1_S, Q1_C",
+      "S_Q1, C_Q1",
+      "Q1, Q1",
+      "S, C"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. PIVOT에 집계 함수를 여러 개 쓰면 결과 컬럼 이름은 \"IN 목록의 별칭_집계 함수의 별칭\" 형태로 만들어지므로 Q1_S, Q1_C가 됩니다.\n\nPIVOT은 IN 목록의 값 하나마다 집계 함수 개수만큼 컬럼을 만듭니다. 값이 2개, 집계가 2개라면 4개 컬럼이 생기는 식입니다. 이때 같은 이름이 겹치지 않도록 두 별칭을 밑줄로 이어 붙이는데, 값의 별칭이 앞에, 집계의 별칭이 뒤에 옵니다. 집계 함수가 여러 개일 때 집계에 별칭을 주지 않으면 컬럼 이름이 겹쳐 오류가 나므로 별칭을 붙여야 합니다.\n\n②는 두 별칭의 순서를 거꾸로 본 경우이고, ③은 집계 별칭을 무시해 이름이 겹치는 경우입니다. ④는 IN 목록의 별칭을 무시한 경우입니다.",
+    "examPoint": "다중 집계 PIVOT의 컬럼명 = IN값별칭_집계별칭 (예: Q1_S). 컬럼 수 = IN 값 수 × 집계 수.",
+    "tags": [
+      "PIVOT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0008",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "PIVOT에는 집계 함수가 필요하다",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[SALES] 테이블(YR, QTR, AMT)에 대해 다음 PIVOT 절 중 **오류가 발생하는** 것은? (Oracle 기준, FROM 절은 (SELECT YR, QTR, AMT FROM SALES)로 같다.)",
+    "choices": [
+      "PIVOT (SUM(AMT) FOR QTR IN ('Q1' AS Q1, 'Q2' AS Q2))",
+      "PIVOT (MAX(AMT) FOR QTR IN ('Q1', 'Q2'))",
+      "PIVOT (AMT FOR QTR IN ('Q1', 'Q2'))",
+      "PIVOT (COUNT(*) FOR QTR IN ('Q1' AS Q1))"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. PIVOT 절의 첫 부분에는 반드시 집계 함수가 와야 합니다. AMT처럼 컬럼만 쓰면 한 칸에 여러 행이 모일 때 어떤 값을 넣을지 정할 수 없으므로 오류가 납니다.\n\nPIVOT은 \"그룹 × 값\" 칸마다 여러 행이 모일 수 있다는 전제로 동작합니다. 그래서 SUM, MAX, COUNT 같은 집계 함수로 여러 행을 하나의 값으로 줄이는 규칙을 반드시 지정해야 합니다. 각 칸에 행이 하나뿐이라고 확신할 때에도 MAX나 MIN을 써서 그 값을 그대로 꺼내는 방식을 씁니다. IN 목록의 별칭은 선택 사항이라, 생략하면 값 자체('Q1')가 컬럼 이름이 됩니다.\n\n①은 SUM으로 합계를 구하는 정상 문장이고, ②는 별칭 없이 쓴 정상 문장입니다. ④는 행 개수를 세는 정상 문장입니다.",
+    "examPoint": "PIVOT (집계함수(컬럼) FOR 컬럼 IN (...)) — 집계 함수 필수. IN 별칭은 선택.",
+    "tags": [
+      "PIVOT",
+      "오류"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0009",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "PIVOT 절의 키워드",
+    "type": "sql_fill",
+    "difficulty": 1,
+    "stem": "분기(QTR) 값을 가로 컬럼으로 펼쳐 연도별 매출 합계를 보려고 한다. (ㄱ)에 들어갈 키워드로 알맞은 것은? (Oracle 기준)\n\n```sql\nSELECT *\n  FROM (SELECT YR, QTR, AMT FROM SALES)\n PIVOT (SUM(AMT) (ㄱ) QTR IN ('Q1' AS Q1, 'Q2' AS Q2));\n```",
+    "choices": [
+      "FOR",
+      "IN",
+      "BY",
+      "ON"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. PIVOT 절은 \"집계 함수 FOR 펼칠 컬럼 IN (값 목록)\" 형태로 씁니다. FOR 뒤에는 값이 가로 컬럼이 될 컬럼을 적습니다.\n\nPIVOT 절을 읽는 순서는 \"QTR 컬럼의 값 중 IN 목록의 값들에 대해(FOR), 각각 SUM(AMT)를 구해 컬럼으로 만든다\"입니다. UNPIVOT도 같은 FOR … IN 형태를 쓰지만 방향이 반대로, 여러 컬럼을 세로 행으로 접습니다. PIVOT의 그룹 기준은 따로 쓰지 않고, FROM 절 결과 중 집계 대상과 FOR 컬럼을 뺀 나머지 컬럼(YR)이 자동으로 그룹 기준이 됩니다.\n\n②의 IN은 FOR 뒤 값 목록 앞에 이미 쓰였고, ③의 BY는 GROUP BY나 ORDER BY에 쓰는 키워드입니다. ④의 ON은 조인 조건에 쓰는 키워드입니다.",
+    "examPoint": "PIVOT (집계 FOR 컬럼 IN (값 AS 별칭, ...)). 그룹 기준은 나머지 컬럼이 자동.",
+    "tags": [
+      "PIVOT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0010",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "PIVOT과 CASE의 동치",
+    "type": "sql_equivalent",
+    "difficulty": 2,
+    "stem": "다음 SQL과 **같은 결과**를 돌려주는 것은? (Oracle 기준)\n\n```sql\nSELECT *\n  FROM (SELECT YR, QTR, AMT FROM SALES)\n PIVOT (SUM(AMT) FOR QTR IN ('Q1' AS Q1, 'Q2' AS Q2));\n```",
+    "choices": [
+      "SELECT YR, SUM(CASE WHEN QTR = 'Q1' THEN AMT END) AS Q1, SUM(CASE WHEN QTR = 'Q2' THEN AMT END) AS Q2 FROM SALES GROUP BY YR;",
+      "SELECT YR, SUM(CASE WHEN QTR = 'Q1' THEN AMT END) AS Q1, SUM(CASE WHEN QTR = 'Q2' THEN AMT END) AS Q2 FROM SALES;",
+      "SELECT YR, SUM(CASE WHEN QTR = 'Q1' THEN AMT ELSE 0 END) AS Q1, SUM(CASE WHEN QTR = 'Q2' THEN AMT ELSE 0 END) AS Q2 FROM SALES GROUP BY YR;",
+      "SELECT YR, SUM(CASE WHEN QTR = 'Q1' THEN AMT END) AS Q1, SUM(CASE WHEN QTR = 'Q2' THEN AMT END) AS Q2 FROM SALES GROUP BY YR, QTR;"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. PIVOT은 나머지 컬럼(YR)으로 GROUP BY하고, 값마다 CASE로 골라낸 금액을 집계하는 것과 같습니다. CASE에 ELSE가 없으면 해당하지 않는 행은 NULL이 되어 합계에서 빠지고, 해당 행이 하나도 없으면 결과도 NULL이 되어 PIVOT과 일치합니다.\n\nPIVOT 문법이 없던 시절이나 다른 DBMS에서는 이렇게 \"집계(CASE WHEN 조건 THEN 값 END) + GROUP BY\"로 행을 열로 바꿨습니다. 이 방식은 IN 목록의 값 하나가 CASE 식 하나에 대응하고, PIVOT이 자동으로 정하던 그룹 기준을 GROUP BY에 직접 적는다고 이해하면 됩니다.\n\n②는 GROUP BY가 없어 YR과 집계를 함께 쓸 수 없으므로 오류입니다. ③은 데이터가 없는 칸이 NULL 대신 0이 되어 결과가 달라집니다. ④는 분기별로 그룹이 나뉘어 연도마다 여러 행이 나옵니다.",
+    "examPoint": "PIVOT ≡ 집계(CASE WHEN 컬럼 = 값 THEN 대상 END) + GROUP BY 나머지 컬럼. ELSE 0을 넣으면 NULL 대신 0.",
+    "tags": [
+      "PIVOT",
+      "CASE",
+      "동치"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0011",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "UNPIVOT과 NULL",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [QS] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "QS",
+        "columns": [
+          "YR",
+          "Q1",
+          "Q2",
+          "Q3"
+        ],
+        "rows": [
+          [
+            2024,
+            100,
+            null,
+            200
+          ],
+          [
+            2025,
+            null,
+            null,
+            50
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT YR, QTR, AMT\n  FROM QS\nUNPIVOT (AMT FOR QTR IN (Q1, Q2, Q3));",
+    "sqlExec": "SELECT * FROM (SELECT YR, 'Q1' AS QTR, Q1 AS AMT FROM QS UNION ALL SELECT YR, 'Q2', Q2 FROM QS UNION ALL SELECT YR, 'Q3', Q3 FROM QS) WHERE AMT IS NOT NULL;",
+    "choices": [
+      "2건",
+      "3건",
+      "4건",
+      "6건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    },
+    "explanation": "정답은 ②입니다. UNPIVOT은 2행 × 3컬럼 = 6개의 칸을 세로 행으로 펼치지만, 기본값인 EXCLUDE NULLS 때문에 값이 NULL인 칸 3개가 빠지고 3건만 남습니다.\n\nUNPIVOT은 PIVOT의 반대로, 여러 컬럼에 가로로 흩어진 값을 \"컬럼 이름\"과 \"값\"의 두 컬럼으로 바꿔 세로로 쌓습니다. 이때 별도로 지정하지 않으면 값이 NULL인 칸은 결과 행으로 만들지 않습니다. NULL 칸도 행으로 남기고 싶다면 UNPIVOT INCLUDE NULLS (…)처럼 씁니다. 그러면 이 문제의 결과는 6건이 됩니다.\n\n| YR | QTR | AMT |\n|---|---|---|\n| 2024 | Q1 | 100 |\n| 2024 | Q3 | 200 |\n| 2025 | Q3 | 50 |\n\n④는 INCLUDE NULLS일 때의 결과이고, ①은 원본 행 수를 고른 경우입니다. ③은 NULL 칸 하나를 덜 뺀 계산 실수입니다.",
+    "examPoint": "UNPIVOT 기본 = EXCLUDE NULLS(NULL 칸은 행이 안 됨). 포함하려면 UNPIVOT INCLUDE NULLS.",
+    "tags": [
+      "UNPIVOT",
+      "NULL"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0012",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "UNPIVOT 절의 구성",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "다음 UNPIVOT 절에 대한 설명으로 옳은 것은? (Oracle 기준)\n\n```sql\nSELECT * FROM QS\nUNPIVOT (AMT FOR QTR IN (Q1, Q2, Q3));\n```",
+    "choices": [
+      "AMT와 QTR은 QS 테이블에 이미 있어야 하는 컬럼이다.",
+      "AMT는 Q1, Q2, Q3의 값을 담는 새 컬럼이고, QTR은 그 값이 원래 있던 컬럼 이름을 담는 새 컬럼이다.",
+      "QTR은 Q1, Q2, Q3의 값을 담고, AMT는 원래 컬럼 이름을 담는다.",
+      "IN 목록의 컬럼은 문자열 상수로 'Q1'처럼 따옴표로 감싸야 한다."
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. UNPIVOT (값컬럼 FOR 이름컬럼 IN (컬럼 목록))에서 값컬럼(AMT)은 펼쳐진 값을, 이름컬럼(QTR)은 그 값이 어느 컬럼에서 왔는지를 담는 새 컬럼입니다.\n\nUNPIVOT은 원본에 없는 두 컬럼을 새로 만듭니다. 원본의 Q1, Q2, Q3 컬럼은 결과에서 사라지고, 대신 각 행이 (QTR = 'Q1', AMT = Q1의 값)처럼 나뉩니다. IN 목록에 적는 것은 값이 아니라 원본 테이블의 컬럼 이름이므로 따옴표 없이 씁니다. 반면 PIVOT의 IN 목록에는 컬럼의 값을 적으므로 문자열이면 따옴표로 감쌉니다. 목록에 없는 컬럼(YR)은 그대로 남아 각 행에 반복됩니다.\n\n①은 두 컬럼이 새로 만들어진다는 점을 놓쳤고, ③은 두 컬럼의 역할을 거꾸로 설명했습니다. ④는 PIVOT의 IN 목록과 혼동한 보기입니다.",
+    "examPoint": "UNPIVOT (값컬럼 FOR 이름컬럼 IN (원본 컬럼들)) — 두 컬럼은 새로 생김. IN에는 컬럼명(따옴표 X).",
+    "tags": [
+      "UNPIVOT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0013",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "PIVOT의 숨은 그룹 기준",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [SALES2] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "SALES2",
+        "columns": [
+          "ID",
+          "YR",
+          "QTR",
+          "AMT"
+        ],
+        "rows": [
+          [
+            1,
+            2024,
+            "Q1",
+            100
+          ],
+          [
+            2,
+            2024,
+            "Q2",
+            200
+          ],
+          [
+            3,
+            2024,
+            "Q1",
+            50
+          ],
+          [
+            4,
+            2025,
+            "Q1",
+            300
+          ],
+          [
+            5,
+            2025,
+            "Q2",
+            150
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT *\n  FROM SALES2\n PIVOT (SUM(AMT) FOR QTR IN ('Q1' AS Q1, 'Q2' AS Q2));",
+    "sqlExec": "SELECT ID, YR, SUM(CASE WHEN QTR = 'Q1' THEN AMT END) AS Q1, SUM(CASE WHEN QTR = 'Q2' THEN AMT END) AS Q2 FROM SALES2 GROUP BY ID, YR;",
+    "choices": [
+      "2건",
+      "3건",
+      "4건",
+      "5건"
+    ],
+    "answer": 4,
+    "fixedOrder": true,
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    },
+    "explanation": "정답은 ④입니다. 테이블을 직접 PIVOT하면 AMT와 QTR을 뺀 나머지 컬럼인 ID와 YR이 모두 그룹 기준이 됩니다. ID가 행마다 다르므로 그룹도 5개가 되어 결과는 5건입니다.\n\nPIVOT은 GROUP BY를 따로 쓰지 않고, FROM 절 결과의 \"나머지 컬럼 전부\"를 그룹 기준으로 삼습니다. 그래서 연도별로 한 행씩 보고 싶다면 FROM (SELECT YR, QTR, AMT FROM SALES2)처럼 필요한 컬럼만 고른 인라인 뷰를 먼저 만들어야 합니다. 이렇게 하면 그룹 기준이 YR만 남아 2건이 됩니다. PIVOT 결과가 예상보다 많이 나온다면 쓸데없는 컬럼이 그룹 기준에 섞였는지부터 확인합니다.\n\n| ID | YR | Q1 | Q2 |\n|---|---|---|---|\n| 1 | 2024 | 100 | NULL |\n| 2 | 2024 | NULL | 200 |\n| 3 | 2024 | 50 | NULL |\n| 4 | 2025 | 300 | NULL |\n| 5 | 2025 | NULL | 150 |\n\n①은 인라인 뷰로 YR만 남겼을 때의 결과입니다. ②와 ③은 그룹 기준을 잘못 짐작한 경우입니다.",
+    "examPoint": "PIVOT의 그룹 기준 = FROM 결과에서 집계·FOR 컬럼을 뺀 나머지 전부 → 인라인 뷰로 필요한 컬럼만 고른다.",
+    "tags": [
+      "PIVOT",
+      "인라인 뷰"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0014",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "UNPIVOT 후 집계",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [QS] 테이블에 Oracle에서 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "QS",
+        "columns": [
+          "YR",
+          "Q1",
+          "Q2",
+          "Q3"
+        ],
+        "rows": [
+          [
+            2024,
+            100,
+            null,
+            200
+          ],
+          [
+            2025,
+            null,
+            null,
+            50
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT QTR, SUM(AMT) AS TOTAL\n  FROM QS\nUNPIVOT (AMT FOR QTR IN (Q1, Q2, Q3))\n GROUP BY QTR;",
+    "sqlExec": "SELECT QTR, SUM(AMT) AS TOTAL FROM (SELECT 'Q1' AS QTR, Q1 AS AMT FROM QS UNION ALL SELECT 'Q2', Q2 FROM QS UNION ALL SELECT 'Q3', Q3 FROM QS) WHERE AMT IS NOT NULL GROUP BY QTR;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "6건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    },
+    "explanation": "정답은 ②입니다. UNPIVOT은 기본적으로 NULL인 칸을 행으로 만들지 않는데, Q2는 두 연도 모두 NULL이라 행이 하나도 생기지 않습니다. 그래서 GROUP BY QTR의 결과는 Q1(100)과 Q3(250)의 2건입니다.\n\nUNPIVOT 결과는 일반 테이블처럼 WHERE, GROUP BY, ORDER BY를 이어서 쓸 수 있습니다. 가로로 흩어진 분기별 컬럼을 세로로 접은 뒤 분기별 합계를 구하는 식으로 활용합니다. 다만 EXCLUDE NULLS가 기본이라 값이 전부 NULL인 컬럼은 그룹 자체가 사라진다는 점을 기억해야 합니다. INCLUDE NULLS를 썼다면 Q2 그룹도 생겨 TOTAL이 NULL인 행까지 3건이 나옵니다.\n\n| QTR | TOTAL |\n|---|---|\n| Q1 | 100 |\n| Q3 | 250 |\n\n③은 INCLUDE NULLS일 때처럼 Q2 그룹까지 센 경우이고, ④는 UNPIVOT으로 생기는 최대 칸 수를 고른 경우입니다. ①은 그룹을 하나로 합친 경우입니다.",
+    "examPoint": "UNPIVOT 결과에도 GROUP BY 가능. EXCLUDE NULLS 때문에 전부 NULL인 컬럼은 그룹이 생기지 않는다.",
+    "tags": [
+      "UNPIVOT",
+      "GROUP BY"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S2-07-0015",
+    "subject": 2,
+    "chapter": "S2-07",
+    "topic": "PIVOT의 제약",
+    "type": "concept",
+    "difficulty": 3,
+    "stem": "Oracle의 PIVOT 절에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "PIVOT 절에는 집계 함수를 하나 이상 지정해야 한다.",
+      "IN 목록의 값에 별칭을 주지 않으면 값 자체가 결과 컬럼 이름이 된다.",
+      "일반 PIVOT의 IN 목록에 서브쿼리를 써서 펼칠 값을 실행 시점에 정할 수 있다.",
+      "FROM 절 결과에서 집계 대상과 FOR 컬럼을 뺀 나머지 컬럼이 그룹 기준이 된다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 일반 PIVOT의 IN 목록에는 상수 값만 쓸 수 있습니다. 결과 컬럼의 개수와 이름이 SQL을 해석하는 시점에 정해져야 하기 때문입니다. 서브쿼리나 ANY로 값을 동적으로 정하는 것은 결과를 XML로 돌려주는 PIVOT XML에서만 가능합니다.\n\n이 제약 때문에 \"데이터에 있는 분기 값만큼 컬럼을 자동으로 만들기\"는 일반 PIVOT으로 할 수 없고, 값 목록이 바뀌면 SQL도 고쳐야 합니다. 실무에서는 값 목록을 먼저 조회한 뒤 SQL 문자열을 만들어 실행하는 동적 SQL로 해결하기도 합니다. 반대로 값 목록이 고정되어 있다면 일반 PIVOT이 가장 간결합니다.\n\n①·②·④는 PIVOT의 특징을 바르게 설명했습니다. ③은 PIVOT XML에만 있는 기능을 일반 PIVOT에 적용한 보기입니다.",
+    "examPoint": "일반 PIVOT의 IN 목록 = 상수만(결과 컬럼이 고정돼야 함). 서브쿼리·ANY는 PIVOT XML 전용.",
+    "tags": [
+      "PIVOT"
+    ],
+    "source": "claude"
   }
 ]

@@ -117,5 +117,244 @@
       "GRANT"
     ],
     "source": "claude"
+  },
+  {
+    "id": "S3-04-0006",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "ADMIN OPTION은 연쇄 회수되지 않는다",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "다음을 차례로 실행했을 때, 마지막 시점에 CREATE TABLE 권한을 가진 사용자는? (Oracle 기준)\n\n```sql\n-- 관리자 DBA가 실행\nGRANT CREATE TABLE TO U1 WITH ADMIN OPTION;\n-- U1이 실행\nGRANT CREATE TABLE TO U2;\n-- 관리자 DBA가 실행\nREVOKE CREATE TABLE FROM U1;\n```",
+    "choices": [
+      "U2만",
+      "U1과 U2 모두",
+      "U1만",
+      "아무도 없음"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. CREATE TABLE 같은 시스템 권한을 WITH ADMIN OPTION으로 받아 다른 사용자에게 넘긴 경우, 처음 받은 사용자(U1)에게서 권한을 회수해도 그가 넘겨준 U2의 권한은 회수되지 않습니다.\n\n권한을 다시 넘겨줄 수 있게 하는 옵션은 두 가지입니다. 시스템 권한에는 WITH ADMIN OPTION, 객체 권한(SELECT ON EMP 등)에는 WITH GRANT OPTION을 씁니다. 둘의 중요한 차이가 회수 방식인데, GRANT OPTION으로 퍼진 객체 권한은 중간 사용자에게서 회수하면 아래로 연쇄 회수되지만, ADMIN OPTION으로 퍼진 시스템 권한은 연쇄 회수되지 않습니다. 그래서 U2의 권한도 없애려면 REVOKE CREATE TABLE FROM U2를 따로 실행해야 합니다.\n\n②는 U1의 회수를 무시한 경우이고, ④는 GRANT OPTION처럼 연쇄 회수된다고 본 경우입니다. ③은 회수 대상을 거꾸로 본 경우입니다.",
+    "examPoint": "시스템 권한 WITH ADMIN OPTION → 연쇄 회수 X. 객체 권한 WITH GRANT OPTION → 연쇄 회수 O.",
+    "tags": [
+      "DCL",
+      "ADMIN OPTION",
+      "REVOKE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0007",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "롤을 사용자에게 부여",
+    "type": "sql_fill",
+    "difficulty": 1,
+    "stem": "여러 사용자에게 같은 권한을 쉽게 주기 위해 롤(ROLE)을 만들었다. (ㄱ)에 들어갈 문장으로 알맞은 것은?\n\n```sql\nCREATE ROLE R_READ;\nGRANT SELECT ON EMP TO R_READ;\n(ㄱ);   -- U1이 R_READ의 권한을 쓸 수 있게 한다\n```",
+    "choices": [
+      "GRANT R_READ TO U1",
+      "GRANT U1 TO R_READ",
+      "ALTER USER U1 ADD R_READ",
+      "INSERT INTO R_READ VALUES ('U1')"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. 롤은 권한처럼 GRANT 롤이름 TO 사용자로 부여합니다. 이렇게 하면 U1은 R_READ에 담긴 SELECT ON EMP 권한을 쓸 수 있습니다.\n\n롤은 여러 권한을 하나로 묶은 이름입니다. 먼저 CREATE ROLE로 롤을 만들고, 그 롤에 권한을 부여한 뒤, 롤을 사용자에게 부여하는 세 단계로 씁니다. 나중에 롤에 권한을 추가하거나 회수하면, 그 롤을 받은 모든 사용자에게 한꺼번에 반영되므로 사용자가 많을 때 관리가 쉬워집니다.\n\n②는 부여 방향이 거꾸로 되어 있고, ③은 Oracle의 롤 부여 문법이 아닙니다. ④는 롤을 테이블처럼 다룬 잘못된 문장입니다.",
+    "examPoint": "CREATE ROLE r → GRANT 권한 TO r → GRANT r TO 사용자. 롤 변경은 받은 사용자 모두에 반영.",
+    "tags": [
+      "DCL",
+      "ROLE",
+      "GRANT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0008",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "REVOKE 문법",
+    "type": "sql_error",
+    "difficulty": 1,
+    "stem": "다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "GRANT SELECT, UPDATE ON EMP TO U1;",
+      "REVOKE UPDATE ON EMP FROM U1;",
+      "REVOKE SELECT ON EMP TO U1;",
+      "GRANT SELECT ON EMP TO PUBLIC;"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 권한을 회수하는 REVOKE는 \"누구에게서\" 가져오는지를 나타내므로 TO가 아니라 FROM을 씁니다.\n\nDCL의 두 문장은 방향을 나타내는 전치사가 다릅니다. 권한을 줄 때는 GRANT 권한 ON 객체 TO 사용자, 회수할 때는 REVOKE 권한 ON 객체 FROM 사용자입니다. 권한은 쉼표로 여러 개를 한 번에 주거나 회수할 수 있고, TO PUBLIC으로 주면 모든 사용자에게 부여됩니다.\n\n①은 두 권한을 함께 주는 정상 문장이고, ②는 FROM을 바르게 쓴 회수 문장입니다. ④는 모든 사용자에게 SELECT 권한을 주는 정상 문장입니다.",
+    "examPoint": "GRANT … TO 사용자 / REVOKE … FROM 사용자.",
+    "tags": [
+      "DCL",
+      "REVOKE",
+      "오류"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0009",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "PUBLIC에 부여한 권한",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "사용자 SCOTT이 GRANT SELECT ON EMP TO PUBLIC;을 실행했다. 이에 대한 설명으로 옳은 것은? (Oracle 기준)",
+    "choices": [
+      "PUBLIC이라는 이름의 사용자 한 명에게만 권한이 부여된다.",
+      "다른 사용자는 SCOTT.EMP를 조회할 뿐 아니라 UPDATE도 할 수 있다.",
+      "현재 있는 사용자와 앞으로 만들어질 사용자 모두가 SCOTT.EMP를 조회할 수 있다.",
+      "PUBLIC에 준 권한은 REVOKE로 회수할 수 없다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. PUBLIC은 데이터베이스의 모든 사용자를 뜻하는 특별한 대상이라, PUBLIC에 준 권한은 현재와 미래의 모든 사용자가 사용할 수 있습니다.\n\n모두가 함께 쓰는 코드 테이블처럼 누구나 조회해야 하는 객체에 PUBLIC 부여를 씁니다. 다만 범위가 매우 넓으므로 민감한 데이터에는 쓰지 않아야 합니다. 부여한 권한은 정확히 그 권한(여기서는 SELECT)뿐이며, 필요 없어지면 REVOKE SELECT ON EMP FROM PUBLIC으로 회수할 수 있습니다. 다른 사용자가 조회할 때는 SCOTT.EMP처럼 소유자 이름을 붙이거나 동의어(SYNONYM)를 만들어 씁니다.\n\n①은 PUBLIC을 일반 사용자 이름으로 본 경우이고, ②는 부여하지 않은 UPDATE까지 생긴다고 본 경우입니다. ④는 PUBLIC 권한도 회수할 수 있다는 점을 놓쳤습니다.",
+    "examPoint": "TO PUBLIC = 현재·미래의 모든 사용자에게 부여. 회수는 REVOKE … FROM PUBLIC.",
+    "tags": [
+      "DCL",
+      "GRANT",
+      "PUBLIC"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0010",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "객체 소유자의 권한",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "사용자 SCOTT이 자신의 스키마에 EMP 테이블을 만들었다. 이에 대한 설명으로 **옳지 않은** 것은? (Oracle 기준)",
+    "choices": [
+      "SCOTT은 별도의 GRANT 없이도 EMP를 조회·수정·삭제할 수 있다.",
+      "SCOTT은 다른 사용자에게 EMP에 대한 객체 권한을 부여할 수 있다.",
+      "다른 사용자 U1은 SELECT 권한을 받은 뒤 SCOTT.EMP처럼 소유자를 붙여 조회할 수 있다.",
+      "U1은 권한을 받지 않아도 같은 데이터베이스에 있는 SCOTT.EMP를 조회할 수 있다."
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. 다른 사용자의 객체는 그 객체에 대한 권한을 받아야만 사용할 수 있습니다. 권한 없이 SCOTT.EMP를 조회하면 \"테이블 또는 뷰가 존재하지 않습니다\" 오류가 납니다.\n\n객체를 만든 사용자(소유자)는 그 객체에 대한 모든 권한을 자동으로 가지며, 다른 사용자에게 권한을 나눠 줄 수도 있습니다. 다른 사용자는 GRANT로 권한을 받은 뒤 \"소유자.객체\" 형태로 접근합니다. 권한이 없을 때 \"존재하지 않는다\"는 오류가 나는 것은, 볼 권한이 없는 객체의 존재 자체를 숨기기 위한 보안상의 동작입니다.\n\n①·②·③은 소유자와 다른 사용자의 권한 관계를 바르게 설명했습니다. ④는 같은 데이터베이스라면 권한이 필요 없다고 착각한 보기입니다.",
+    "examPoint": "소유자는 자기 객체에 모든 권한 + 부여 가능. 다른 사용자는 권한을 받아야 소유자.객체로 접근.",
+    "tags": [
+      "DCL",
+      "객체 권한"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0011",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "컬럼 단위 UPDATE 권한",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "SCOTT이 GRANT SELECT, UPDATE (SAL) ON EMP TO U1;을 실행했다. 이후 U1이 다음 문장을 실행할 때 **성공하는** 문장의 수는? (Oracle 기준)\n\n```sql\nSELECT * FROM SCOTT.EMP;\nUPDATE SCOTT.EMP SET SAL = SAL * 1.1 WHERE ENO = 1;\nUPDATE SCOTT.EMP SET ENAME = 'KIM' WHERE ENO = 1;\nDELETE FROM SCOTT.EMP WHERE ENO = 1;\n```",
+    "choices": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. U1은 SELECT 권한과 SAL 컬럼에 대한 UPDATE 권한만 받았으므로 첫 번째(SELECT)와 두 번째(SAL 수정) 문장만 성공합니다.\n\nUPDATE 권한은 UPDATE (컬럼목록)처럼 특정 컬럼으로 범위를 좁혀 줄 수 있습니다. 이 경우 지정한 컬럼만 바꿀 수 있고, 다른 컬럼(ENAME)을 바꾸려 하면 권한 부족 오류가 납니다. DELETE는 별도의 권한이므로 SELECT나 UPDATE 권한이 있어도 할 수 없습니다. 이렇게 필요한 만큼만 권한을 주는 것을 최소 권한 원칙이라고 합니다.\n\n| 문장 | 결과 |\n|---|---|\n| SELECT | 성공 |\n| UPDATE SAL | 성공 |\n| UPDATE ENAME | 실패 (권한 없음) |\n| DELETE | 실패 (권한 없음) |\n\n①은 컬럼 단위 UPDATE 권한을 몰라 UPDATE가 모두 실패한다고 본 경우이고, ③은 UPDATE 권한이 모든 컬럼에 적용된다고 본 경우입니다. ④는 권한 검사를 무시한 경우입니다.",
+    "examPoint": "GRANT UPDATE (컬럼) ON 테이블 → 그 컬럼만 수정 가능. DELETE는 별도 권한.",
+    "tags": [
+      "DCL",
+      "객체 권한",
+      "GRANT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0012",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "DCL 명령어 구분",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "다음 중 DCL(데이터 제어어)에 해당하는 명령어만 고른 것은?",
+    "choices": [
+      "GRANT, REVOKE",
+      "COMMIT, ROLLBACK",
+      "CREATE, DROP",
+      "GRANT, COMMIT"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. DCL은 사용자의 권한을 관리하는 명령어로, 권한을 주는 GRANT와 회수하는 REVOKE가 해당합니다.\n\nSQL 명령어는 역할에 따라 네 가지로 나뉩니다. DDL(CREATE, ALTER, DROP, RENAME, TRUNCATE)은 객체의 구조를 정의하고, DML(SELECT, INSERT, UPDATE, DELETE, MERGE)은 데이터를 다루며, DCL(GRANT, REVOKE)은 권한을 제어하고, TCL(COMMIT, ROLLBACK, SAVEPOINT)은 트랜잭션을 제어합니다. 교재에 따라 TCL을 DCL에 포함해 설명하기도 하지만, SQLD에서는 보통 네 가지로 구분합니다.\n\n②는 TCL이고, ③은 DDL입니다. ④는 DCL과 TCL이 섞여 있습니다.",
+    "examPoint": "DDL(구조) / DML(데이터) / DCL(GRANT, REVOKE) / TCL(COMMIT, ROLLBACK, SAVEPOINT).",
+    "tags": [
+      "DCL",
+      "SQL 분류"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0013",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "접속 권한",
+    "type": "sql_fill",
+    "difficulty": 2,
+    "stem": "새로 만든 사용자 U1이 데이터베이스에 **접속(로그인)할 수 있도록** 하려고 한다. (ㄱ)에 들어갈 권한으로 알맞은 것은? (Oracle 기준)\n\n```sql\nCREATE USER U1 IDENTIFIED BY \"pw\";\nGRANT (ㄱ) TO U1;\n```",
+    "choices": [
+      "CREATE SESSION",
+      "CREATE TABLE",
+      "CONNECT USER",
+      "SELECT ANY TABLE"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. Oracle에서 사용자를 만들기만 하면 접속조차 할 수 없고, CREATE SESSION 시스템 권한을 받아야 로그인할 수 있습니다.\n\nCREATE USER는 계정만 만들 뿐 아무 권한도 주지 않습니다. 접속하려면 CREATE SESSION, 테이블을 만들려면 CREATE TABLE처럼 필요한 시스템 권한을 하나씩 받아야 합니다. 이런 기본 권한을 매번 따로 주기 번거로워서, Oracle은 접속 권한을 담은 CONNECT, 객체 생성 권한을 담은 RESOURCE 같은 미리 만든 롤을 제공합니다.\n\n②는 테이블 생성 권한으로 접속과는 별개이고, ③은 Oracle에 없는 권한 이름입니다. ④는 모든 테이블을 조회하는 강력한 권한으로 접속 권한이 아닙니다.",
+    "examPoint": "접속 권한 = CREATE SESSION (CONNECT 롤에 포함). CREATE USER만으로는 로그인 불가.",
+    "tags": [
+      "DCL",
+      "시스템 권한",
+      "GRANT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0014",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "롤의 구성",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "Oracle의 롤(ROLE)에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "롤에는 시스템 권한과 객체 권한을 모두 담을 수 있다.",
+      "롤에 다른 롤을 부여해 여러 롤을 묶을 수 있다.",
+      "롤에는 시스템 권한만 담을 수 있고 객체 권한은 담을 수 없다.",
+      "한 사용자에게 여러 롤을 부여할 수 있다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 롤에는 CREATE TABLE 같은 시스템 권한뿐 아니라 SELECT ON EMP 같은 객체 권한도 담을 수 있습니다.\n\n롤은 권한을 묶어 관리하기 위한 그릇이므로 담을 수 있는 권한의 종류에 제한이 없고, 다른 롤을 담아 계층적으로 구성할 수도 있습니다. 예를 들어 조회용 롤과 수정용 롤을 따로 만든 뒤, 관리자 롤에 두 롤을 모두 부여하는 식입니다. 사용자도 여러 롤을 동시에 받을 수 있어, 업무에 맞는 롤을 조합해 권한을 줄 수 있습니다.\n\n①·②·④는 롤의 특징을 바르게 설명했습니다. ③은 롤이 담을 수 있는 권한을 시스템 권한으로 좁힌 보기입니다.",
+    "examPoint": "롤 = 시스템 권한 + 객체 권한 + 다른 롤을 묶는 그릇. 사용자에게 여러 롤 부여 가능.",
+    "tags": [
+      "DCL",
+      "ROLE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-04-0015",
+    "subject": 2,
+    "chapter": "S3-04",
+    "topic": "롤에서 권한 회수",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "다음을 차례로 실행했을 때, 마지막 시점에 EMP를 조회할 수 있는 사용자의 수는? (U1, U2, U3 기준, Oracle)\n\n```sql\nCREATE ROLE R_READ;\nGRANT SELECT ON EMP TO R_READ;\nGRANT R_READ TO U1, U2;\nGRANT SELECT ON EMP TO U3;\nREVOKE SELECT ON EMP FROM R_READ;\n```",
+    "choices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. 롤 R_READ에서 SELECT 권한을 회수하면, 그 롤을 통해 권한을 받던 U1과 U2는 조회 권한을 잃습니다. 권한을 직접 받은 U3만 계속 조회할 수 있으므로 1명입니다.\n\n롤을 통한 권한은 롤의 내용에 따라 움직입니다. 롤에서 권한을 빼면 롤을 받은 모든 사용자에게서 그 권한이 한꺼번에 사라지고, 반대로 롤에 권한을 추가하면 모두에게 한꺼번에 생깁니다. 반면 사용자에게 직접 준 권한은 롤과 상관없이 따로 관리되므로, 롤의 변경이 U3에게는 영향을 주지 않습니다.\n\n| 사용자 | 권한 경로 | 결과 |\n|---|---|---|\n| U1 | R_READ | 조회 불가 |\n| U2 | R_READ | 조회 불가 |\n| U3 | 직접 부여 | 조회 가능 |\n\n③은 U1, U2 중 하나가 남는다고 본 경우이고, ④는 롤에서의 회수가 사용자에게 반영되지 않는다고 본 경우입니다. ①은 직접 받은 U3까지 회수된다고 본 경우입니다.",
+    "examPoint": "롤에서 권한 회수 → 롤을 받은 모든 사용자에게 즉시 반영. 직접 받은 권한은 별개.",
+    "tags": [
+      "DCL",
+      "ROLE",
+      "REVOKE"
+    ],
+    "source": "claude"
   }
 ]

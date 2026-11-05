@@ -211,5 +211,321 @@
       "동치"
     ],
     "source": "claude"
+  },
+  {
+    "id": "S1-02-0006",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "산술 연산 우선순위",
+    "type": "sql_result",
+    "difficulty": 1,
+    "stem": "다음 [EMP] 테이블에 SQL을 실행한 결과 (A, B)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "SAL"
+        ],
+        "rows": [
+          [
+            1,
+            1000
+          ],
+          [
+            2,
+            2000
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT SAL + 100 * 2   AS A,\n       (SAL + 100) * 2 AS B\n  FROM EMP\n WHERE ENO = 1;",
+    "choices": [
+      "2200, 1200",
+      "2200, 2200",
+      "1200, 1200",
+      "1200, 2200"
+    ],
+    "answer": 4,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ④입니다. 곱셈이 덧셈보다 먼저 계산되므로 A는 1000 + 200 = 1200이고, B는 괄호 안의 덧셈을 먼저 해서 1100 × 2 = 2200입니다.\n\nSQL의 산술 연산도 수학과 같은 우선순위를 따릅니다. 곱셈(*)과 나눗셈(/)이 덧셈(+)과 뺄셈(-)보다 먼저 계산되고, 같은 순위끼리는 왼쪽부터 계산합니다. 괄호를 쓰면 괄호 안이 가장 먼저 계산됩니다. 그래서 \"급여에 100을 더한 뒤 두 배\"를 의도했다면 반드시 괄호를 써야 합니다. 의도가 분명하더라도 괄호를 써 두면 읽는 사람이 계산 순서를 헷갈리지 않습니다.\n\n| A | B |\n|---|---|\n| 1200 | 2200 |\n\n②는 A도 왼쪽부터 순서대로 계산한 경우이고, ③은 B의 괄호를 무시한 경우입니다. ①은 두 식의 결과를 서로 바꾼 보기입니다.",
+    "examPoint": "산술 연산 우선순위: 괄호 → *, / → +, -. 같은 순위는 왼쪽부터.",
+    "tags": [
+      "SELECT",
+      "산술 연산"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0007",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "문자열 연결과 NULL",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "다음 [STAFF] 테이블에 Oracle에서 SQL을 실행했을 때 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "STAFF",
+        "columns": [
+          "ENO",
+          "ENAME",
+          "JOB"
+        ],
+        "rows": [
+          [
+            1,
+            "KIM",
+            "CLERK"
+          ],
+          [
+            2,
+            "LEE",
+            null
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT ENAME || '(' || JOB || ')' AS LABEL\n  FROM STAFF\n WHERE ENO = 2;",
+    "sqlExec": "SELECT ENAME || '(' || IFNULL(JOB, '') || ')' AS LABEL FROM STAFF WHERE ENO = 2;",
+    "choices": [
+      "LEE()",
+      "NULL",
+      "LEE(NULL)",
+      "LEE"
+    ],
+    "answer": 1,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ①입니다. Oracle의 연결 연산자 ||는 NULL을 빈 문자열처럼 취급하므로, JOB이 NULL인 행은 'LEE' || '(' || NULL || ')' = 'LEE()'가 됩니다.\n\n연결 연산자는 여러 문자열과 컬럼을 이어 붙여 하나의 문자열을 만듭니다. 산술 연산에서는 NULL이 하나라도 있으면 결과가 NULL이 되지만, Oracle의 문자열 연결은 예외적으로 NULL을 길이 0인 문자열로 보고 그 부분만 비워 둡니다. 이는 Oracle이 빈 문자열('')과 NULL을 같은 것으로 다루는 특성과 이어져 있습니다. 표준 SQL이나 다른 DBMS에서는 결과가 NULL이 되므로, 실행 검증에서는 NVL에 해당하는 함수로 Oracle 동작을 재현했습니다.\n\n| LABEL |\n|---|\n| LEE() |\n\n②는 산술 연산처럼 결과 전체가 NULL이 된다고 본 경우입니다. ③은 NULL이 'NULL'이라는 글자로 바뀐다고 본 경우이고, ④는 괄호 문자열까지 사라진다고 본 경우입니다.",
+    "examPoint": "Oracle ||(CONCAT)은 NULL을 빈 문자열로 취급: 'A' || NULL || ')' = 'A)'. 산술 연산과 다르다.",
+    "tags": [
+      "연결 연산자",
+      "NULL"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0008",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "DISTINCT의 위치",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블(ENAME, DEPT, JOB)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "SELECT DISTINCT DEPT, JOB FROM EMP;",
+      "SELECT DISTINCT DEPT FROM EMP;",
+      "SELECT ENAME, DISTINCT JOB FROM EMP;",
+      "SELECT ALL JOB FROM EMP;"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. DISTINCT는 SELECT 바로 뒤에 한 번만 쓸 수 있고, SELECT 목록 전체에 적용됩니다. 목록 중간의 특정 컬럼 앞에 쓰면 문법 오류가 납니다.\n\nDISTINCT는 \"이 컬럼의 중복을 없애라\"가 아니라 \"결과 행 전체에서 중복을 없애라\"는 키워드입니다. 그래서 SELECT DISTINCT DEPT, JOB은 (DEPT, JOB) 조합이 같은 행을 하나로 합칩니다. ENAME은 그대로 두고 JOB만 중복을 없애는 식의 부분 적용은 불가능합니다. 한 행에 ENAME과 JOB이 함께 있는데 JOB만 줄이면 행을 맞출 방법이 없기 때문입니다. ALL은 DISTINCT의 반대로 중복을 그대로 두라는 뜻이며, 생략했을 때의 기본값입니다.\n\n①과 ②는 DISTINCT를 SELECT 바로 뒤에 쓴 정상 문장이고, ④는 기본값인 ALL을 명시한 정상 문장입니다.",
+    "examPoint": "DISTINCT는 SELECT 바로 뒤에 한 번, 목록 전체 조합에 적용. 컬럼 중간 사용 불가. ALL이 기본값.",
+    "tags": [
+      "DISTINCT",
+      "SELECT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0009",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "SELECT * 의 의미",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "`SELECT * FROM EMP;`에 대한 설명으로 옳은 것은?",
+    "choices": [
+      "EMP 테이블의 모든 컬럼을 테이블에 정의된 순서대로 조회한다.",
+      "EMP 테이블의 첫 번째 컬럼만 조회한다.",
+      "EMP 테이블에서 중복된 행을 제거하고 조회한다.",
+      "EMP 테이블의 행 수만 조회한다."
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. 별표(*)는 \"모든 컬럼\"을 뜻하므로, 테이블에 정의된 모든 컬럼을 정의된 순서대로 가져옵니다. 행은 걸러지지 않으므로 모든 행이 나옵니다.\n\n*는 컬럼 목록을 하나하나 적지 않아도 되는 편리한 표기입니다. 다만 실무에서는 필요한 컬럼만 명시하는 것이 좋습니다. 테이블에 컬럼이 추가되거나 순서가 바뀌면 *를 쓴 SQL의 결과 모양도 함께 바뀌어 응용 프로그램이 오작동할 수 있고, 필요 없는 컬럼까지 읽어 성능이 떨어질 수 있기 때문입니다. *는 다른 컬럼과 함께 쓸 때 E.*처럼 테이블 별칭을 붙여 쓰기도 합니다.\n\n②는 *의 의미를 잘못 이해한 경우이고, ③은 DISTINCT의 기능입니다. ④는 COUNT(*)의 결과로, 같은 별표라도 COUNT 안에서는 \"행 수\"를 뜻합니다.",
+    "examPoint": "SELECT * = 모든 컬럼(정의 순서), 행은 그대로. COUNT(*)의 *는 '행'을 뜻해 의미가 다르다.",
+    "tags": [
+      "SELECT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0010",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "별칭과 대소문자",
+    "type": "sql_result",
+    "difficulty": 2,
+    "stem": "Oracle에서 다음 SQL을 실행했을 때 결과에 표시되는 두 컬럼의 이름(머리글)으로 알맞은 것은?\n\n```sql\nSELECT SAL * 12 AS annual,\n       SAL * 12 AS \"Annual Pay\"\n  FROM EMP;\n```",
+    "choices": [
+      "ANNUAL, Annual Pay",
+      "annual, Annual Pay",
+      "ANNUAL, ANNUAL PAY",
+      "SAL*12, SAL*12"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. 큰따옴표 없이 쓴 별칭 annual은 Oracle이 대문자로 바꿔 ANNUAL로 표시하고, 큰따옴표로 감싼 \"Annual Pay\"는 대소문자와 공백을 그대로 유지합니다.\n\nOracle에서 따옴표 없이 쓴 이름(테이블, 컬럼, 별칭)은 모두 대문자로 저장·표시됩니다. 그래서 annual, Annual, ANNUAL은 모두 같은 이름 ANNUAL로 취급됩니다. 반면 큰따옴표로 감싼 이름은 적은 그대로 정확히 유지되며, 공백이나 특수문자도 쓸 수 있습니다. 대신 큰따옴표 이름은 나중에 참조할 때도 반드시 같은 대소문자로, 큰따옴표와 함께 써야 하므로 공백이 필요할 때만 쓰는 것이 좋습니다.\n\n②는 따옴표 없는 별칭이 소문자로 유지된다고 본 경우이고, ③은 큰따옴표 별칭도 대문자로 바뀐다고 본 경우입니다. ④는 별칭이 적용되지 않는다고 본 경우입니다.",
+    "examPoint": "따옴표 없는 별칭 → 대문자로 표시(ANNUAL), 큰따옴표 별칭 → 대소문자·공백 그대로(\"Annual Pay\").",
+    "tags": [
+      "SELECT",
+      "별칭"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0011",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "0으로 나누기",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[EMP] 테이블(ENO, SAL, CNT)에는 CNT가 0인 행이 있다. Oracle에서 실행했을 때 **오류가 발생하는** SQL은?",
+    "choices": [
+      "SELECT SAL / NULLIF(CNT, 0) FROM EMP;",
+      "SELECT SAL * CNT FROM EMP;",
+      "SELECT SAL / CNT FROM EMP;",
+      "SELECT SAL / NULL FROM EMP;"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. CNT가 0인 행에서 SAL / 0을 계산하게 되어 Oracle은 \"제수가 0입니다\" 오류를 냅니다.\n\n숫자를 0으로 나누는 것은 수학적으로 정의되지 않으므로 Oracle은 실행 중에 오류를 냅니다. 이 오류는 문법이 아니라 데이터 때문에 생기므로, CNT에 0이 없는 동안에는 문제가 드러나지 않다가 0이 들어오는 순간 SQL 전체가 실패합니다. 이를 피하는 대표적인 방법이 NULLIF(CNT, 0)입니다. NULLIF는 두 값이 같으면 NULL을 돌려주므로, CNT가 0인 행은 SAL / NULL이 되어 오류 대신 NULL이 나옵니다. CASE WHEN CNT = 0 THEN NULL ELSE SAL / CNT END로 써도 같습니다.\n\n①은 0 나누기를 NULLIF로 막은 정상 문장입니다. ②는 곱셈이라 0이 있어도 결과가 0일 뿐이고, ④는 NULL로 나누면 결과가 NULL이 될 뿐 오류가 아닙니다.",
+    "examPoint": "x / 0 = 실행 오류, x / NULL = NULL. 0 나누기 방지: x / NULLIF(분모, 0).",
+    "tags": [
+      "SELECT",
+      "산술 연산",
+      "NULLIF"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0012",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "연결한 값의 DISTINCT",
+    "type": "sql_result",
+    "difficulty": 3,
+    "stem": "다음 [CODES] 테이블에 SQL을 실행했을 때 결과 행의 수는?",
+    "tables": [
+      {
+        "name": "CODES",
+        "columns": [
+          "C1",
+          "C2"
+        ],
+        "rows": [
+          [
+            "A",
+            "BC"
+          ],
+          [
+            "AB",
+            "C"
+          ],
+          [
+            "A",
+            "B"
+          ],
+          [
+            "A",
+            "BC"
+          ]
+        ]
+      }
+    ],
+    "sql": "SELECT DISTINCT C1 || C2 AS CODE\n  FROM CODES;",
+    "choices": [
+      "1건",
+      "2건",
+      "3건",
+      "4건"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "verify": {
+      "executable": true,
+      "expect": "rowCount"
+    },
+    "explanation": "정답은 ②입니다. 연결한 결과가 'ABC', 'ABC', 'AB', 'ABC'이므로, 서로 다른 값은 'ABC'와 'AB'의 2건입니다.\n\nDISTINCT는 SELECT 목록에 적힌 식의 \"결과값\"을 기준으로 중복을 없앱니다. 컬럼 두 개를 따로 쓴 DISTINCT C1, C2라면 (A, BC), (AB, C), (A, B)가 서로 다른 조합이라 3건이 나오지만, C1 || C2로 연결하면 (A, BC)와 (AB, C)가 둘 다 'ABC'가 되어 하나로 합쳐집니다. 이렇게 값을 이어 붙여 비교하면 원래는 다른 조합이 같아지는 경우가 생기므로, 여러 컬럼의 조합으로 중복을 따지려면 컬럼을 나눠 쓰거나 구분자를 넣어 C1 || '-' || C2처럼 연결해야 합니다.\n\n| C1 | C2 | 연결 결과 |\n|---|---|---|\n| A | BC | ABC |\n| AB | C | ABC |\n| A | B | AB |\n| A | BC | ABC |\n\n③은 DISTINCT C1, C2처럼 컬럼 조합으로 계산한 경우이고, ④는 DISTINCT가 아무것도 없애지 않는다고 본 경우입니다. ①은 'AB'까지 'ABC'와 같다고 본 경우입니다.",
+    "examPoint": "DISTINCT는 식의 결과값 기준. C1||C2처럼 이어 붙이면 다른 조합이 같은 값이 될 수 있다(구분자 사용).",
+    "tags": [
+      "DISTINCT",
+      "연결 연산자"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0013",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "공백이 있는 별칭",
+    "type": "sql_fill",
+    "difficulty": 1,
+    "stem": "결과 머리글을 `연봉 합계`(가운데 공백 포함)로 표시하려고 한다. (ㄱ)에 들어갈 내용으로 알맞은 것은? (Oracle 기준)\n\n```sql\nSELECT SAL * 12 (ㄱ)\n  FROM EMP;\n```",
+    "choices": [
+      "AS 연봉 합계",
+      "AS '연봉 합계'",
+      "AS \"연봉 합계\"",
+      "AS [연봉 합계]"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. Oracle에서 공백이나 특수문자가 들어간 별칭은 큰따옴표로 감싸야 합니다.\n\n별칭은 결과 컬럼에 붙이는 이름이라 \"식별자\"로 취급되며, Oracle에서 식별자를 감싸는 기호는 큰따옴표입니다. 따옴표 없이 AS 연봉 합계라고 쓰면 '연봉'까지만 별칭으로 보고 '합계'를 해석할 수 없어 오류가 납니다. 작은따옴표는 '연봉 합계'처럼 문자열 값(리터럴)을 나타내는 기호이므로 별칭 자리에 쓰면 오류가 납니다. 큰따옴표로 감싼 별칭은 공백과 대소문자가 그대로 유지됩니다.\n\n①은 공백 때문에 별칭이 끊어지고, ②는 문자열 리터럴 기호를 잘못 썼습니다. ④의 대괄호는 SQL Server에서 식별자를 감쌀 때 쓰는 문법이라 Oracle에서는 쓸 수 없습니다.",
+    "examPoint": "Oracle 별칭에 공백·특수문자·대소문자 유지가 필요하면 큰따옴표(\" \"). 작은따옴표는 문자열 값, [ ]는 SQL Server.",
+    "tags": [
+      "SELECT",
+      "별칭"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0014",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "ALL과 UNIQUE 키워드",
+    "type": "sql_equivalent",
+    "difficulty": 2,
+    "stem": "다음 SQL과 **같은 결과**를 돌려주는 것은? (Oracle 기준, JOB에는 중복 값이 있다.)\n\n```sql\nSELECT JOB FROM EMP;\n```",
+    "choices": [
+      "SELECT DISTINCT JOB FROM EMP;",
+      "SELECT ALL JOB FROM EMP;",
+      "SELECT UNIQUE JOB FROM EMP;",
+      "SELECT JOB FROM EMP GROUP BY JOB;"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. ALL은 중복을 제거하지 않고 모든 행을 그대로 보여 주라는 키워드로, 아무것도 쓰지 않았을 때의 기본값입니다. 그래서 SELECT JOB과 SELECT ALL JOB은 같은 결과를 냅니다.\n\nSELECT 바로 뒤에는 ALL 또는 DISTINCT를 쓸 수 있고, 생략하면 ALL로 처리됩니다. DISTINCT는 중복을 제거하며, Oracle에서는 UNIQUE를 DISTINCT와 같은 뜻으로 쓸 수 있습니다. GROUP BY JOB으로 그룹 기준 컬럼만 조회해도 JOB 값마다 한 행만 남으므로 DISTINCT와 같은 결과가 됩니다. 결국 원래 SQL처럼 중복을 모두 보여 주는 것은 ALL뿐입니다.\n\n①·③·④는 모두 중복을 제거하므로, JOB에 같은 값이 여러 번 있다면 원래 SQL보다 행이 적어집니다. 특히 ③의 UNIQUE가 Oracle에서 DISTINCT와 같다는 점이 함정입니다.",
+    "examPoint": "SELECT 기본값은 ALL(중복 유지). DISTINCT = UNIQUE(Oracle) = 그룹 기준만 조회한 GROUP BY.",
+    "tags": [
+      "SELECT",
+      "DISTINCT",
+      "동치"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S1-02-0015",
+    "subject": 2,
+    "chapter": "S1-02",
+    "topic": "SELECT 절의 산술 연산과 컬럼",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "SELECT 절의 산술 연산에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "SELECT 절에서 컬럼끼리, 또는 컬럼과 상수를 더하거나 곱한 결과를 새 컬럼처럼 조회할 수 있다.",
+      "SELECT 절의 산술 연산은 결과로 보여 줄 값만 계산할 뿐, 테이블에 저장된 데이터를 바꾸지 않는다.",
+      "NULL이 포함된 산술 연산의 결과는 NULL이다.",
+      "SELECT SAL * 1.1 FROM EMP를 실행하면 EMP 테이블의 SAL 값이 10% 올라 저장된다."
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. SELECT는 데이터를 조회만 하므로, SAL * 1.1은 결과 화면에 보여 줄 값을 계산할 뿐 테이블에 저장된 SAL은 그대로입니다. 저장된 값을 바꾸려면 UPDATE를 써야 합니다.\n\nSELECT 절에는 컬럼뿐 아니라 컬럼과 상수, 함수, 산술 연산을 조합한 식을 쓸 수 있습니다. 이렇게 만든 값은 결과에만 존재하는 \"계산된 컬럼\"이라, 별칭을 붙여 이름을 정할 수 있습니다. 계산할 때 NULL이 하나라도 섞이면 결과가 NULL이 되므로, NULL을 0처럼 계산하려면 NVL 같은 함수를 함께 씁니다. 데이터 자체를 바꾸는 일은 DML인 UPDATE의 역할입니다.\n\n①·②·③은 SELECT 절 산술 연산의 특징을 바르게 설명했습니다. ④는 조회와 변경을 혼동한 보기입니다.",
+    "examPoint": "SELECT의 계산은 결과에만 나타난다(저장값 불변). 저장값을 바꾸려면 UPDATE. NULL 포함 산술 = NULL.",
+    "tags": [
+      "SELECT",
+      "산술 연산"
+    ],
+    "source": "claude"
   }
 ]

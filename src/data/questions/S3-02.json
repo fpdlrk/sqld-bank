@@ -301,5 +301,488 @@
       "SAVEPOINT"
     ],
     "source": "claude"
+  },
+  {
+    "id": "S3-02-0009",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "전체 ROLLBACK",
+    "type": "scenario",
+    "difficulty": 1,
+    "stem": "[T_ORDER] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은? (실행 전 데이터는 모두 COMMIT된 상태이다)",
+    "tables": [
+      {
+        "name": "T_ORDER",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ]
+        ]
+      }
+    ],
+    "sql": "INSERT INTO T_ORDER VALUES (3, 30);\nUPDATE T_ORDER SET QTY = 0 WHERE ID = 1;\nDELETE FROM T_ORDER WHERE ID = 2;\nROLLBACK;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "sqlExec": "BEGIN;\nINSERT INTO T_ORDER VALUES (3, 30);\nUPDATE T_ORDER SET QTY = 0 WHERE ID = 1;\nDELETE FROM T_ORDER WHERE ID = 2;\nROLLBACK;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "choices": [
+      "0, NULL",
+      "1, 30",
+      "3, 30",
+      "2, 30"
+    ],
+    "answer": 4,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ④입니다. ROLLBACK은 마지막 COMMIT 이후 현재 트랜잭션에서 한 작업을 모두 취소합니다. INSERT, UPDATE, DELETE가 모두 되돌려져 처음 상태인 (1, 10), (2, 20)으로 돌아가므로 2행, 합계 30입니다.\n\nOracle에서는 첫 DML을 실행하는 순간 트랜잭션이 자동으로 시작되고, COMMIT이나 ROLLBACK을 만날 때까지 이어집니다. SAVEPOINT 없이 ROLLBACK만 쓰면 트랜잭션 전체가 취소되며, 문장 하나만 골라서 되돌릴 수는 없습니다. 일부 작업만 되돌리고 싶다면 미리 SAVEPOINT를 만들어 두고 ROLLBACK TO SAVEPOINT를 써야 합니다.\n\n②는 마지막 DELETE만 남았다고 본 경우이고, ③은 INSERT가 이미 확정되었다고 본 경우입니다. ①은 ROLLBACK이 테이블의 모든 데이터를 지운다고 착각한 경우입니다.",
+    "examPoint": "ROLLBACK = 마지막 COMMIT 이후 트랜잭션 전체 취소. 일부만 되돌리려면 SAVEPOINT.",
+    "tags": [
+      "TCL",
+      "ROLLBACK"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0010",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "COMMIT 후 사라지는 SAVEPOINT",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "다음 SQL을 차례로 실행할 때의 설명으로 옳은 것은? (Oracle 기준)\n\n```sql\nUPDATE T_ORDER SET QTY = 0 WHERE ID = 1;\nSAVEPOINT SP1;\nDELETE FROM T_ORDER WHERE ID = 2;\nCOMMIT;\nROLLBACK TO SAVEPOINT SP1;\n```",
+    "choices": [
+      "마지막 문장은 DELETE만 취소하고 UPDATE는 유지한다.",
+      "마지막 문장은 UPDATE와 DELETE를 모두 취소한다.",
+      "마지막 문장은 아무 효과 없이 정상 종료되며 SP1은 다음 트랜잭션에서도 쓸 수 있다.",
+      "COMMIT으로 SP1이 사라졌으므로 마지막 문장은 오류가 나고, UPDATE와 DELETE는 모두 확정된 상태로 남는다."
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. COMMIT은 트랜잭션을 끝내면서 그 안에서 만든 SAVEPOINT를 모두 지웁니다. 존재하지 않는 SP1로 되돌리려 하므로 \"저장점이 존재하지 않습니다\" 오류가 나고, 이미 확정된 UPDATE와 DELETE는 그대로 남습니다.\n\nSAVEPOINT는 하나의 트랜잭션 안에서만 의미가 있는 책갈피입니다. COMMIT이든 ROLLBACK이든 트랜잭션이 끝나면 책갈피도 함께 사라지며, COMMIT된 변경은 어떤 ROLLBACK으로도 되돌릴 수 없습니다. 그래서 SAVEPOINT로 되돌릴 가능성이 있는 작업은 COMMIT 전에 확인을 마쳐야 합니다.\n\n①과 ②는 COMMIT 뒤에도 SAVEPOINT나 ROLLBACK이 효과가 있다고 본 경우입니다. ③은 오류가 나지 않고 SAVEPOINT가 트랜잭션을 넘어 유지된다고 착각한 보기입니다.",
+    "examPoint": "COMMIT/ROLLBACK으로 트랜잭션이 끝나면 SAVEPOINT도 사라진다 → ROLLBACK TO는 오류.",
+    "tags": [
+      "TCL",
+      "SAVEPOINT",
+      "COMMIT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0011",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "두 개의 트랜잭션",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_ORDER] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은? (실행 전 데이터는 모두 COMMIT된 상태이다)",
+    "tables": [
+      {
+        "name": "T_ORDER",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE T_ORDER SET QTY = QTY + 1;\nSAVEPOINT A;\nDELETE FROM T_ORDER WHERE ID = 1;\nROLLBACK TO SAVEPOINT A;\nCOMMIT;\nUPDATE T_ORDER SET QTY = 0;\nROLLBACK;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "sqlExec": "BEGIN;\nUPDATE T_ORDER SET QTY = QTY + 1;\nSAVEPOINT A;\nDELETE FROM T_ORDER WHERE ID = 1;\nROLLBACK TO SAVEPOINT A;\nCOMMIT;\nBEGIN;\nUPDATE T_ORDER SET QTY = 0;\nROLLBACK;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "choices": [
+      "2, 0",
+      "2, 30",
+      "1, 21",
+      "2, 32"
+    ],
+    "answer": 4,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ④입니다. 첫 트랜잭션에서 UPDATE로 11, 21이 되고, DELETE는 SAVEPOINT A로 되돌려진 뒤 COMMIT으로 (1, 11), (2, 21)이 확정됩니다. COMMIT 뒤에 시작된 두 번째 트랜잭션의 UPDATE는 ROLLBACK으로 취소되므로 최종 결과는 2행, 합계 32입니다.\n\nCOMMIT을 경계로 트랜잭션이 나뉜다는 점이 핵심입니다. ROLLBACK은 \"현재 트랜잭션\"만 취소하므로, 이미 COMMIT된 첫 트랜잭션의 UPDATE(+1)는 되돌려지지 않습니다. 단계마다 \"아직 확정되지 않은 변경이 어디부터인가\"를 표시해 가며 따라가면 헷갈리지 않습니다.\n\n| 단계 | 데이터 (ID:QTY) |\n|---|---|\n| UPDATE +1 → SP A | 1:11, 2:21 |\n| DELETE 1 | 2:21 |\n| ROLLBACK TO A → COMMIT | 1:11, 2:21 (확정) |\n| UPDATE 0 | 1:0, 2:0 |\n| ROLLBACK | 1:11, 2:21 |\n\n②는 마지막 ROLLBACK이 첫 트랜잭션까지 취소한다고 본 경우이고, ③은 DELETE가 되돌려지지 않았다고 본 경우입니다. ①은 마지막 ROLLBACK을 무시한 경우입니다.",
+    "examPoint": "ROLLBACK은 현재 트랜잭션만 취소. COMMIT된 변경은 이후 ROLLBACK과 무관.",
+    "tags": [
+      "TCL",
+      "ROLLBACK",
+      "SAVEPOINT",
+      "COMMIT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0012",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "COMMIT 전 다른 세션의 조회",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "세션 A가 UPDATE EMP SET SAL = 500 WHERE ENO = 1;(원래 SAL = 300)을 실행하고 아직 COMMIT하지 않았다. 이때의 설명으로 옳은 것은? (Oracle 기준)",
+    "choices": [
+      "세션 B가 ENO = 1인 행을 SELECT하면 300이 보인다.",
+      "세션 B가 ENO = 1인 행을 SELECT하면 500이 보인다.",
+      "세션 B는 세션 A가 COMMIT할 때까지 ENO = 1인 행을 SELECT할 수 없다.",
+      "세션 A 자신이 SELECT해도 COMMIT 전이므로 300이 보인다."
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. COMMIT되지 않은 변경은 변경한 세션에서만 보이고, 다른 세션은 변경 전의 값(300)을 읽습니다. Oracle은 읽기 일관성을 위해 변경 전 데이터를 보관해 두었다가 다른 세션에 보여 줍니다.\n\n트랜잭션의 고립성(Isolation) 덕분에, 아직 확정되지 않은 값이 다른 사용자에게 새어 나가지 않습니다. 확정되지 않은 값을 읽는 것을 Dirty Read라고 하는데, Oracle은 이를 허용하지 않습니다. 또 Oracle에서 단순 조회는 잠금을 기다리지 않으므로, 세션 B의 SELECT는 막히지 않고 바로 이전 값을 돌려줍니다. 다만 세션 B가 같은 행을 UPDATE하려 하면 세션 A가 끝날 때까지 기다리게 됩니다.\n\n②는 Dirty Read가 일어난다고 본 경우이고, ③은 조회도 잠금에 막힌다고 본 경우입니다. ④는 변경한 세션 자신은 새 값(500)을 본다는 점을 놓쳤습니다.",
+    "examPoint": "COMMIT 전 변경은 본인 세션만 보인다. 다른 세션은 이전 값(읽기 일관성), SELECT는 잠금 대기 없음.",
+    "tags": [
+      "TCL",
+      "읽기 일관성",
+      "격리성"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0013",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "동시성 이상 현상",
+    "type": "concept",
+    "difficulty": 3,
+    "stem": "트랜잭션 T1이 같은 조건(SAL > 300)으로 두 번 조회하는 사이에 다른 트랜잭션 T2가 조건을 만족하는 **새 행을 INSERT하고 COMMIT**하여, T1의 두 번째 조회에 없던 행이 나타났다. 이 현상의 이름으로 알맞은 것은?",
+    "choices": [
+      "Dirty Read",
+      "Non-Repeatable Read",
+      "Phantom Read",
+      "Lost Update"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 같은 조건으로 다시 조회했을 때 다른 트랜잭션이 넣은 행이 \"유령처럼\" 새로 나타나는 현상을 Phantom Read라고 합니다.\n\n동시에 실행되는 트랜잭션 사이에서 생기는 대표적인 이상 현상은 세 가지입니다. Dirty Read는 COMMIT되지 않은 값을 읽는 것이고, Non-Repeatable Read는 같은 행을 다시 읽었을 때 다른 트랜잭션의 UPDATE·DELETE 때문에 값이 바뀌어 있는 것입니다. Phantom Read는 행의 값이 아니라 조건에 맞는 행의 \"집합\"이 바뀌는 것으로, 주로 INSERT 때문에 생깁니다. 격리 수준을 SERIALIZABLE로 높이면 세 현상을 모두 막을 수 있습니다.\n\n①은 COMMIT 전 값을 읽는 현상이고, ②는 이미 읽은 행의 값이 바뀌는 현상입니다. ④는 두 트랜잭션이 같은 행을 고쳐 한쪽의 변경이 사라지는 현상입니다.",
+    "examPoint": "Dirty = 미확정 값 읽기, Non-Repeatable = 같은 행 값 변경, Phantom = 조건에 맞는 새 행 출현.",
+    "tags": [
+      "TCL",
+      "격리성",
+      "동시성"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0014",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "ACID 특성 고르기",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "\"COMMIT이 완료된 트랜잭션의 결과는 이후 시스템에 장애가 나더라도 사라지지 않아야 한다\"는 설명에 해당하는 트랜잭션 특성은?",
+    "choices": [
+      "원자성(Atomicity)",
+      "일관성(Consistency)",
+      "고립성(Isolation)",
+      "지속성(Durability)"
+    ],
+    "answer": 4,
+    "fixedOrder": true,
+    "explanation": "정답은 ④입니다. 확정된 결과가 장애 이후에도 영구히 유지되어야 한다는 성질은 지속성(Durability)입니다. DBMS는 로그 파일 등을 이용해 장애 후에도 COMMIT된 내용을 복구합니다.\n\n트랜잭션의 네 가지 특성(ACID)은 각각 다른 질문에 답합니다. 원자성은 \"모두 반영되거나 하나도 반영되지 않는가\", 일관성은 \"트랜잭션 전후로 데이터가 규칙(제약조건)을 지키는가\", 고립성은 \"실행 중인 트랜잭션이 서로 간섭하지 않는가\", 지속성은 \"확정된 결과가 영구히 남는가\"입니다. 문제 설명에 나온 \"COMMIT 이후\", \"장애가 나도\"라는 표현이 지속성의 핵심 단서입니다.\n\n①은 전부 또는 전무(All or Nothing)를, ②는 규칙 준수를, ③은 동시에 실행되는 트랜잭션 사이의 간섭 방지를 뜻합니다.",
+    "examPoint": "ACID: 원자성(전부/전무), 일관성(규칙 유지), 고립성(간섭 없음), 지속성(COMMIT 결과 영구).",
+    "tags": [
+      "TCL",
+      "ACID"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0015",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "SAVEPOINT 되돌리기 순서",
+    "type": "sql_error",
+    "difficulty": 3,
+    "stem": "한 트랜잭션 안에서 다음을 먼저 실행했다. 이어서 실행했을 때 **오류가 발생하는** 것은? (Oracle 기준)\n\n```sql\nINSERT INTO T VALUES (1);\nSAVEPOINT SP1;\nINSERT INTO T VALUES (2);\nSAVEPOINT SP2;\nINSERT INTO T VALUES (3);\n```",
+    "choices": [
+      "ROLLBACK TO SAVEPOINT SP2; ROLLBACK TO SAVEPOINT SP1;",
+      "ROLLBACK TO SAVEPOINT SP1; ROLLBACK TO SAVEPOINT SP1;",
+      "ROLLBACK TO SAVEPOINT SP1; ROLLBACK TO SAVEPOINT SP2;",
+      "ROLLBACK TO SAVEPOINT SP2; ROLLBACK;"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. ROLLBACK TO SAVEPOINT SP1을 실행하면 SP1 이후의 작업과 함께 SP1 뒤에 만든 SP2도 사라집니다. 그 상태에서 SP2로 되돌리려 하면 존재하지 않는 저장점이라 오류가 납니다.\n\n저장점으로 되돌릴 때는 그 지점 자체는 남지만, 그보다 나중에 만든 저장점은 모두 지워집니다. 그래서 늦게 만든 SP2에서 먼저 만든 SP1으로 거슬러 가는 것은 가능하지만(①), 그 반대 방향은 불가능합니다. 같은 저장점으로 여러 번 되돌리는 것(②)은 SP1이 남아 있으므로 문제없고, 저장점으로 되돌린 뒤 전체 ROLLBACK(④)도 정상입니다.\n\n①은 SP2 → SP1 순서로 거슬러 가는 정상 동작이고, ②는 남아 있는 SP1로 다시 되돌리는 정상 동작입니다. ④는 트랜잭션 전체를 취소하는 정상 동작입니다.",
+    "examPoint": "ROLLBACK TO SP는 SP 자신은 남기고 그 뒤에 만든 저장점은 지운다 → 앞 저장점으로 간 뒤 뒤 저장점으로는 못 간다.",
+    "tags": [
+      "TCL",
+      "SAVEPOINT",
+      "오류"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0016",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "저장점까지 되돌리기",
+    "type": "sql_fill",
+    "difficulty": 1,
+    "stem": "SP1 이후에 실행한 작업만 취소하려고 한다. (ㄱ)에 들어갈 명령어로 알맞은 것은?\n\n```sql\nSAVEPOINT SP1;\nDELETE FROM T_ORDER WHERE ID = 1;\n(ㄱ) TO SAVEPOINT SP1;\n```",
+    "choices": [
+      "ROLLBACK",
+      "COMMIT",
+      "UNDO",
+      "RESTORE"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. 저장점까지만 되돌릴 때는 ROLLBACK TO SAVEPOINT 저장점이름 형태로 씁니다. SAVEPOINT 키워드는 생략하고 ROLLBACK TO SP1이라고 써도 됩니다.\n\nTCL(트랜잭션 제어어)에는 COMMIT, ROLLBACK, SAVEPOINT가 있습니다. SAVEPOINT로 중간 지점을 표시해 두면, 트랜잭션 전체를 취소하지 않고 그 지점 이후의 작업만 골라서 취소할 수 있습니다. 저장점까지 되돌린 뒤에도 트랜잭션은 끝나지 않으므로, 이어서 다른 작업을 하고 COMMIT하거나 ROLLBACK할 수 있습니다.\n\n②의 COMMIT은 저장점과 함께 쓸 수 없고 변경을 확정합니다. ③의 UNDO와 ④의 RESTORE는 SQL의 트랜잭션 제어 명령어가 아닙니다.",
+    "examPoint": "ROLLBACK TO [SAVEPOINT] 이름 — 저장점 이후만 취소, 트랜잭션은 계속.",
+    "tags": [
+      "TCL",
+      "SAVEPOINT",
+      "ROLLBACK"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0017",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "저장점 두 개와 COMMIT",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_ORDER] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은? (실행 전 데이터는 모두 COMMIT된 상태이다)",
+    "tables": [
+      {
+        "name": "T_ORDER",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ]
+        ]
+      }
+    ],
+    "sql": "INSERT INTO T_ORDER VALUES (3, 30);\nSAVEPOINT S1;\nINSERT INTO T_ORDER VALUES (4, 40);\nSAVEPOINT S2;\nUPDATE T_ORDER SET QTY = QTY * 10;\nROLLBACK TO SAVEPOINT S2;\nCOMMIT;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "sqlExec": "BEGIN;\nINSERT INTO T_ORDER VALUES (3, 30);\nSAVEPOINT S1;\nINSERT INTO T_ORDER VALUES (4, 40);\nSAVEPOINT S2;\nUPDATE T_ORDER SET QTY = QTY * 10;\nROLLBACK TO SAVEPOINT S2;\nCOMMIT;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "choices": [
+      "4, 100",
+      "4, 1000",
+      "3, 60",
+      "2, 30"
+    ],
+    "answer": 1,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ①입니다. ROLLBACK TO SAVEPOINT S2는 S2 이후의 UPDATE(× 10)만 취소합니다. S2 이전의 두 INSERT는 남아 COMMIT으로 확정되므로 4행, 합계 10 + 20 + 30 + 40 = 100입니다.\n\n저장점으로 되돌리면 그 저장점을 만든 순간의 상태로 돌아갑니다. S2를 만든 시점에는 이미 3번과 4번 행이 들어가 있었으므로 두 행은 영향을 받지 않습니다. 저장점이 여러 개일 때는 \"어느 저장점으로 돌아가는지\"를 찾고, 그 저장점이 만들어진 시점의 데이터를 떠올리면 됩니다.\n\n| 단계 | 데이터 (ID:QTY) |\n|---|---|\n| INSERT 3 → S1 | 1:10, 2:20, 3:30 |\n| INSERT 4 → S2 | 1:10, 2:20, 3:30, 4:40 |\n| UPDATE × 10 | 1:100, 2:200, 3:300, 4:400 |\n| ROLLBACK TO S2 → COMMIT | 1:10, 2:20, 3:30, 4:40 |\n\n②는 UPDATE가 취소되지 않았다고 본 경우이고, ③은 S1으로 되돌린 경우입니다. ④는 트랜잭션 전체를 ROLLBACK한 경우입니다.",
+    "examPoint": "ROLLBACK TO SP = SP를 만든 시점의 상태로 복귀. 그 이전 작업은 이후 COMMIT으로 확정.",
+    "tags": [
+      "TCL",
+      "SAVEPOINT",
+      "ROLLBACK"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0018",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "Oracle 트랜잭션의 시작",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "Oracle의 트랜잭션에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "첫 번째 DML 문장을 실행하면 트랜잭션이 자동으로 시작된다.",
+      "DDL 문장을 실행하면 그 전의 트랜잭션이 자동으로 COMMIT된다.",
+      "COMMIT이나 ROLLBACK을 실행하면 현재 트랜잭션이 끝난다.",
+      "트랜잭션을 시작하려면 반드시 BEGIN TRANSACTION을 먼저 실행해야 한다."
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. Oracle에는 트랜잭션을 여는 별도의 명령이 필요 없습니다. 이전 트랜잭션이 끝난 뒤 첫 DML을 실행하면 그때 새 트랜잭션이 자동으로 시작됩니다.\n\nSQL Server 같은 일부 DBMS는 기본적으로 문장마다 자동 COMMIT(Auto Commit)하고, 여러 문장을 묶으려면 BEGIN TRANSACTION을 명시합니다. 반면 Oracle은 기본적으로 자동 COMMIT하지 않으므로, 사용자가 COMMIT하기 전까지 DML 결과가 확정되지 않습니다. 단 DDL(CREATE, ALTER, DROP, TRUNCATE 등)은 실행 전후로 자동 COMMIT되어, 그 앞에 실행한 DML도 함께 확정된다는 점을 주의해야 합니다.\n\n①·③·②는 Oracle 트랜잭션의 특징을 바르게 설명했습니다. ④는 다른 DBMS의 명시적 트랜잭션 방식을 Oracle에 적용한 보기입니다.",
+    "examPoint": "Oracle: 첫 DML로 트랜잭션 자동 시작, 기본은 자동 COMMIT 아님, DDL은 자동 COMMIT.",
+    "tags": [
+      "TCL",
+      "트랜잭션"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0019",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "비정상 종료와 트랜잭션",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "COMMIT하지 않은 변경이 있는 상태에서 다음 상황이 생겼을 때, 그 변경이 **ROLLBACK되는** 경우는? (Oracle 기준)",
+    "choices": [
+      "같은 세션에서 CREATE TABLE 문을 실행했다.",
+      "같은 세션에서 ALTER TABLE 문을 실행했다.",
+      "작업 중 네트워크가 끊겨 세션이 비정상적으로 종료되었다.",
+      "같은 세션에서 GRANT 문으로 권한을 부여했다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 세션이 비정상적으로 끊기면 Oracle은 확정되지 않은 변경을 신뢰할 수 없다고 보고 자동으로 ROLLBACK합니다.\n\n확정되지 않은 변경이 처리되는 방식은 상황마다 다릅니다. DDL(CREATE, ALTER, DROP 등)과 DCL(GRANT, REVOKE)은 실행할 때 자동으로 COMMIT되므로, 그 앞의 DML도 함께 확정됩니다. 또 SQL*Plus 같은 도구를 EXIT로 정상 종료하면 보통 자동으로 COMMIT됩니다. 반면 장애, 네트워크 단절, 강제 종료처럼 비정상적으로 끝나면 자동 ROLLBACK됩니다. 그래서 중요한 작업은 끝날 때 직접 COMMIT하는 것이 안전합니다.\n\n①·②는 DDL이라 자동 COMMIT되고, ④는 DCL이라 역시 자동 COMMIT됩니다.",
+    "examPoint": "자동 COMMIT: DDL·DCL 실행, 정상 종료. 자동 ROLLBACK: 비정상 종료(장애·연결 끊김).",
+    "tags": [
+      "TCL",
+      "자동 COMMIT",
+      "ROLLBACK"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0020",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "같은 행을 고치는 두 세션",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "세션 A가 UPDATE EMP SET SAL = 500 WHERE ENO = 1;을 실행하고 COMMIT하지 않았다. 이어서 세션 B가 UPDATE EMP SET SAL = 600 WHERE ENO = 1;을 실행했을 때의 설명으로 옳은 것은? (Oracle 기준)",
+    "choices": [
+      "세션 B의 UPDATE는 즉시 실행되어 세션 A의 값을 덮어쓴다.",
+      "세션 B의 UPDATE는 오류가 나며 자동으로 취소된다.",
+      "세션 B의 UPDATE는 세션 A가 COMMIT 또는 ROLLBACK하여 잠금을 풀 때까지 기다린다.",
+      "두 세션의 값이 합쳐져 SAL은 1100이 된다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 세션 A의 UPDATE는 ENO = 1인 행에 잠금(Lock)을 걸어 둡니다. 세션 B가 같은 행을 바꾸려 하면 그 잠금이 풀릴 때까지, 즉 세션 A가 COMMIT이나 ROLLBACK할 때까지 기다리게 됩니다.\n\n잠금은 두 트랜잭션이 같은 데이터를 동시에 고쳐 한쪽의 변경이 사라지는 문제(Lost Update)를 막기 위한 장치입니다. Oracle은 행 단위로 잠금을 걸므로, 세션 B가 다른 행(ENO = 2)을 고치는 것은 기다림 없이 바로 됩니다. 또 단순 SELECT는 잠금과 상관없이 이전 값을 읽습니다. 두 세션이 서로가 잡은 행을 기다리면 교착 상태(Deadlock)가 생기는데, 이 경우 Oracle이 한쪽 문장을 오류로 끝내 풀어 줍니다.\n\n①은 Lost Update가 일어난다고 본 경우이고, ②는 기다리지 않고 바로 오류가 난다고 본 경우입니다. ④는 동시 변경이 합산된다고 착각한 경우입니다.",
+    "examPoint": "같은 행 UPDATE는 앞 트랜잭션이 끝날 때까지 대기(행 잠금). SELECT는 대기 없음. 서로 기다리면 Deadlock.",
+    "tags": [
+      "TCL",
+      "잠금",
+      "동시성"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0021",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "처음에 만든 저장점",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_ORDER] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은? (실행 전 데이터는 모두 COMMIT된 상태이다)",
+    "tables": [
+      {
+        "name": "T_ORDER",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ]
+        ]
+      }
+    ],
+    "sql": "SAVEPOINT SP0;\nDELETE FROM T_ORDER;\nINSERT INTO T_ORDER VALUES (5, 50);\nROLLBACK TO SAVEPOINT SP0;\nINSERT INTO T_ORDER VALUES (6, 60);\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "sqlExec": "BEGIN;\nSAVEPOINT SP0;\nDELETE FROM T_ORDER;\nINSERT INTO T_ORDER VALUES (5, 50);\nROLLBACK TO SAVEPOINT SP0;\nINSERT INTO T_ORDER VALUES (6, 60);\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ORDER;",
+    "choices": [
+      "3, 90",
+      "1, 60",
+      "2, 110",
+      "4, 140"
+    ],
+    "answer": 1,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ①입니다. SP0로 되돌리면 DELETE와 5번 INSERT가 모두 취소되어 원래의 (1, 10), (2, 20)이 돌아오고, 그 뒤에 6번 행을 넣으므로 3행, 합계 90입니다.\n\n저장점은 트랜잭션의 맨 처음에도 만들 수 있습니다. 이렇게 하면 ROLLBACK TO SAVEPOINT SP0가 사실상 \"지금까지의 작업 전체 취소\"와 같은 효과를 내면서도 트랜잭션은 끝나지 않습니다. 그래서 되돌린 뒤 이어서 새 작업을 하고 한꺼번에 COMMIT할 수 있습니다. 마지막 SELECT는 같은 세션에서 실행하므로 COMMIT 전이라도 6번 행이 보입니다.\n\n| 단계 | 데이터 (ID:QTY) |\n|---|---|\n| SP0 | 1:10, 2:20 |\n| DELETE 전체 | 없음 |\n| INSERT 5 | 5:50 |\n| ROLLBACK TO SP0 | 1:10, 2:20 |\n| INSERT 6 | 1:10, 2:20, 6:60 |\n\n②는 DELETE가 되돌려지지 않았다고 본 경우이고, ③은 5번 INSERT가 남았다고 본 경우입니다. ④는 ROLLBACK TO가 아무것도 취소하지 않았다고 본 경우입니다.",
+    "examPoint": "트랜잭션 처음에 만든 저장점으로 되돌리면 지금까지의 작업만 취소되고 트랜잭션은 계속된다.",
+    "tags": [
+      "TCL",
+      "SAVEPOINT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0022",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "ROLLBACK TO의 다른 표기",
+    "type": "sql_equivalent",
+    "difficulty": 1,
+    "stem": "다음 문장과 **같은 동작**을 하는 것은? (Oracle 기준)\n\n```sql\nROLLBACK TO SAVEPOINT SP1;\n```",
+    "choices": [
+      "ROLLBACK TO SP1;",
+      "ROLLBACK;",
+      "COMMIT TO SP1;",
+      "SAVEPOINT SP1;"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. ROLLBACK TO SAVEPOINT 구문에서 SAVEPOINT 키워드는 생략할 수 있으므로 ROLLBACK TO SP1과 같습니다.\n\nOracle의 ROLLBACK 문법은 ROLLBACK [WORK] [TO [SAVEPOINT] 저장점]입니다. 대괄호 부분은 생략할 수 있어, TO 절을 쓰면 저장점까지만, TO 절을 생략하면 트랜잭션 전체를 되돌립니다. 같은 뜻의 다른 표기를 알아 두면 시험에서 낯선 형태가 나와도 당황하지 않습니다.\n\n②는 TO 절이 없어 트랜잭션 전체를 취소합니다. ③의 COMMIT에는 TO 절이 없어 문법 오류이고, ④는 되돌리는 것이 아니라 SP1이라는 저장점을 새로 만드는(같은 이름이 있으면 옮기는) 문장입니다.",
+    "examPoint": "ROLLBACK [WORK] [TO [SAVEPOINT] sp] — ROLLBACK TO SP1 ≡ ROLLBACK TO SAVEPOINT SP1.",
+    "tags": [
+      "TCL",
+      "SAVEPOINT",
+      "ROLLBACK",
+      "동치"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0023",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "문장 단위 롤백",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "[T_ITEM] 테이블의 QTY에는 CHECK (QTY <= 100) 제약조건이 있고, 데이터는 (1, 50), (2, 90), (3, 30)이다(모두 COMMIT됨). 같은 트랜잭션에서 다음을 실행했을 때, 오류 직후 같은 세션에서 조회한 QTY의 합계는? (Oracle 기준)\n\n```sql\nUPDATE T_ITEM SET QTY = QTY + 5 WHERE ID = 3;\nUPDATE T_ITEM SET QTY = QTY + 20;   -- 오류 발생\n```",
+    "choices": [
+      "170",
+      "175",
+      "195",
+      "235"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "explanation": "정답은 ②입니다. 두 번째 UPDATE는 2번 행이 110이 되어 CHECK 제약을 어기므로 문장 전체가 취소됩니다. 하지만 같은 트랜잭션의 첫 번째 UPDATE(30 → 35)는 그대로 남으므로 합계는 50 + 90 + 35 = 175입니다.\n\n문장 하나가 오류로 실패하면 Oracle은 그 문장이 바꾼 내용만 모두 되돌리는 문장 단위 롤백(Statement-level Rollback)을 합니다. 그래서 두 번째 UPDATE에서 1번, 3번 행이 먼저 바뀌었더라도 함께 취소됩니다. 반면 트랜잭션 전체가 취소되지는 않으므로, 이전에 성공한 문장의 결과는 COMMIT이나 ROLLBACK을 기다리는 상태로 남아 있습니다.\n\n| ID | 처음 | 첫 UPDATE 후 | 두 번째 UPDATE(실패) 후 |\n|---|---|---|---|\n| 1 | 50 | 50 | 50 |\n| 2 | 90 | 90 | 90 |\n| 3 | 30 | 35 | 35 |\n\n①은 오류로 트랜잭션 전체가 취소되었다고 본 경우이고, ③은 오류가 난 2번 행만 빼고 나머지 행은 바뀌었다고 본 경우입니다. ④는 제약조건을 무시하고 모두 반영한 경우입니다.",
+    "examPoint": "문장 단위 롤백: 실패한 문장의 변경만 전부 취소, 앞서 성공한 문장은 트랜잭션에 남는다.",
+    "tags": [
+      "TCL",
+      "ROLLBACK",
+      "제약조건"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-02-0024",
+    "subject": 2,
+    "chapter": "S3-02",
+    "topic": "격리 수준",
+    "type": "concept",
+    "difficulty": 3,
+    "stem": "트랜잭션 격리 수준(Isolation Level)에 대한 설명으로 옳은 것은?",
+    "choices": [
+      "READ UNCOMMITTED는 Dirty Read를 막는다.",
+      "Oracle의 기본 격리 수준은 READ COMMITTED이다.",
+      "SERIALIZABLE은 가장 낮은 격리 수준이라 동시성이 가장 높다.",
+      "격리 수준을 높일수록 동시에 처리할 수 있는 트랜잭션이 늘어난다."
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. Oracle의 기본 격리 수준은 READ COMMITTED로, COMMIT된 데이터만 읽으므로 Dirty Read가 일어나지 않습니다.\n\n격리 수준은 낮은 것부터 READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ, SERIALIZABLE 순입니다. READ UNCOMMITTED는 COMMIT되지 않은 값도 읽어 Dirty Read가 생길 수 있고, READ COMMITTED는 Dirty Read를, REPEATABLE READ는 Non-Repeatable Read까지, SERIALIZABLE은 Phantom Read까지 막습니다. 격리 수준을 높일수록 데이터는 더 일관되지만, 서로 기다리는 일이 많아져 동시에 처리할 수 있는 양은 줄어듭니다.\n\n①의 READ UNCOMMITTED는 Dirty Read를 허용하는 가장 낮은 수준이고, ③의 SERIALIZABLE은 가장 높은 수준입니다. ④는 격리 수준과 동시성의 관계를 거꾸로 설명했습니다.",
+    "examPoint": "격리 수준(낮→높): READ UNCOMMITTED < READ COMMITTED(Oracle 기본) < REPEATABLE READ < SERIALIZABLE.",
+    "tags": [
+      "TCL",
+      "격리성"
+    ],
+    "source": "claude"
   }
 ]

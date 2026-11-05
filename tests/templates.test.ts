@@ -12,7 +12,15 @@ afterAll(() => setSqlEngineLoader(undefined))
 const SEEDS = Array.from({ length: 150 }, (_, i) => i * 104729 + 17)
 
 /** 화면 SQL(Oracle) → SQLite (docs/04 §6 중 템플릿이 쓰는 규칙만) */
-const toSqlite = (sql: string) => sql.replace(/\bMINUS\b/g, 'EXCEPT').replace(/\bNVL\(/g, 'IFNULL(')
+/** Oracle의 NULL 정렬(ASC면 마지막, DESC면 처음)을 SQLite에서 재현하려면 NULLS FIRST/LAST를 명시해야 한다 (docs/04 §6) */
+const oracleNullOrder = (sql: string) =>
+  /NULLS (FIRST|LAST)/.test(sql)
+    ? sql
+    : sql.replace(/ORDER BY COMM( ASC| DESC)?,/, (_m, dir?: string) => `ORDER BY COMM${dir ?? ''} ${dir === ' DESC' ? 'NULLS FIRST' : 'NULLS LAST'},`)
+const toSqlite = (sql: string) => oracleNullOrder(sql.replace(/\bMINUS\b/g, 'EXCEPT').replace(/\bNVL\(/g, 'IFNULL('))
+
+/** 화면 SQL이 Oracle 전용 문법이라 SQLite로 바로 실행할 수 없는 템플릿 → 아래에서 JS 계산으로 따로 대조 */
+const ORACLE_ONLY = new Set(['TP09', 'TP15', 'TP16'])
 
 /**
  * 트랜잭션 시나리오(TP10) 화면 SQL → SQLite: Oracle처럼 첫 문장부터 트랜잭션이 되도록 BEGIN을 넣는다.
@@ -56,7 +64,7 @@ const column = (t: TableData | undefined, name: string): CellValue[] => {
 }
 
 describe('T4-4 템플릿 목록', () => {
-  it('TP01~TP10이 docs/04 §7의 단원으로 등록돼 있다', () => {
+  it('TP01~TP18이 docs/04 §7의 단원으로 등록돼 있다', () => {
     expect(TEMPLATES.map((t) => [t.id, t.chapter])).toEqual([
       ['TP01', 'S1-04'],
       ['TP02', 'S1-03'],
@@ -68,6 +76,14 @@ describe('T4-4 템플릿 목록', () => {
       ['TP08', 'S2-04'],
       ['TP09', 'S2-05'],
       ['TP10', 'S3-02'],
+      ['TP11', 'S1-03'],
+      ['TP12', 'S1-03'],
+      ['TP13', 'S1-06'],
+      ['TP14', 'S1-07'],
+      ['TP15', 'S2-03'],
+      ['TP16', 'S2-06'],
+      ['TP17', 'S2-01'],
+      ['TP18', 'S3-01'],
     ])
   })
 })
@@ -82,7 +98,7 @@ describe.each(TEMPLATES.map((t) => [t.id]))('T4-4·T4-5 %s (시드 150개)', (id
     expect(await findTemplate(id)!.generate(SEEDS[3]!)).toEqual(list[3])
   })
 
-  it.skipIf(id === 'TP09')('화면에 보이는 SQL을 직접 실행한 결과 = 정답 보기', async () => {
+  it.skipIf(ORACLE_ONLY.has(id))('화면에 보이는 SQL을 직접 실행한 결과 = 정답 보기', async () => {
     for (const q of await generated(id)) {
       expect(await answerFromDisplaySql(q), `${id} seed ${q.seed}\n${q.sql}`).toBe(q.choices[q.answer - 1])
     }
@@ -268,5 +284,123 @@ describe('T4-5 템플릿별 세부 규칙', () => {
     expect(list.some((q) => q.sql?.includes('ROLLBACK TO SAVEPOINT'))).toBe(true)
     expect(list.some((q) => /^ROLLBACK;$/m.test(q.sql ?? ''))).toBe(true)
     for (const q of list) expect(q.explanation).toContain('**모든 문장을 실행한 뒤의 EMP**')
+  })
+})
+
+// ───────────── T8-15: TP11~TP18 ─────────────
+
+describe('T8-15 템플릿별 세부 규칙', () => {
+  it('TP11: 세 변형(SUBSTR·INSTR·REPLACE)이 모두 나온다', async () => {
+    const sqls = (await generated('TP11')).map((q) => q.sql ?? '')
+    expect(sqls.some((s) => /SUBSTR\(CODE, \d, \d\)/.test(s))).toBe(true)
+    expect(sqls.some((s) => s.includes('INSTR'))).toBe(true)
+    expect(sqls.some((s) => s.includes('REPLACE'))).toBe(true)
+  })
+
+  it('TP12: CASE 경계값이 실제 급여에 있고, 두 변형(WHEN 순서·ELSE 없음)이 모두 나온다', async () => {
+    const list = await generated('TP12')
+    for (const q of list) {
+      const sals = column(q.tables?.[0], 'SAL')
+      for (const m of (q.sql ?? '').matchAll(/SAL >= (\d+)/g)) expect(sals).toContain(Number(m[1]))
+    }
+    expect(list.some((q) => q.sql?.includes("GRADE = 'B'"))).toBe(true)
+    expect(list.some((q) => q.sql?.includes('GRADE IS NULL'))).toBe(true)
+  })
+
+  it('TP13: 첫 행을 JS로 계산한 값과 같다 (Oracle: NULL은 가장 큰 값)', async () => {
+    const seen = new Set<string>()
+    for (const q of await generated('TP13')) {
+      const sql = q.sql ?? ''
+      const desc = sql.includes('COMM DESC')
+      const nulls = /NULLS (FIRST|LAST)/.exec(sql)?.[1] ?? (desc ? 'FIRST' : 'LAST')
+      seen.add(`${desc ? 'DESC' : 'ASC'} ${nulls}`)
+      const rows = [...(q.tables?.[0]?.rows ?? [])].sort((a, b) => {
+        const [x, y] = [a[2] ?? null, b[2] ?? null]
+        if (x === null || y === null) {
+          if (x === y) return (a[0] as number) - (b[0] as number)
+          return (x === null ? -1 : 1) * (nulls === 'FIRST' ? 1 : -1)
+        }
+        return ((x as number) - (y as number)) * (desc ? -1 : 1) || (a[0] as number) - (b[0] as number)
+      })
+      expect(q.choices[q.answer - 1], `seed ${q.seed}\n${sql}`).toBe(rows[0]?.[1])
+    }
+    expect(seen.size).toBe(4)
+  })
+
+  it('TP14: 경계값과 같은 급여가 있고, 결과 건수가 JS 계산과 같다', async () => {
+    for (const q of await generated('TP14')) {
+      const emp = q.tables?.[0]?.rows ?? []
+      const grades = q.tables?.[1]?.rows ?? []
+      const edges = grades.flatMap((g) => [g[1], g[2]])
+      expect(emp.some((e) => edges.includes(e[2] ?? null))).toBe(true)
+      const g = Number(/S\.GRADE = (\d)/.exec(q.sql ?? '')?.[1] ?? 0)
+      const expected = emp.flatMap((e) =>
+        grades.filter((s) => (!g || s[0] === g) && (e[2] as number) >= (s[1] as number) && (e[2] as number) <= (s[2] as number)),
+      ).length
+      expect(q.choices[q.answer - 1], `seed ${q.seed}`).toBe(`${expected}건`)
+    }
+  })
+
+  it('TP15: ROLLUP·CUBE·GROUPING SETS 행 수가 JS 계산과 같다', async () => {
+    const seen = new Set<string>()
+    for (const q of await generated('TP15')) {
+      const rows = q.tables?.[0]?.rows ?? []
+      const pairs = new Set(rows.map((r) => `${r[1]}|${r[2]}`)).size
+      const depts = new Set(rows.map((r) => r[1])).size
+      const jobs = new Set(rows.map((r) => r[2])).size
+      const kind = /GROUP BY (ROLLUP|CUBE|GROUPING SETS)/.exec(q.sql ?? '')?.[1] ?? ''
+      seen.add(kind)
+      const expected = ({ ROLLUP: pairs + depts + 1, CUBE: pairs + depts + jobs + 1, 'GROUPING SETS': depts + jobs } as Record<string, number>)[kind]
+      expect(q.choices[q.answer - 1], `${kind} seed ${q.seed}`).toBe(`${expected}건`)
+    }
+    expect([...seen].sort()).toEqual(['CUBE', 'GROUPING SETS', 'ROLLUP'])
+  })
+
+  it('TP16: 계층형 질의 결과 건수가 JS 트리 계산과 같다 (순방향·LEVEL·역방향)', async () => {
+    const seen = new Set<string>()
+    for (const q of await generated('TP16')) {
+      const sql = q.sql ?? ''
+      const rows = q.tables?.[0]?.rows ?? []
+      const startName = /ENAME = '(\w+)'/.exec(sql)?.[1]
+      const start = startName ? rows.filter((r) => r[1] === startName) : rows.filter((r) => r[2] === null)
+      let expected = 0
+      if (sql.includes('PRIOR MGR = EMPNO')) {
+        seen.add('up')
+        for (let r: CellValue[] | undefined = start[0]; r; ) {
+          expected++
+          const mgr: CellValue = r[2] ?? null
+          r = rows.find((x) => x[0] === mgr)
+        }
+      } else {
+        const levels: number[] = []
+        const walk = (r: CellValue[], lv: number) => {
+          levels.push(lv)
+          for (const k of rows.filter((x) => x[2] === r[0])) walk(k, lv + 1)
+        }
+        for (const r of start) walk(r, 1)
+        const lv = /WHERE LEVEL = (\d+)/.exec(sql)?.[1]
+        seen.add(lv ? 'level' : 'down')
+        expected = lv ? levels.filter((x) => x === Number(lv)).length : levels.length
+      }
+      expect(q.choices[q.answer - 1], `seed ${q.seed}\n${sql}`).toBe(`${expected}건`)
+    }
+    expect([...seen].sort()).toEqual(['down', 'level', 'up'])
+  })
+
+  it('TP17: 두 변형(부서 평균 비교·EXISTS)이 모두 나오고, 사원이 없는 부서가 있다', async () => {
+    const list = await generated('TP17')
+    for (const q of list) {
+      const used = new Set(column(q.tables?.[0], 'DEPTNO'))
+      expect(column(q.tables?.[1], 'DEPTNO').some((d) => !used.has(d))).toBe(true)
+    }
+    expect(list.some((q) => q.sql?.includes('AVG(SAL)'))).toBe(true)
+    expect(list.some((q) => q.sql?.includes('EXISTS'))).toBe(true)
+  })
+
+  it('TP18: 해설에 최종 테이블이 들어가고, DELETE 조건 두 방향이 모두 나온다', async () => {
+    const list = await generated('TP18')
+    for (const q of list) expect(q.explanation).toContain('**모든 문장을 실행한 뒤의 EMP**')
+    expect(list.some((q) => /SAL >= \d+;/.test(q.sql ?? ''))).toBe(true)
+    expect(list.some((q) => /SAL < \d+;/.test(q.sql ?? ''))).toBe(true)
   })
 })

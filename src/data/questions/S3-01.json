@@ -545,5 +545,870 @@
       "executable": true,
       "expect": "value"
     }
+  },
+  {
+    "id": "S3-01-0012",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "UPDATE의 SET은 동시에 계산된다",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_PAIR] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (A, B)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_PAIR",
+        "columns": [
+          "ID",
+          "A",
+          "B"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            20
+          ],
+          [
+            2,
+            5,
+            7
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE T_PAIR SET A = B, B = A;\nSELECT A, B FROM T_PAIR WHERE ID = 1;",
+    "choices": [
+      "10, 20",
+      "20, 20",
+      "10, 10",
+      "20, 10"
+    ],
+    "answer": 4,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ④입니다. UPDATE의 SET 절에 쓴 식은 모두 \"변경 전의 행 값\"으로 계산된 뒤 한꺼번에 반영됩니다. 그래서 A에는 원래 B(20)가, B에는 원래 A(10)가 들어가 두 값이 맞바뀝니다.\n\n프로그래밍 언어에서는 a = b; b = a;처럼 차례로 실행하면 두 변수가 같은 값이 되어 버리지만, SQL의 SET 절은 순서대로 실행되는 명령이 아니라 한 행에 대한 하나의 변경입니다. 오른쪽의 식은 모두 UPDATE 직전의 값을 읽으므로, 임시 변수 없이도 두 컬럼의 값을 바꿀 수 있습니다. 2번 행도 같은 방식으로 (7, 5)가 됩니다.\n\n| ID | A (전 → 후) | B (전 → 후) |\n|---|---|---|\n| 1 | 10 → 20 | 20 → 10 |\n| 2 | 5 → 7 | 7 → 5 |\n\n②는 A가 먼저 바뀐 뒤 B가 바뀐 A를 읽는다고 본 경우이고, ③은 그 반대 순서로 본 경우입니다. ①은 UPDATE가 적용되지 않은 원래 값입니다.",
+    "examPoint": "UPDATE SET의 식은 모두 변경 전 값으로 계산 → SET A = B, B = A는 값 교환.",
+    "tags": [
+      "DML",
+      "UPDATE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0013",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "WHERE 없는 DELETE",
+    "type": "scenario",
+    "difficulty": 1,
+    "stem": "[T_ITEM] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_ITEM",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      }
+    ],
+    "sql": "DELETE FROM T_ITEM;\nSELECT COUNT(*) AS CNT FROM T_ITEM;",
+    "choices": [
+      "오류가 발생한다",
+      "1",
+      "3",
+      "0"
+    ],
+    "answer": 4,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ④입니다. WHERE 절이 없는 DELETE는 테이블의 모든 행을 지우므로 COUNT(*)는 0입니다.\n\nDELETE, UPDATE에서 WHERE 절은 \"어느 행에 적용할지\"를 정합니다. 이를 생략하면 조건 없이 모든 행이 대상이 됩니다. 테이블 자체(구조)는 남아 있으므로 SELECT는 오류 없이 실행되고 0을 돌려줍니다. 테이블 구조까지 없애려면 DROP TABLE을 써야 합니다. 또 DELETE는 DML이라 COMMIT 전이라면 ROLLBACK으로 되돌릴 수 있습니다. 실무에서 가장 흔한 사고 중 하나가 WHERE를 빠뜨린 DELETE·UPDATE이므로, 실행 전에 같은 조건으로 SELECT를 먼저 해 보는 습관이 좋습니다.\n\n②는 한 행만 지운다고 본 경우이고, ③은 아무 행도 지워지지 않는다고 본 경우입니다. ①은 테이블까지 없어진다고 착각한 경우입니다.",
+    "examPoint": "WHERE 없는 DELETE = 모든 행 삭제(구조는 남음, ROLLBACK 가능). 구조까지 삭제는 DROP.",
+    "tags": [
+      "DML",
+      "DELETE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0014",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "기본값(DEFAULT)과 INSERT",
+    "type": "concept",
+    "difficulty": 2,
+    "stem": "다음과 같이 만든 테이블에 대한 설명으로 **옳지 않은** 것은? (Oracle 기준)\n\n```sql\nCREATE TABLE T_STOCK (\n  ID  NUMBER,\n  QTY NUMBER DEFAULT 0\n);\n```",
+    "choices": [
+      "INSERT INTO T_STOCK (ID) VALUES (1);을 실행하면 QTY에 0이 들어간다.",
+      "INSERT INTO T_STOCK VALUES (2, DEFAULT);를 실행하면 QTY에 0이 들어간다.",
+      "INSERT INTO T_STOCK VALUES (3, NULL);을 실행하면 기본값이 적용되어 QTY에 0이 들어간다.",
+      "기존 행의 QTY를 기본값으로 바꾸려면 UPDATE T_STOCK SET QTY = DEFAULT;처럼 쓸 수 있다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. 기본값은 값을 \"지정하지 않았을 때\" 적용됩니다. NULL을 명시적으로 넣으면 그 NULL이 그대로 저장되고, 기본값 0으로 바뀌지 않습니다.\n\nDEFAULT는 INSERT에서 컬럼을 생략하거나(①), 값 자리에 DEFAULT 키워드를 쓸 때(②) 적용됩니다. UPDATE에서도 SET 컬럼 = DEFAULT로 기본값을 다시 넣을 수 있습니다(④). 반면 NULL은 \"값이 없음\"을 뜻하는 하나의 값으로 취급되므로, 명시하면 기본값이 끼어들 틈이 없습니다. NULL이 들어오는 것 자체를 막고 싶다면 기본값과 별도로 NOT NULL 제약조건을 함께 걸어야 합니다.\n\n①·②·④는 기본값이 적용되는 상황을 바르게 설명했습니다. ③은 명시한 NULL에도 기본값이 적용된다고 착각한 보기입니다.",
+    "examPoint": "DEFAULT는 컬럼 생략·DEFAULT 키워드일 때만 적용. NULL을 명시하면 NULL 저장.",
+    "tags": [
+      "DML",
+      "INSERT",
+      "DEFAULT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0015",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "짝이 없는 행의 서브쿼리 UPDATE",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "다음 테이블에 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, NAMED)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DNO",
+          "DNAME"
+        ],
+        "rows": [
+          [
+            1,
+            10,
+            "OLD"
+          ],
+          [
+            2,
+            20,
+            "OLD"
+          ],
+          [
+            3,
+            40,
+            "OLD"
+          ]
+        ]
+      },
+      {
+        "name": "DEPT",
+        "columns": [
+          "DNO",
+          "DNAME"
+        ],
+        "rows": [
+          [
+            10,
+            "SALES"
+          ],
+          [
+            20,
+            "HR"
+          ],
+          [
+            30,
+            "IT"
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE EMP E\n   SET DNAME = (SELECT D.DNAME FROM DEPT D WHERE D.DNO = E.DNO);\nSELECT COUNT(*) AS CNT, COUNT(DNAME) AS NAMED FROM EMP;",
+    "sqlExec": "UPDATE EMP SET DNAME = (SELECT D.DNAME FROM DEPT D WHERE D.DNO = EMP.DNO);\nSELECT COUNT(*) AS CNT, COUNT(DNAME) AS NAMED FROM EMP;",
+    "choices": [
+      "3, 3",
+      "3, 0",
+      "2, 2",
+      "3, 2"
+    ],
+    "answer": 4,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ④입니다. WHERE가 없으므로 3명 모두 UPDATE되는데, 40번 부서는 DEPT에 없어 서브쿼리 결과가 비고, 결과가 없는 스칼라 서브쿼리는 NULL을 돌려줍니다. 그래서 3번 사원의 DNAME은 'OLD'가 아니라 NULL이 되어 COUNT(DNAME)은 2입니다.\n\n서브쿼리로 값을 가져오는 UPDATE에서 자주 하는 실수입니다. \"짝이 있는 행만 바뀌고 나머지는 그대로\"일 것 같지만, 실제로는 대상 행 모두에 서브쿼리 결과를 넣으므로 짝이 없는 행은 기존 값이 지워집니다. 이를 막으려면 WHERE EXISTS (SELECT 1 FROM DEPT D WHERE D.DNO = E.DNO)를 붙여 짝이 있는 행만 UPDATE하거나, MERGE를 써야 합니다.\n\n| ENO | DNO | DNAME (전 → 후) |\n|---|---|---|\n| 1 | 10 | OLD → SALES |\n| 2 | 20 | OLD → HR |\n| 3 | 40 | OLD → NULL |\n\n①은 3번 사원의 값이 그대로 남는다고 본 경우이고, ③은 짝이 없는 행이 지워진다고 본 경우입니다. ②는 COUNT(컬럼)이 NULL이 아닌 값을 센다는 점을 놓친 경우입니다.",
+    "examPoint": "서브쿼리 UPDATE에서 짝이 없는 행은 NULL로 덮어써진다 → WHERE EXISTS로 대상 제한.",
+    "tags": [
+      "DML",
+      "UPDATE",
+      "서브쿼리"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0016",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "INSERT FIRST와 INSERT ALL",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "[SRC] 테이블의 데이터를 비어 있는 [BIG]과 [HUGE] 테이블에 다음과 같이 넣었다. 실행 후 (BIG 행 수, HUGE 행 수)로 알맞은 것은? (Oracle 기준)",
+    "tables": [
+      {
+        "name": "SRC",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            60
+          ],
+          [
+            3,
+            120
+          ]
+        ]
+      }
+    ],
+    "sql": "INSERT FIRST\n  WHEN QTY > 50  THEN INTO BIG  VALUES (ID, QTY)\n  WHEN QTY > 100 THEN INTO HUGE VALUES (ID, QTY)\nSELECT ID, QTY FROM SRC;",
+    "choices": [
+      "2, 1",
+      "1, 1",
+      "2, 0",
+      "3, 0"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. INSERT FIRST는 각 행에 대해 WHEN 조건을 위에서부터 검사하다가 처음 만족한 조건 하나에만 넣습니다. 60과 120은 모두 첫 조건(QTY > 50)을 먼저 만족하므로 BIG에 들어가고, HUGE에는 아무 행도 들어가지 않습니다.\n\nOracle의 다중 테이블 INSERT는 SELECT 결과 한 번으로 여러 테이블에 나눠 넣는 문장입니다. INSERT ALL은 만족하는 조건마다 모두 넣으므로, 같은 SQL을 ALL로 바꾸면 120은 BIG과 HUGE 양쪽에 들어가 (2, 1)이 됩니다. INSERT FIRST는 CASE 식처럼 첫 번째로 맞는 분기만 실행하므로, 조건의 순서가 결과를 바꿉니다. 더 좁은 조건(QTY > 100)을 위에 두었다면 120은 HUGE로, 60은 BIG으로 가서 (1, 1)이 됩니다.\n\n| SRC 행 | 처음 만족한 조건 | 들어간 곳 |\n|---|---|---|\n| 10 | 없음 | - |\n| 60 | QTY > 50 | BIG |\n| 120 | QTY > 50 | BIG |\n\n①은 INSERT ALL일 때의 결과이고, ②는 조건 순서를 반대로 본 경우입니다. ④는 조건을 만족하지 않은 10까지 넣은 경우입니다.",
+    "examPoint": "INSERT ALL = 만족하는 조건 모두에 삽입, INSERT FIRST = 처음 만족한 조건 하나만(순서가 중요).",
+    "tags": [
+      "DML",
+      "INSERT",
+      "다중 테이블 INSERT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0017",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "서브쿼리 조건의 DELETE",
+    "type": "scenario",
+    "difficulty": 1,
+    "stem": "다음 테이블에 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "EMP",
+        "columns": [
+          "ENO",
+          "DNO"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            4,
+            30
+          ]
+        ]
+      },
+      {
+        "name": "DEPT",
+        "columns": [
+          "DNO",
+          "LOC"
+        ],
+        "rows": [
+          [
+            10,
+            "SEOUL"
+          ],
+          [
+            20,
+            "BUSAN"
+          ],
+          [
+            30,
+            "SEOUL"
+          ]
+        ]
+      }
+    ],
+    "sql": "DELETE FROM EMP\n WHERE DNO IN (SELECT DNO FROM DEPT WHERE LOC = 'SEOUL');\nSELECT COUNT(*) AS CNT FROM EMP;",
+    "choices": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "answer": 2,
+    "fixedOrder": true,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ②입니다. 서브쿼리가 SEOUL에 있는 부서 번호 10, 30을 돌려주므로 DELETE는 이 부서의 사원 1, 3, 4번을 지우고, BUSAN 부서(20)의 2번 사원 1명만 남습니다.\n\nDELETE와 UPDATE의 WHERE 절에도 SELECT와 똑같이 서브쿼리를 쓸 수 있습니다. 다른 테이블의 조건으로 지울 행을 정할 때 자주 쓰는 형태입니다. 서브쿼리가 여러 값을 돌려줄 수 있으므로 = 대신 IN을 써야 하며, 같은 의미를 EXISTS로 쓸 수도 있습니다. 실행 전에 SELECT * FROM EMP WHERE DNO IN (…)으로 지워질 행을 먼저 확인하면 안전합니다.\n\n| ENO | DNO | LOC | 결과 |\n|---|---|---|---|\n| 1 | 10 | SEOUL | 삭제 |\n| 2 | 20 | BUSAN | 남음 |\n| 3 | 10 | SEOUL | 삭제 |\n| 4 | 30 | SEOUL | 삭제 |\n\n③은 30번 부서를 빠뜨린 경우이고, ④는 10번 부서 사원 중 하나만 지운 경우입니다. ①은 모든 행이 지워진다고 본 경우입니다.",
+    "examPoint": "DELETE/UPDATE의 WHERE에도 서브쿼리 사용 가능. 여러 값이면 IN 또는 EXISTS.",
+    "tags": [
+      "DML",
+      "DELETE",
+      "서브쿼리"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0018",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "MERGE의 DELETE 절",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "다음 테이블에 Oracle에서 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_STOCK",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      },
+      {
+        "name": "S_IN",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            25
+          ],
+          [
+            4,
+            40
+          ]
+        ]
+      }
+    ],
+    "sql": "MERGE INTO T_STOCK T\nUSING S_IN S\n   ON (T.ID = S.ID)\n WHEN MATCHED THEN\n      UPDATE SET T.QTY = S.QTY\n      DELETE WHERE T.QTY = 0\n WHEN NOT MATCHED THEN\n      INSERT (ID, QTY) VALUES (S.ID, S.QTY);\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_STOCK;",
+    "sqlExec": "INSERT INTO T_STOCK SELECT ID, QTY FROM S_IN WHERE ID NOT IN (SELECT ID FROM T_STOCK);\nUPDATE T_STOCK SET QTY = (SELECT S.QTY FROM S_IN S WHERE S.ID = T_STOCK.ID) WHERE ID IN (SELECT ID FROM S_IN);\nDELETE FROM T_STOCK WHERE ID IN (SELECT ID FROM S_IN) AND QTY = 0;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_STOCK;",
+    "choices": [
+      "2, 55",
+      "4, 95",
+      "4, 100",
+      "3, 95"
+    ],
+    "answer": 4,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ④입니다. 짝이 있는 1, 2번은 S_IN의 값으로 갱신되는데(1번 → 0, 2번 → 25), DELETE WHERE가 갱신된 값을 기준으로 QTY = 0인 1번을 지웁니다. 짝이 없는 4번(40)은 새로 들어가므로 (2, 25), (3, 30), (4, 40)의 3행, 합계 95가 남습니다.\n\nOracle MERGE의 WHEN MATCHED 절에는 UPDATE 뒤에 DELETE WHERE를 붙일 수 있습니다. 이 DELETE는 MERGE로 갱신된 행에만, 그것도 갱신된 뒤의 값으로 조건을 검사합니다. 그래서 \"입고 수량을 반영한 결과 재고가 0이 되면 행을 지운다\" 같은 규칙을 한 문장으로 처리할 수 있습니다. 대상 테이블에만 있는 3번 행은 짝이 없으므로 MERGE의 영향을 전혀 받지 않습니다. (실행 검증에서는 INSERT·UPDATE·DELETE를 나눠 같은 결과를 확인했습니다.)\n\n| ID | 처리 | 결과 |\n|---|---|---|\n| 1 | 10 → 0 갱신 후 삭제 | - |\n| 2 | 20 → 25 갱신 | 25 |\n| 3 | 짝 없음(대상에만 있음) | 30 |\n| 4 | 새로 삽입 | 40 |\n\n②는 DELETE WHERE가 적용되지 않은 경우이고, ③은 UPDATE까지 무시한 경우입니다. ①은 WHEN NOT MATCHED의 INSERT를 빠뜨린 경우입니다.",
+    "examPoint": "MERGE … UPDATE SET … DELETE WHERE: 갱신된 행만, 갱신 후 값으로 삭제 조건 검사.",
+    "tags": [
+      "DML",
+      "MERGE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0019",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "UPDATE 조건과 NULL",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_ITEM] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_ITEM",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            null
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE T_ITEM SET QTY = 0 WHERE QTY <> 10;\nSELECT COUNT(QTY) AS CNT, SUM(QTY) AS TOTAL FROM T_ITEM;",
+    "choices": [
+      "2, 40",
+      "3, 10",
+      "2, 10",
+      "3, 0"
+    ],
+    "answer": 3,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ③입니다. QTY <> 10 조건은 30인 3번 행에서만 참이고, NULL인 2번 행에서는 UNKNOWN이라 UPDATE 대상이 되지 않습니다. 결과는 (1, 10), (2, NULL), (3, 0)이므로 COUNT(QTY)는 2, SUM(QTY)는 10입니다.\n\nNULL과의 비교는 =, <> 어느 쪽이든 참도 거짓도 아닌 UNKNOWN이 되고, WHERE 절은 참인 행만 통과시킵니다. 그래서 \"10이 아닌 모든 행\"을 의도했더라도 NULL인 행은 빠집니다. NULL까지 포함하려면 WHERE QTY <> 10 OR QTY IS NULL처럼 따로 조건을 써야 합니다. 이어서 COUNT(QTY)와 SUM(QTY)는 NULL을 빼고 계산하므로 2번 행은 집계에서도 제외됩니다.\n\n| ID | QTY (전 → 후) |\n|---|---|\n| 1 | 10 → 10 |\n| 2 | NULL → NULL |\n| 3 | 30 → 0 |\n\n②는 COUNT가 NULL 행까지 센다고 본 경우이고, ④는 NULL도 0으로 바뀌었다고 본 경우입니다. ①은 UPDATE가 적용되지 않은 합계입니다.",
+    "examPoint": "WHERE col <> 값은 NULL 행을 고르지 않는다(UNKNOWN). 포함하려면 OR col IS NULL.",
+    "tags": [
+      "DML",
+      "UPDATE",
+      "NULL"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0020",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "DELETE 문법",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[T_ITEM] 테이블(ID, QTY)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "DELETE FROM T_ITEM WHERE ID = 1;",
+      "DELETE T_ITEM WHERE ID = 1;",
+      "DELETE * FROM T_ITEM WHERE ID = 1;",
+      "DELETE FROM T_ITEM;"
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. DELETE는 행 전체를 지우는 문장이라 지울 컬럼을 고르는 목록이 없습니다. SELECT처럼 *를 쓰면 문법 오류가 납니다.\n\nDELETE의 기본 형태는 DELETE [FROM] 테이블 [WHERE 조건]입니다. 대괄호는 생략할 수 있다는 뜻으로, Oracle에서는 FROM을 빼고 DELETE T_ITEM WHERE …라고 써도 됩니다(②). WHERE를 생략하면 모든 행이 지워집니다(④). 특정 컬럼의 값만 지우고 싶다면 DELETE가 아니라 UPDATE … SET 컬럼 = NULL을 써야 합니다.\n\n①은 가장 일반적인 형태이고, ②는 FROM을 생략한 Oracle의 정상 문장입니다. ④는 모든 행을 지우는 정상 문장입니다.",
+    "examPoint": "DELETE [FROM] 테이블 [WHERE] — 컬럼 목록·* 없음, Oracle은 FROM 생략 가능.",
+    "tags": [
+      "DML",
+      "DELETE",
+      "오류"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0021",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "여러 컬럼을 한 번에 UPDATE",
+    "type": "sql_fill",
+    "difficulty": 2,
+    "stem": "사원의 급여(SAL)와 수당(COMM)을 [STD] 테이블의 값으로 **한 번의 서브쿼리**로 바꾸려고 한다. (ㄱ)에 들어갈 내용으로 알맞은 것은? (Oracle 기준)\n\n```sql\nUPDATE EMP E\n   SET (ㄱ) = (SELECT S.SAL, S.COMM\n                 FROM STD S\n                WHERE S.GRADE = E.GRADE);\n```",
+    "choices": [
+      "ROW(SAL, COMM)",
+      "SAL, COMM",
+      "[SAL, COMM]",
+      "(SAL, COMM)"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. 서브쿼리가 두 컬럼을 돌려줄 때는 SET 절에 바꿀 컬럼들을 괄호로 묶어 (SAL, COMM) = (SELECT …) 형태로 씁니다. 서브쿼리의 컬럼이 순서대로 짝지어 들어갑니다.\n\n같은 일을 SET SAL = (SELECT S.SAL …), COMM = (SELECT S.COMM …)처럼 컬럼마다 서브쿼리를 따로 써서 할 수도 있지만, 그러면 같은 테이블을 두 번 읽습니다. 괄호로 묶는 방식은 한 번의 서브쿼리로 여러 값을 가져오므로 더 간결하고 효율적입니다. 괄호 안 컬럼 수와 서브쿼리의 SELECT 컬럼 수가 같아야 하며, 서브쿼리는 행마다 한 행만 돌려줘야 합니다.\n\n②는 괄호가 없어 첫 컬럼 SAL만 대입 대상으로 보게 되어 문법 오류가 납니다. ③의 대괄호와 ①의 ROW 키워드는 Oracle의 UPDATE 문법에 없습니다.",
+    "examPoint": "UPDATE … SET (c1, c2) = (SELECT v1, v2 …) — 여러 컬럼을 한 서브쿼리로 갱신.",
+    "tags": [
+      "DML",
+      "UPDATE",
+      "서브쿼리"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0022",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "DML에 속하는 명령어",
+    "type": "concept",
+    "difficulty": 1,
+    "stem": "다음 중 DML(데이터 조작어)에 해당하지 **않는** 것은?",
+    "choices": [
+      "INSERT",
+      "MERGE",
+      "UPDATE",
+      "TRUNCATE"
+    ],
+    "answer": 4,
+    "explanation": "정답은 ④입니다. TRUNCATE는 테이블의 모든 행을 지운다는 점에서 DELETE와 비슷해 보이지만, 저장 공간을 초기화하는 DDL(데이터 정의어)에 속합니다.\n\nDML은 테이블 안의 데이터를 넣고, 바꾸고, 지우는 명령으로 INSERT, UPDATE, DELETE, MERGE가 있습니다(SELECT를 DML에 포함하기도 합니다). DML은 트랜잭션 안에서 실행되어 COMMIT 전에는 ROLLBACK으로 되돌릴 수 있습니다. 반면 TRUNCATE는 DDL이라 Oracle에서는 실행 즉시 자동으로 COMMIT되고 ROLLBACK할 수 없으며, WHERE 조건도 쓸 수 없습니다.\n\n①·②·③은 모두 데이터를 조작하는 DML입니다. ④는 기능이 비슷한 DELETE와 혼동하기 쉬운 DDL입니다.",
+    "examPoint": "DML = INSERT, UPDATE, DELETE, MERGE (+SELECT). TRUNCATE는 DDL(자동 COMMIT, WHERE 불가).",
+    "tags": [
+      "DML",
+      "TRUNCATE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0023",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "같은 테이블에서 읽어 INSERT",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_ITEM] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_ITEM",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      }
+    ],
+    "sql": "INSERT INTO T_ITEM\nSELECT ID + 10, QTY FROM T_ITEM WHERE QTY >= 20;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ITEM;",
+    "choices": [
+      "4, 90",
+      "5, 110",
+      "6, 120",
+      "5, 60"
+    ],
+    "answer": 2,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ②입니다. SELECT는 INSERT가 시작되기 전의 데이터를 기준으로 QTY >= 20인 2, 3번 행을 읽어 (12, 20), (13, 30)을 추가합니다. 결과는 5행, 합계 10 + 20 + 30 + 20 + 30 = 110입니다.\n\nINSERT … SELECT는 SELECT 결과를 한꺼번에 넣는 문장으로, 같은 테이블에서 읽어 같은 테이블에 넣을 수도 있습니다. 이때 SELECT는 문장이 시작된 시점의 데이터를 읽으므로(읽기 일관성), 방금 넣은 행이 다시 조건을 만족해 끝없이 복사되는 일은 생기지 않습니다. 테스트 데이터를 빠르게 늘리거나 이력 행을 복사할 때 쓰는 방식입니다.\n\n| ID | QTY | 비고 |\n|---|---|---|\n| 1 | 10 | 원래 행 |\n| 2 | 20 | 원래 행 |\n| 3 | 30 | 원래 행 |\n| 12 | 20 | 추가 |\n| 13 | 30 | 추가 |\n\n①은 한 행만 추가한 경우이고, ③은 모든 행을 복사한 경우입니다. ④는 합계에 추가된 행을 반영하지 않은 경우입니다.",
+    "examPoint": "INSERT … SELECT는 문장 시작 시점의 데이터를 읽는다(같은 테이블 복사도 무한 반복 없음).",
+    "tags": [
+      "DML",
+      "INSERT",
+      "INSERT SELECT"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0024",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "CASE로 조건별 UPDATE",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_ITEM] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_ITEM",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE T_ITEM\n   SET QTY = CASE WHEN QTY < 20 THEN QTY * 2\n                  ELSE QTY - 5 END;\nDELETE FROM T_ITEM WHERE QTY < 20;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ITEM;",
+    "choices": [
+      "2, 45",
+      "3, 60",
+      "2, 55",
+      "1, 25"
+    ],
+    "answer": 1,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ①입니다. UPDATE 후 값은 10 → 20, 20 → 15, 30 → 25가 되고, DELETE가 바뀐 값을 기준으로 20 미만인 15(2번 행)를 지우므로 (1, 20), (3, 25)의 2행, 합계 45가 남습니다.\n\nUPDATE의 SET 절에 CASE 식을 쓰면 행마다 조건에 따라 다른 값으로 바꿀 수 있습니다. 조건별로 UPDATE를 여러 번 나눠 실행하면 앞의 UPDATE가 바꾼 값이 뒤의 조건에 다시 걸리는 문제가 생길 수 있는데, CASE를 쓰면 한 번에 원래 값 기준으로 처리됩니다. 이어지는 DELETE는 UPDATE가 끝난 상태를 보고 조건을 검사합니다.\n\n| ID | 처음 | UPDATE 후 | DELETE 후 |\n|---|---|---|---|\n| 1 | 10 | 20 | 20 |\n| 2 | 20 | 15 | 삭제 |\n| 3 | 30 | 25 | 25 |\n\n②는 UPDATE 후 DELETE를 실행하지 않은 경우이고, ③은 DELETE가 원래 값(10)을 기준으로 1번 행을 지운다고 본 경우입니다. ④는 20인 행까지 지운 경우입니다.",
+    "examPoint": "UPDATE SET에 CASE로 조건별 갱신. 다음 DML은 바뀐 값을 기준으로 동작한다.",
+    "tags": [
+      "DML",
+      "UPDATE",
+      "CASE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0025",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "MERGE의 제약",
+    "type": "concept",
+    "difficulty": 3,
+    "stem": "Oracle의 MERGE 문에 대한 설명으로 **옳지 않은** 것은?",
+    "choices": [
+      "USING 절에는 테이블뿐 아니라 서브쿼리(인라인 뷰)도 쓸 수 있다.",
+      "WHEN MATCHED 절과 WHEN NOT MATCHED 절 중 하나만 써도 된다.",
+      "ON 절의 조인 조건에 사용한 컬럼도 WHEN MATCHED의 UPDATE SET에서 바꿀 수 있다.",
+      "WHEN NOT MATCHED 절에서는 대상 테이블에 새 행을 INSERT한다."
+    ],
+    "answer": 3,
+    "explanation": "정답은 ③입니다. Oracle은 MERGE의 ON 절에 쓴 컬럼을 UPDATE SET에서 바꾸는 것을 허용하지 않습니다. 짝을 맞춘 기준 값이 MERGE 도중에 바뀌면 일치 여부가 흔들리기 때문이며, 시도하면 오류가 납니다.\n\nMERGE는 원본(USING)과 대상(INTO)을 ON 조건으로 맞춰 보고, 짝이 있으면 UPDATE(필요하면 DELETE), 없으면 INSERT하는 문장입니다. USING에는 테이블, 뷰, 서브쿼리를 모두 쓸 수 있고, 두 WHEN 절 중 필요한 것만 써도 됩니다. 예를 들어 WHEN MATCHED만 쓰면 \"있는 행만 갱신\", WHEN NOT MATCHED만 쓰면 \"없는 행만 추가\"가 됩니다.\n\n①·②·④는 MERGE의 특징을 바르게 설명했습니다. ③은 ON 절 컬럼을 갱신할 수 없다는 제약을 놓친 보기입니다.",
+    "examPoint": "MERGE: USING에 서브쿼리 가능, WHEN 절 하나만도 가능, ON 절 컬럼은 UPDATE 불가.",
+    "tags": [
+      "DML",
+      "MERGE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0026",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "EXISTS와 IN으로 DELETE",
+    "type": "sql_equivalent",
+    "difficulty": 2,
+    "stem": "다음 SQL과 **같은 행을 지우는** 것은? (RETIRE.ENO에는 NULL이 없다.)\n\n```sql\nDELETE FROM EMP E\n WHERE EXISTS (SELECT 1 FROM RETIRE R WHERE R.ENO = E.ENO);\n```",
+    "choices": [
+      "DELETE FROM EMP WHERE ENO IN (SELECT ENO FROM RETIRE);",
+      "DELETE FROM EMP WHERE ENO NOT IN (SELECT ENO FROM RETIRE);",
+      "DELETE FROM EMP WHERE ENO = (SELECT ENO FROM RETIRE);",
+      "DELETE FROM EMP E WHERE EXISTS (SELECT 1 FROM RETIRE R);"
+    ],
+    "answer": 1,
+    "explanation": "정답은 ①입니다. 원래 SQL은 \"RETIRE에 같은 사번이 있는 사원\"을 지우며, 이는 사번이 RETIRE의 사번 목록에 포함되는 사원을 지우는 IN 조건과 같습니다.\n\n연관 서브쿼리를 쓴 EXISTS와 비연관 서브쿼리를 쓴 IN은 같은 세미 조인을 다른 모양으로 표현한 것입니다. EXISTS는 바깥 행마다 짝이 있는지를 확인하고, IN은 서브쿼리의 값 목록에 포함되는지를 확인합니다. 서브쿼리 쪽에 NULL이 없다면 두 방식의 결과는 같습니다. DELETE든 SELECT든 WHERE 절의 의미는 똑같이 적용됩니다.\n\n②는 반대로 RETIRE에 없는 사원을 지웁니다. ③은 RETIRE에 2행 이상 있으면 단일 행 서브쿼리 오류가 납니다. ④는 연관 조건이 없어 RETIRE에 행이 하나라도 있으면 EMP의 모든 행을 지웁니다.",
+    "examPoint": "연관 EXISTS(R.ENO = E.ENO) ≡ ENO IN (SELECT ENO …). 연관 조건 없는 EXISTS는 전체 아니면 0.",
+    "tags": [
+      "DML",
+      "DELETE",
+      "EXISTS",
+      "동치"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0027",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "NULL로 바꾼 뒤의 집계",
+    "type": "scenario",
+    "difficulty": 2,
+    "stem": "[T_ITEM] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (ALL_CNT, QTY_CNT, TOTAL)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_ITEM",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE T_ITEM SET QTY = NULL WHERE ID = 2;\nSELECT COUNT(*) AS ALL_CNT, COUNT(QTY) AS QTY_CNT, SUM(QTY) AS TOTAL FROM T_ITEM;",
+    "choices": [
+      "3, 2, 40",
+      "2, 2, 40",
+      "3, 3, 40",
+      "3, 2, NULL"
+    ],
+    "answer": 1,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ①입니다. UPDATE로 2번 행의 QTY만 NULL이 되고 행은 그대로 3개입니다. COUNT(*)는 행 수 3, COUNT(QTY)는 NULL을 뺀 2, SUM(QTY)는 NULL을 뺀 10 + 30 = 40입니다.\n\n값을 NULL로 바꾸는 UPDATE는 행을 지우는 것이 아니라 그 칸만 비우는 것입니다. 그래서 COUNT(*)에는 영향이 없지만, 컬럼을 대상으로 하는 집계 함수는 NULL을 건너뛰므로 결과가 달라집니다. SUM은 NULL이 섞여 있어도 나머지 값의 합을 돌려주며, 모든 값이 NULL일 때만 NULL이 됩니다.\n\n| ID | QTY |\n|---|---|\n| 1 | 10 |\n| 2 | NULL |\n| 3 | 30 |\n\n②는 NULL로 바꾼 행이 사라진다고 본 경우이고, ③은 COUNT(QTY)가 NULL도 센다고 본 경우입니다. ④는 NULL이 하나라도 있으면 SUM이 NULL이 된다고 본 경우입니다.",
+    "examPoint": "SET col = NULL은 행 유지 → COUNT(*) 불변, COUNT(col)·SUM(col)은 NULL 제외.",
+    "tags": [
+      "DML",
+      "UPDATE",
+      "NULL",
+      "집계 함수"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0028",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "중복 행 지우기",
+    "type": "scenario",
+    "difficulty": 3,
+    "stem": "[T_NAME] 테이블에 Oracle에서 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_NAME",
+        "columns": [
+          "NAME"
+        ],
+        "rows": [
+          [
+            "A"
+          ],
+          [
+            "B"
+          ],
+          [
+            "A"
+          ],
+          [
+            "C"
+          ],
+          [
+            "B"
+          ],
+          [
+            "A"
+          ]
+        ]
+      }
+    ],
+    "sql": "DELETE FROM T_NAME X\n WHERE X.ROWID > (SELECT MIN(Y.ROWID)\n                    FROM T_NAME Y\n                   WHERE Y.NAME = X.NAME);\nSELECT COUNT(*) AS CNT FROM T_NAME;",
+    "sqlExec": "DELETE FROM T_NAME WHERE rowid > (SELECT MIN(Y.rowid) FROM T_NAME Y WHERE Y.NAME = T_NAME.NAME);\nSELECT COUNT(*) AS CNT FROM T_NAME;",
+    "choices": [
+      "1",
+      "2",
+      "3",
+      "6"
+    ],
+    "answer": 3,
+    "fixedOrder": true,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ③입니다. 같은 이름끼리 묶었을 때 ROWID가 가장 작은 행 하나만 남기고 나머지를 지우므로, A, B, C가 하나씩 남아 3건입니다.\n\nROWID는 Oracle이 행마다 붙이는 물리적 주소로, 값이 모두 같은 중복 행이라도 ROWID는 서로 다릅니다. 연관 서브쿼리로 \"같은 이름 중 가장 작은 ROWID\"를 구하고, 그보다 큰 ROWID를 가진 행을 지우면 이름마다 대표 한 행만 남습니다. 기본 키가 없어 행을 구분할 수 없는 테이블에서 중복을 정리할 때 쓰는 전형적인 방법입니다.\n\n| NAME | 행 수 (전 → 후) |\n|---|---|\n| A | 3 → 1 |\n| B | 2 → 1 |\n| C | 1 → 1 |\n\n①은 이름과 관계없이 한 행만 남는다고 본 경우이고, ②는 중복이 없던 C까지 지운 경우입니다. ④는 아무 행도 지워지지 않는다고 본 경우입니다.",
+    "examPoint": "중복 제거: ROWID > (같은 키의 MIN(ROWID))인 행 삭제 → 키마다 한 행만 남음.",
+    "tags": [
+      "DML",
+      "DELETE",
+      "ROWID",
+      "중복 제거"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0029",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "WHERE 없는 UPDATE",
+    "type": "scenario",
+    "difficulty": 1,
+    "stem": "[T_ITEM] 테이블에 다음 SQL을 차례로 실행했을 때, 마지막 SELECT의 결과 (CNT, TOTAL)로 알맞은 것은?",
+    "tables": [
+      {
+        "name": "T_ITEM",
+        "columns": [
+          "ID",
+          "QTY"
+        ],
+        "rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            20
+          ],
+          [
+            3,
+            30
+          ]
+        ]
+      }
+    ],
+    "sql": "UPDATE T_ITEM SET QTY = 0;\nSELECT COUNT(*) AS CNT, SUM(QTY) AS TOTAL FROM T_ITEM;",
+    "choices": [
+      "3, 0",
+      "0, NULL",
+      "3, 60",
+      "1, 0"
+    ],
+    "answer": 1,
+    "verify": {
+      "executable": true,
+      "expect": "value"
+    },
+    "explanation": "정답은 ①입니다. WHERE가 없는 UPDATE는 모든 행을 바꾸므로 3행의 QTY가 모두 0이 됩니다. 행 수는 그대로 3이고 합계는 0입니다.\n\nUPDATE는 행을 만들거나 지우지 않고 값만 바꾸므로 COUNT(*)는 변하지 않습니다. WHERE를 생략하면 테이블 전체가 대상이 된다는 점은 DELETE와 같습니다. 실수로 실행했더라도 COMMIT 전이라면 ROLLBACK으로 되돌릴 수 있으니, 결과 건수(\"3개의 행이 갱신되었습니다\")를 보고 예상과 다르면 바로 ROLLBACK하는 습관이 중요합니다.\n\n②는 UPDATE가 행을 지운다고 본 경우이고, ③은 UPDATE가 적용되지 않은 합계입니다. ④는 첫 행만 바뀐다고 본 경우입니다.",
+    "examPoint": "WHERE 없는 UPDATE = 모든 행 갱신(행 수 불변). 실수하면 COMMIT 전 ROLLBACK.",
+    "tags": [
+      "DML",
+      "UPDATE"
+    ],
+    "source": "claude"
+  },
+  {
+    "id": "S3-01-0030",
+    "subject": 2,
+    "chapter": "S3-01",
+    "topic": "UPDATE SET의 컬럼 중복",
+    "type": "sql_error",
+    "difficulty": 2,
+    "stem": "[T_ITEM] 테이블(ID, QTY)에 대해 다음 SQL 중 **오류가 발생하는** 것은? (Oracle 기준)",
+    "choices": [
+      "UPDATE T_ITEM SET QTY = QTY + 1, ID = ID + 100 WHERE ID = 1;",
+      "UPDATE T_ITEM SET QTY = 1, QTY = 2 WHERE ID = 1;",
+      "UPDATE T_ITEM SET QTY = QTY WHERE 1 = 0;",
+      "UPDATE T_ITEM SET QTY = NULL;"
+    ],
+    "answer": 2,
+    "explanation": "정답은 ②입니다. 하나의 UPDATE에서 같은 컬럼을 SET 절에 두 번 지정하면, 어느 값을 넣어야 할지 정할 수 없으므로 \"열명이 중복되었습니다\" 오류가 납니다.\n\nSET 절의 대입은 모두 변경 전 값을 기준으로 동시에 계산되므로, 같은 컬럼에 두 값을 차례로 넣는다는 개념이 성립하지 않습니다. 반면 서로 다른 컬럼은 몇 개든 쉼표로 이어 바꿀 수 있습니다(①). 조건이 항상 거짓이라 바뀌는 행이 없는 UPDATE(③)도 오류가 아니라 \"0개 행이 갱신됨\"으로 정상 처리되고, NULL로 바꾸는 것(④)도 NOT NULL 제약이 없다면 문제없습니다.\n\n①은 두 컬럼을 함께 바꾸는 정상 문장이고, ③은 대상 행이 0개인 정상 문장입니다. ④는 모든 행의 QTY를 NULL로 바꾸는 정상 문장입니다.",
+    "examPoint": "UPDATE SET에 같은 컬럼 두 번 → 오류. 대상 0행 UPDATE는 오류 아님(0행 갱신).",
+    "tags": [
+      "DML",
+      "UPDATE",
+      "오류"
+    ],
+    "source": "claude"
   }
 ]

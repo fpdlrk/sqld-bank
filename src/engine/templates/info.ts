@@ -18,4 +18,12 @@ export const TEMPLATE_INFO: readonly TemplateInfo[] = [
   { id: 'TP08', subject: 2, chapter: 'S2-04', topic: '집계 윈도우 함수 누적 값', type: 'sql_result', difficulty: 3 },
   { id: 'TP09', subject: 2, chapter: 'S2-05', topic: 'ROWNUM과 ORDER BY 순서', type: 'sql_result', difficulty: 3 },
   { id: 'TP10', subject: 2, chapter: 'S3-02', topic: '트랜잭션 시나리오 최종 결과', type: 'scenario', difficulty: 3 },
+  { id: 'TP11', subject: 2, chapter: 'S1-03', topic: '문자 함수 결과 값', type: 'sql_result', difficulty: 2 },
+  { id: 'TP12', subject: 2, chapter: 'S1-03', topic: 'CASE 등급 결과 건수', type: 'sql_result', difficulty: 2 },
+  { id: 'TP13', subject: 2, chapter: 'S1-06', topic: 'ORDER BY와 NULL의 위치', type: 'sql_result', difficulty: 2 },
+  { id: 'TP14', subject: 2, chapter: 'S1-07', topic: 'NON-EQUI 조인 결과 건수', type: 'sql_result', difficulty: 2 },
+  { id: 'TP15', subject: 2, chapter: 'S2-03', topic: 'ROLLUP·CUBE 결과 행 수', type: 'sql_result', difficulty: 3 },
+  { id: 'TP16', subject: 2, chapter: 'S2-06', topic: '계층형 질의 결과 건수', type: 'sql_result', difficulty: 3 },
+  { id: 'TP17', subject: 2, chapter: 'S2-01', topic: '연관 서브쿼리 결과 건수', type: 'sql_result', difficulty: 3 },
+  { id: 'TP18', subject: 2, chapter: 'S3-01', topic: 'DML 연속 실행 결과', type: 'scenario', difficulty: 2 },
 ]

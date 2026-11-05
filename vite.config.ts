@@ -45,10 +45,12 @@ export default defineConfig({
     }),
   ],
   build: {
+    // 문제 데이터 묶음(약 1.2MB, gzip 약 0.3MB)은 한 번 받으면 PWA가 캐시하는 데이터라 경고 기준을 넉넉히 둔다
+    chunkSizeWarningLimit: 2000,
     rolldownOptions: {
       output: {
         codeSplitting: {
-          // 문제 데이터는 따로 묶는다 — 앱 코드와 나눠 캐시되고, 큰 파일 경고도 사라진다
+          // 문제 데이터는 따로 묶는다 — 앱 코드와 나눠 캐시된다
           groups: [{ name: 'questions', test: /src[\\/]data[\\/]questions/ }],
         },
       },

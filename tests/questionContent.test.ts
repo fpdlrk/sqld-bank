@@ -16,12 +16,24 @@ const partOf = (code: string) => code.slice(0, 2)
 const PART_TARGETS: { task: string; chapters: string[]; added: number }[] = [
   { task: 'T8-1', chapters: ['M1-01', 'M1-02', 'M1-03', 'M1-04', 'M1-05'], added: 35 },
   { task: 'T8-2', chapters: ['M2-01', 'M2-02', 'M2-03', 'M2-04', 'M2-05'], added: 25 },
-  { task: 'T8-3', chapters: ['S1-01', 'S1-02', 'S1-03', 'S1-04'], added: 25 },
-  { task: 'T8-4', chapters: ['S1-05', 'S1-06', 'S1-07', 'S1-08'], added: 30 },
-  { task: 'T8-5', chapters: ['S2-01', 'S2-02', 'S2-03'], added: 25 },
-  { task: 'T8-6', chapters: ['S2-04', 'S2-05', 'S2-06', 'S2-07', 'S2-08'], added: 30 },
+  { task: 'T8-3', chapters: ['S1-01', 'S1-02', 'S1-03', 'S1-04', 'S1-05', 'S1-06', 'S1-07', 'S1-08', 'S2-01', 'S2-02', 'S2-03', 'S2-04', 'S2-05', 'S2-06', 'S2-07', 'S2-08', 'S3'], added: 25 },
+  { task: 'T8-4', chapters: ['S1-05', 'S1-06', 'S1-07', 'S1-08', 'S2-01', 'S2-02', 'S2-03', 'S2-04', 'S2-05', 'S2-06', 'S2-07', 'S2-08', 'S3'], added: 30 },
+  { task: 'T8-5', chapters: ['S2-01', 'S2-02', 'S2-03', 'S2-04', 'S2-05', 'S2-06', 'S2-07', 'S2-08', 'S3'], added: 25 },
+  { task: 'T8-6', chapters: ['S2-04', 'S2-05', 'S2-06', 'S2-07', 'S2-08', 'S3'], added: 30 },
   { task: 'T8-7', chapters: ['S3-01', 'S3-02', 'S3-03', 'S3-04'], added: 30 },
 ]
+
+/** Phase 8-2 단원별 목표 (docs/03): 비중 0→12, 1→15, 2→24, 3→30, 4→36 */
+const CHAPTER_TARGET_BY_WEIGHT: Record<number, number> = { 0: 12, 1: 15, 2: 24, 3: 30, 4: 36 }
+/** 2차 보강을 마친 파트 — Task가 끝날 때마다 추가한다 */
+const PHASE_8_2_DONE: string[] = ['M1', 'M2', 'S1-01', 'S1-02', 'S1-03', 'S1-04', 'S1-05', 'S1-06', 'S1-07', 'S1-08', 'S2-01', 'S2-02', 'S2-03', 'S2-04', 'S2-05', 'S2-06', 'S2-07', 'S2-08', 'S3']
+
+describe('Phase 8-2 단원별 목표 문항 수', () => {
+  const done = CHAPTERS.filter((c) => PHASE_8_2_DONE.some((p) => c.code.startsWith(p)))
+  it.each(done.map((c) => [c.code, CHAPTER_TARGET_BY_WEIGHT[c.examWeight] ?? 0] as const))('%s: %i문제 이상', (code, target) => {
+    expect(byChapter(code).length).toBeGreaterThanOrEqual(target)
+  })
+})
 
 describe('Phase 8 목표 문항 수', () => {
   it('고정 문제 200개 이상, 모든 단원에 문제가 있다', () => {
@@ -63,5 +75,12 @@ describe('해설 형식 (docs/04 §4)', () => {
     if (q.choices.some((c) => /[①②③④]/.test(c))) expect(q.fixedOrder).toBe(true)
     // 첫 문장의 "정답은 X"가 정답 번호와 같다
     expect(q.explanation.startsWith(`정답은 ${CHOICE_MARKS[q.answer]}`)).toBe(true)
+    // 조사: ①(일)·③(삼)은 받침 있음 → 은/이/을/과, ②(이)·④(사)는 받침 없음 → 는/가/를/와
+    for (const text of [q.explanation, q.examPoint]) {
+      expect(text).not.toMatch(/[①③][는가를와][\s,.)]/)
+      expect(text).not.toMatch(/[②④][은이을과][\s,.)]/)
+      // 보기는 4개뿐: ⑤ 이상의 번호를 쓰지 않는다
+      expect(text).not.toMatch(/[⑤⑥⑦⑧⑨⑩]/)
+    }
   })
 })
